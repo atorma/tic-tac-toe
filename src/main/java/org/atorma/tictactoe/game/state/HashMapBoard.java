@@ -28,7 +28,7 @@ public class HashMapBoard implements Board {
     public HashMapBoard(int numRows, int numCols) {
         this.numRows = numRows;
         this.numCols = numCols;
-        map = new HashMap<Integer, Piece>(numRows*numCols/10);
+        map = new HashMap<>(numRows * numCols / 10);
     }
 
 

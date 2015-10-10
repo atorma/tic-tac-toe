@@ -9,7 +9,6 @@ import org.atorma.tictactoe.game.state.Utils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -78,11 +77,7 @@ public class NaivePlayer implements Player {
 
         // My longest sequence is blocked, elongate the next longest possible
         List<GameState.Sequence> mySequences = currentState.getAllSequences().get(mySide);
-        Collections.sort(mySequences, new Comparator<GameState.Sequence>() {
-            public int compare(GameState.Sequence o1, GameState.Sequence o2) {
-                return o2.length - o1.length;
-            }
-        });
+        Collections.sort(mySequences, (o1, o2) -> o2.length - o1.length);
         for (GameState.Sequence seq : mySequences) {
             candidates = getFreeSequenceEnds(currentState, seq);
             if (!candidates.isEmpty()) {
@@ -95,7 +90,7 @@ public class NaivePlayer implements Player {
     }
 
     private List<Cell> getFreeSequenceEnds(GameState state, GameState.Sequence sequence) {
-        List<Cell> candidates = new ArrayList<Cell>();
+        List<Cell> candidates = new ArrayList<>();
 
         if (sequence.length == 0) {
             return candidates;

@@ -92,7 +92,7 @@ public class GameState {
     public Piece getPiece(int row, int col) {
         return board.get(row, col);
     }
-    
+
     public int getNumPieces() {
         return getBoardRows()*getBoardCols() - getAllowedMoves().size();
     }
@@ -108,7 +108,7 @@ public class GameState {
     }
 
     private void checkAllowedMoves() {
-        allowedMoves = new ArrayList<Cell>(getBoardRows()*getBoardCols());
+        allowedMoves = new ArrayList<>(getBoardRows() * getBoardCols());
 
         if (getWinner() != null) {
             return;
@@ -128,8 +128,8 @@ public class GameState {
         nextState.connectHowMany = this.connectHowMany;
         nextState.turn = this.turn;
         nextState.board = this.board.copy();
-        nextState.allowedMoves = new ArrayList<Cell>(this.allowedMoves);
-        nextState.longestSequences = new EnumMap<Piece, Sequence>(this.longestSequences);
+        nextState.allowedMoves = new ArrayList<>(this.allowedMoves);
+        nextState.longestSequences = new EnumMap<>(this.longestSequences);
         return nextState;
     }
 
@@ -188,9 +188,9 @@ public class GameState {
     }
 
     public Map<Piece, List<Sequence>> getAllSequences() {
-        Map<Piece, List<Sequence>> sequences = new HashMap<Piece, List<Sequence>>();
+        Map<Piece, List<Sequence>> sequences = new HashMap<>();
         for (Piece piece : Piece.values()) {
-            sequences.put(piece, new ArrayList<Sequence>());
+            sequences.put(piece, new ArrayList<>());
         }
         checkLongestSequencesFromScratch(sequences);
         return sequences;
@@ -238,7 +238,7 @@ public class GameState {
     }
 
     private void initLongestSequences() {
-        longestSequences = new EnumMap<Piece, Sequence>(Piece.class);
+        longestSequences = new EnumMap<>(Piece.class);
         for (Piece piece : Piece.values()) {
             longestSequences.put(piece, new Sequence(0, null, null));
         }

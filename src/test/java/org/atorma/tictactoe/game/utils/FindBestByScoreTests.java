@@ -21,11 +21,7 @@ public class FindBestByScoreTests {
                 new Element(-1),
                 new Element(2)
         );
-        List<Element> maxList = Utils.max(elementList, new Utils.ScoringFunction<Element>() {
-            public double getScore(Element element) {
-                return -1 * element.getValue();
-            }
-        });
+        List<Element> maxList = Utils.max(elementList, element -> -1 * element.getValue());
         assertEquals(2, maxList.size());
         for (Element e : maxList) {
             assertEquals(-1, e.getValue());

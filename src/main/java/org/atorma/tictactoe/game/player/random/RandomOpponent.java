@@ -25,10 +25,6 @@ public class RandomOpponent implements Player {
         return myPiece;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     @Override
     public String getName() {
         return this.name;

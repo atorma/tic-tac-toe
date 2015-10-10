@@ -20,9 +20,9 @@ public class MoveNode {
     private List<Cell> unexpandedMoves;
     private Cell cell;
     private MoveNode parent;
-    private List<MoveNode> children = new ArrayList<MoveNode>();
-    private Map<Piece, Integer> wins = new EnumMap<Piece, Integer>(Piece.class);
-    private Map<Piece, Double> rewardSums = new EnumMap<Piece, Double>(Piece.class);
+    private List<MoveNode> children = new ArrayList<>();
+    private Map<Piece, Integer> wins = new EnumMap<>(Piece.class);
+    private Map<Piece, Double> rewardSums = new EnumMap<>(Piece.class);
     private int numPlays = 0;
 
     private MoveNode root;
@@ -43,7 +43,7 @@ public class MoveNode {
         this.root = this;
         this.state = gameState.getCopy();
         this.cell = cell;
-        this.unexpandedMoves = new ArrayList<Cell>(state.getAllowedMoves()); // sorted by rows then columns
+        this.unexpandedMoves = new ArrayList<>(state.getAllowedMoves()); // sorted by rows then columns
         this.rewardScheme = rewardScheme;
     }
 
@@ -60,7 +60,7 @@ public class MoveNode {
         this.root = parent.root;
         this.cell = cell;
         this.state = parent.state.next(cell);
-        this.unexpandedMoves = new ArrayList<Cell>(state.getAllowedMoves()); // sorted by rows then columns
+        this.unexpandedMoves = new ArrayList<>(state.getAllowedMoves()); // sorted by rows then columns
     }
 
     /**
@@ -170,7 +170,7 @@ public class MoveNode {
             return null;
         }
 
-        List<Integer> candidates = new ArrayList<Integer>();
+        List<Integer> candidates = new ArrayList<>();
         for (Rectangle rectangle : rectangles) {
             for (int i = rectangle.getUpperLeftCorner().getRow(); i <= rectangle.getLowerRightCorner().getRow(); i++) {
                 int first = indexOfEqualOrNext(new Cell(i, rectangle.getUpperLeftCorner().getColumn()), unexpandedMoves);
@@ -271,11 +271,7 @@ public class MoveNode {
             throw new IllegalStateException("Node has no children");
         }
 
-        return Utils.max(children, new Utils.ScoringFunction<MoveNode>() {
-            public double getScore(MoveNode element) {
-                return element.getExpectedReward(state.getTurn());
-            }
-        });
+        return Utils.max(children, element -> element.getExpectedReward(state.getTurn()));
     }
 
     /**
@@ -296,11 +292,7 @@ public class MoveNode {
             throw new IllegalStateException("Node has no children");
         }
 
-        return Utils.max(children, new Utils.ScoringFunction<MoveNode>() {
-            public double getScore(MoveNode element) {
-                return element.getExplorationScore(state.getTurn());
-            }
-        });
+        return Utils.max(children, element -> element.getExplorationScore(state.getTurn()));
     }
 
     public double getExplorationScore(Piece player) {
@@ -332,7 +324,7 @@ public class MoveNode {
     public void propagateSimulatedResult(GameState endState) {
         Piece winner = endState.getWinner();
 
-        Map<Piece, Double> rewards = new EnumMap<Piece, Double>(Piece.class);
+        Map<Piece, Double> rewards = new EnumMap<>(Piece.class);
         rewards.put(Piece.CROSS, root.rewardScheme.getReward(Piece.CROSS, endState));
         rewards.put(Piece.ROUND, root.rewardScheme.getReward(Piece.ROUND, endState));
 
@@ -353,7 +345,7 @@ public class MoveNode {
     }
 
     public List<MoveNode> getPathToRoot() {
-        ArrayList<MoveNode> pathToRoot = new ArrayList<MoveNode>();
+        ArrayList<MoveNode> pathToRoot = new ArrayList<>();
         MoveNode current = this;
         while (current != null) {
             pathToRoot.add(current);

@@ -164,7 +164,7 @@ public class MCTSPlayer implements Player {
 
 
     private List<Rectangle> getSearchRectangles() {
-        List<Rectangle> searchAreas = new ArrayList<Rectangle>();
+        List<Rectangle> searchAreas = new ArrayList<>();
         if (params.searchRadius < Integer.MAX_VALUE) {
             int numMoves = 0;
             MoveNode moveNode = lastMove;
@@ -308,11 +308,7 @@ public class MCTSPlayer implements Player {
         } else {
             target = new Cell(params.boardRowsNum/2, params.boardColsNum/2);
         }
-        candidates = Utils.max(candidates, new Utils.ScoringFunction<MoveNode>() {
-            public double getScore(MoveNode element) {
-                return Cell.getDistance(element.getMove(), target);
-            }
-        });
+        candidates = Utils.max(candidates, element -> Cell.getDistance(element.getMove(), target));
         return Utils.pickRandom(candidates);
     }
 }
