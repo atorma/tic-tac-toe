@@ -7,12 +7,16 @@ import org.atorma.tictactoe.game.state.Piece;
 import org.atorma.tictactoe.game.state.Utils;
 
 
-public class RandomOpponent implements Player {
+public class RandomPlayer implements Player {
     private Piece myPiece;
     private String name;
 
-    public RandomOpponent(String name) {
+    public RandomPlayer(String name) {
         this.name = name;
+    }
+
+    public RandomPlayer() {
+        this("Random");
     }
 
     @Override

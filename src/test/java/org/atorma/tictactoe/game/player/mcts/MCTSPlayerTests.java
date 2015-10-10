@@ -4,7 +4,7 @@ package org.atorma.tictactoe.game.player.mcts;
 import org.atorma.tictactoe.game.*;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
-import org.atorma.tictactoe.game.player.random.RandomOpponent;
+import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
@@ -31,10 +31,10 @@ public class MCTSPlayerTests {
         params.pastMovesSearchNumber = Integer.MAX_VALUE;
         params.rewardScheme = new WinLossDrawScheme();
 
-        Player mctsPlayer = new MCTSPlayer(params, "MCTS");
+        Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setSide(Piece.CROSS);
 
-        Player naivePlayer = new NaivePlayer("Naive");
+        Player naivePlayer = new NaivePlayer();
         naivePlayer.setSide(Piece.ROUND);
 
         GameState startState = new GameState(3, new Piece[3][3], mctsPlayer.getSide());
@@ -61,10 +61,10 @@ public class MCTSPlayerTests {
         params.pastMovesSearchNumber = Integer.MAX_VALUE;
         params.rewardScheme = new WinLossDrawScheme();
 
-        Player mctsPlayer = new MCTSPlayer(params, "MCTS");
+        Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setSide(Piece.CROSS);
 
-        Player naivePlayer = new NaivePlayer("Naive");
+        Player naivePlayer = new NaivePlayer();
         naivePlayer.setSide(Piece.ROUND);
 
         // Naive player has started from the optimal position in the middle
@@ -95,10 +95,10 @@ public class MCTSPlayerTests {
         params.pastMovesSearchNumber = 4;
         params.rewardScheme = new WinLossDrawScheme();
 
-        Player mctsPlayer = new MCTSPlayer(params, "MCTS");
+        Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setSide(Piece.CROSS);
 
-        Player naivePlayer = new NaivePlayer("Naive");
+        Player naivePlayer = new NaivePlayer();
         naivePlayer.setSide(Piece.ROUND);
 
         GameState startState = new GameState(params.connectHowMany,
@@ -127,10 +127,10 @@ public class MCTSPlayerTests {
         params.pastMovesSearchNumber = 4;
         params.rewardScheme = new WinLossDrawScheme();
 
-        Player mctsPlayer = new MCTSPlayer(params, "MCTS");
+        Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setSide(Piece.CROSS);
 
-        Player randomPlayer = new RandomOpponent("Random");
+        Player randomPlayer = new RandomPlayer();
         randomPlayer.setSide(Piece.ROUND);
 
         GameState startState = new GameState(params.connectHowMany,
@@ -170,7 +170,7 @@ public class MCTSPlayerTests {
         board[2][0] = Piece.ROUND;
         board[3][0] = Piece.ROUND;
 
-        Player mctsPlayer = new MCTSPlayer(params, "MCTS");
+        Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setSide(Piece.CROSS);
 
         GameState startState = new GameState(params.connectHowMany, board, mctsPlayer.getSide());
@@ -209,7 +209,7 @@ public class MCTSPlayerTests {
         board[2][0] = Piece.ROUND;
         board[3][0] = Piece.ROUND;
 
-        Player mctsPlayer = new MCTSPlayer(params, "MCTS");
+        Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setSide(Piece.CROSS);
 
 
@@ -248,10 +248,10 @@ public class MCTSPlayerTests {
         board[7][0] = Piece.ROUND;
         board[8][0] = Piece.ROUND;
 
-        MCTSPlayer mctsPlayer = new MCTSPlayer(params, "MCTS");
+        MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setSide(Piece.CROSS);
 
-        NaivePlayer naivePlayer = new NaivePlayer("Naive");
+        NaivePlayer naivePlayer = new NaivePlayer();
         naivePlayer.setSide(Piece.ROUND);
 
 
@@ -292,10 +292,10 @@ public class MCTSPlayerTests {
 
     @Test
     public void test_when_opponent_has_already_made_first_move() {
-        Player mctsPlayer = new MCTSPlayer("MCTS");
+        Player mctsPlayer = new MCTSPlayer();
         mctsPlayer.setSide(Piece.CROSS);
 
-        Player opponent = new RandomOpponent("Random");
+        Player opponent = new RandomPlayer();
         opponent.setSide(Piece.ROUND);
 
         Piece[][] board = new Piece[18][18];
@@ -324,7 +324,7 @@ public class MCTSPlayerTests {
         params.rewardScheme = new WinLossDrawScheme();
         params.pruneTreeAfterEachMove = false;
 
-        MCTSPlayer mctsPlayer = new MCTSPlayer(params, "MCTS");
+        MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setSide(Piece.CROSS);
 
         GameState gameState = new GameState(params.connectHowMany,
@@ -380,7 +380,7 @@ public class MCTSPlayerTests {
         params.rewardScheme = new WinLossDrawScheme();
         params.pruneTreeAfterEachMove = false;
 
-        MCTSPlayer mctsPlayer = new MCTSPlayer(params, "MCTS");
+        MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setSide(Piece.CROSS);
 
         GameState gameState = new GameState(params.connectHowMany,

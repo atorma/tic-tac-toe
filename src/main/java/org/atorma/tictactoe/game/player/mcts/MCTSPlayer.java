@@ -36,11 +36,12 @@ public class MCTSPlayer implements Player {
         this.params = params;
     }
 
-    /**
-     * A player for connect 5, default parameters
-     */
-    public MCTSPlayer(String name) {
-        this(DEFAULT_PARAMS, name);
+    public MCTSPlayer(MCTSParameters params) {
+        this(params, "MCTS");
+    }
+
+    public MCTSPlayer() {
+        this(DEFAULT_PARAMS);
     }
 
 
