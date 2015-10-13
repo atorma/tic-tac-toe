@@ -9,4 +9,7 @@ Done
 
 Todo
 * Javascript client using AngularJS and HTML5 canvas
+  * Autoplay two AIs against each other
+  * Human vs AI
 * REST API using Spring MVC and Spring Boot
+* Two human players against each other using Websockets
