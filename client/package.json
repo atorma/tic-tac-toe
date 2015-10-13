@@ -1,7 +1,7 @@
 {
-  "name": "tic-tac-toe client",
+  "name": "tic-tac-toe-client",
   "version": "0.0.1",
-  "description": "A simple app for sharing expenses",
+  "description": "A client app for the tic-tac-toe game server",
   "directories": {
     "src": "src"
   },
@@ -20,12 +20,13 @@
     "watchify": "3.4.0",
     "del": "2.0.2",
     "gulp": "3.9.0",
+	"gulp-if": "2.0.0",
     "gulp-jshint": "1.11.2",
     "gulp-ng-annotate": "1.1.0",
     "gulp-preprocess": "1.2.0",
     "gulp-sourcemaps": "1.6.0",
     "gulp-uglify": "1.4.1",
-    "gulp-util": "3.0.4",
+    "gulp-util": "3.0.6",
     "jasmine-core": "2.3.4",
     "karma": "0.13.10",
     "karma-browserify": "4.4.0",
