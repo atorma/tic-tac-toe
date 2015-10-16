@@ -15,6 +15,7 @@ var jshint = require('gulp-jshint');
 var uglify = require('gulp-uglify');
 var ngAnnotate = require('gulp-ng-annotate');
 var preprocess = require('gulp-preprocess');
+var gulpIf = require('gulp-if');
 
 var paths = {
     app: 'src/app/tic-tac-toe.js',
@@ -23,64 +24,44 @@ var paths = {
     lib: ['src/lib/**/*.*'],
     libResources: ['node_modules/angular-material/angular-material.css'],
     tests: 'src/app/**/*.spec.js',
-    build: 'build'
+    build: '../public'
 };
 
 var bundles = require('./browserify-bundles');
 var packageJson = require('./package.json');
 
-var materialDesignSprites = ['action', 'alert', 'content', 'navigation'];
 
-var DEVELOPMENT = "development";
-var PRODUCTION = "production";
+var DEV = "development";
+var PROD = "production";
 var context = {
-    environment: DEVELOPMENT,
+    env: DEV,
     version: packageJson.version
 };
 
-function ifEnv(env, fun) {
-    if (context.environment == env) {
-        return fun();
-    } else {
-        return gutil.noop();
-    }
-}
-
 
 gulp.task('build-dev', function (cb) {
-    context.environment = DEVELOPMENT;
-    runSequence(
-        'clean',
-        [
-            'js-libs',
-            'js-app',
-            'html',
-            'resources',
-            'lib',
-            'lib-resources'
-        ],
-        cb);
+    context.env = DEV;
+    runSequence('build', cb);
 });
 
 gulp.task('build-prod', function (cb) {
-    context.environment = PRODUCTION;
+    context.env = PROD;
+    runSequence('build', cb);
+});
+
+
+gulp.task('clean', function () {
+    return del(paths.build + '/**/*.*', {force: true});
+});
+
+
+gulp.task('build', function (cb) {
     runSequence(
         'clean',
-        [
-            'js-libs',
-            'js-app',
-            'html',
-            'resources',
-            'lib',
-            'lib-resources'
-        ],
+        ['js-libs', 'js-app', 'html', 'resources', 'lib', 'lib-resources'],
         cb);
 });
 
-
-gulp.task('clean', function (cb) {
-    del(paths.build + '/**/*.*', cb);
-});
 
 gulp.task('js-libs', function () {
     return bundles.libBundle
@@ -89,14 +70,14 @@ gulp.task('js-libs', function () {
         .pipe(source('libs.js'))
         .pipe(buffer())
         .pipe(sourcemaps.init({loadMaps: true}))
-        .pipe(ifEnv(PRODUCTION, uglify))
+        .pipe(gulpIf(context.env == PROD, uglify()))
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest(paths.build));
 });
 
 
 gulp.task('jshint', function () {
-    gulp.src('src/app/**/*.js')
+    return gulp.src('src/app/**/*.js')
         .pipe(jshint())
         .pipe(jshint.reporter('default'));
 });
@@ -109,7 +90,7 @@ function bundleApp(bundler) {
         .pipe(buffer())
         .pipe(ngAnnotate())
         .pipe(sourcemaps.init({loadMaps: true}))
-        .pipe(ifEnv(PRODUCTION, uglify))
+        .pipe(gulpIf(context.env == PROD, uglify()))
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest(paths.build));
 }
@@ -149,7 +130,7 @@ gulp.task('lib', function () {
         .pipe(gulp.dest(paths.build));
 });
 
-gulp.task('lib-resources', function (done) {
+gulp.task('lib-resources', function () {
     return gulp.src(paths.libResources)
         .pipe(gulp.dest(paths.build + '/resources'));
 });

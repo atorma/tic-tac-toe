@@ -3,6 +3,7 @@ build
 node_modules
 bower_components
 target
+public
 
 # Eclipse project
 .settings

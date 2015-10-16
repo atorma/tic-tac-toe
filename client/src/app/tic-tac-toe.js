@@ -9,6 +9,10 @@ angular
     .module("ticTacToe", ["ngMaterial", "ui.router"])
     .run(makeStateAvailableInScope);
 
+
+require("./board");
+
+
 // Injection of $state may trigger a GET, which can show as an 
 // "Unexpected request" error in your test. Workaround is to 
 // $provide a mock $state to Angular.
