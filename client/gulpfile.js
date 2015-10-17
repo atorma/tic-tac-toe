@@ -8,7 +8,6 @@ var sourcemaps = require('gulp-sourcemaps');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var watchify = require('watchify');
-var browserify = require('browserify');
 var karma = require('karma').server;
 var _ = require('lodash');
 var jshint = require('gulp-jshint');
@@ -17,17 +16,8 @@ var ngAnnotate = require('gulp-ng-annotate');
 var preprocess = require('gulp-preprocess');
 var gulpIf = require('gulp-if');
 
-var paths = {
-    app: 'src/app/tic-tac-toe.js',
-    html: ['src/app/**/*.html', '!src/app/**/*.spec.html'],
-    resources: ['src/resources/**'],
-    lib: ['src/lib/**/*.*'],
-    libResources: ['node_modules/angular-material/angular-material.css'],
-    tests: 'src/app/**/*.spec.js',
-    build: '../public'
-};
-
-var bundles = require('./browserify-bundles');
+var projectPaths = require('./project-paths');
+var browserified = require('./browserified');
 var packageJson = require('./package.json');
 
 
@@ -49,95 +39,100 @@ gulp.task('build-prod', function (cb) {
     runSequence('build', cb);
 });
 
+gulp.task('watch', function (cb) {
+    context.env = DEV;
+    runSequence(['watch:js-app', 'watch:html', 'watch:resources'], cb);
+});
 
 gulp.task('clean', function () {
-    return del(paths.build + '/**/*.*', {force: true});
+    return del(projectPaths.build + '/**', {force: true});
 });
 
 
 gulp.task('build', function (cb) {
     runSequence(
         'clean',
-        ['js-libs', 'js-app', 'html', 'resources', 'lib', 'lib-resources'],
+        ['js-libs', 'js-app', 'html', 'resources', 'lib-resources'],
         cb);
 });
 
 
-gulp.task('js-libs', function () {
-    return bundles.libBundle
-        .bundle()
-        .on('error', gutil.log.bind(gutil, 'Browserify Error'))
-        .pipe(source('libs.js'))
+function browserifyBuild(params) {
+    return params.browserified.bundle()
+        .on('error', gutil.log.bind(gutil.log, "Browserify error:"))
+        .pipe(source(params.outputFileName))
         .pipe(buffer())
+        .pipe(gulpIf(params.ngAnnotate, ngAnnotate()))
         .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(gulpIf(context.env == PROD, uglify()))
         .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest(paths.build));
+        .pipe(gulp.dest(projectPaths.build));
+}
+
+gulp.task('js-libs', function () {
+    return browserifyBuild({
+        browserified: browserified.lib,
+        ngAnnotate: false,
+        outputFileName: projectPaths.libDestName
+    });
+});
+
+gulp.task('js-app', function() {
+    return browserifyBuild({
+        browserified: browserified.app,
+        ngAnnotate: true,
+        outputFileName: projectPaths.appDestName
+    });
+});
+
+gulp.task('watch:js-app', function () {
+    var watchified = watchify(browserified.app)
+        .on('log', gutil.log.bind(gutil.log, "Watchify:"))
+        .on('update', build);
+
+    return build();
+
+    function build() {
+        return browserifyBuild({
+            browserified: watchified,
+            ngAnnotate: true,
+            outputFileName: projectPaths.appDestName
+        });
+    }
 });
 
 
 gulp.task('jshint', function () {
-    return gulp.src('src/app/**/*.js')
+    return gulp.src(projectPaths.appSourceAll)
         .pipe(jshint())
         .pipe(jshint.reporter('default'));
 });
 
 
-function bundleApp(bundler) {
-    return bundler.bundle()
-        .on('error', gutil.log.bind(gutil, 'Browserify Error'))
-        .pipe(source('tic-tac-toe.js'))
-        .pipe(buffer())
-        .pipe(ngAnnotate())
-        .pipe(sourcemaps.init({loadMaps: true}))
-        .pipe(gulpIf(context.env == PROD, uglify()))
-        .pipe(sourcemaps.write('./'))
-        .pipe(gulp.dest(paths.build));
-}
-
-gulp.task('js-app', function () {
-    return bundleApp(bundles.appBundle);
-});
-
-gulp.task('watch:js-app', function () {
-    var bundler = watchify(bundles.appBundle)
-        .on('update', function () {
-            return bundleApp(bundler);
-        });
-});
-
 gulp.task('html', function () {
-    return gulp.src(paths.html)
+    return gulp.src(projectPaths.html)
         .pipe(preprocess({context: context}))
-        .pipe(gulp.dest(paths.build));
+        .pipe(gulp.dest(projectPaths.build));
 });
 
 gulp.task('watch:html', function () {
-    return gulp.watch(paths.html, ['html']);
+    return gulp.watch(projectPaths.html, ['html']);
 });
 
+
 gulp.task('resources', function () {
-    return gulp.src(paths.resources)
-        .pipe(gulp.dest(paths.build + '/resources'));
+    return gulp.src(projectPaths.resources)
+        .pipe(gulp.dest(projectPaths.build + '/resources'));
 });
 
 gulp.task('watch:resources', function () {
-    return gulp.watch(paths.resources, ['resources']);
+    return gulp.watch(projectPaths.resources, ['resources']);
 });
 
-gulp.task('lib', function () {
-    return gulp.src(paths.lib)
-        .pipe(gulp.dest(paths.build));
-});
 
 gulp.task('lib-resources', function () {
-    return gulp.src(paths.libResources)
-        .pipe(gulp.dest(paths.build + '/resources'));
-});
-
-
-gulp.task('watch', function (cb) {
-    runSequence(['watch:js-app', 'watch:html', 'watch:resources'], cb);
+    return gulp.src(projectPaths.libResources)
+        .pipe(gulp.dest(projectPaths.build + '/resources'));
 });
 
 gulp.task('test', function () {

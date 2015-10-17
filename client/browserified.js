@@ -4,6 +4,8 @@ var browserify = require('browserify');
 var watchify = require('watchify');
 var _ = require('lodash');
 
+var projectPaths = require('./project-paths');
+
 /*
  * Dependencies
  * material-design-icons: 
@@ -16,18 +18,18 @@ var dependencies = _(packageJson && packageJson.dependencies || {})
     .value();
 
 
-var libBundle = browserify()
+var libs = browserify(watchify.args)
     .require(dependencies);
 
-var appDependencies = dependencies; // Put manually defined dependencies here
+var appDependencies = dependencies; // Add manually defined dependencies to this array
 
-var appBundle = browserify(watchify.args)
-    .add('./src/app/tic-tac-toe.js')
+var app = browserify(watchify.args)
+    .add(projectPaths.appSourceMain)
     .external(appDependencies);
 
 
 module.exports = {
-    libBundle: libBundle,
-    appBundle: appBundle,
+    lib: libs,
+    app: app,
     appDependencies: appDependencies
 };

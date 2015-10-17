@@ -1,24 +1,31 @@
-var bundles = require('./browserify-bundles');
+var toPath = require('join-path');
+
+var browserified = require('./browserified');
+var projectPaths = require('./project-paths');
+
+var preprocessors = {};
+preprocessors[projectPaths.tests] = ['browserify'];
+
+var libsPath = toPath(projectPaths.build, projectPaths.appDestName);
+var libsMapPath = libsPath + '.map';
 
 module.exports = function (config) {
     config.set({
         basePath: '',
         files: [
-            'build/libs.js',
-            {pattern: 'build/libs.js.map', included: false},
-            'src/app/**/*.spec.js'
+            libsPath,
+            {pattern: libsMapPath, included: false},
+            projectPaths.tests
         ],
         exclude: [],
         frameworks: ['browserify', 'jasmine'],
         reporters: ['mocha'],
-        preprocessors: {
-            'src/app/**/*.spec.js': ['browserify']
-        },
+        preprocessors: preprocessors,
         browserify: {
             debug: true,
             configure: function (bundle) {
                 bundle.on('prebundle', function () {
-                    bundle.external(bundles.appDependencies);
+                    bundle.external(browserified.appDependencies);
                 });
             }
         },
