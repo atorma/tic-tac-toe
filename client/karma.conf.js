@@ -23,9 +23,9 @@ module.exports = function (config) {
         preprocessors: preprocessors,
         browserify: {
             debug: true,
-            configure: function (bundle) {
-                bundle.on('prebundle', function () {
-                    bundle.external(browserified.appDependencies);
+            configure: function (bundler) {
+                bundler.on('prebundle', function () {
+                    bundler.external(browserified.appDependencies);
                 });
             }
         },

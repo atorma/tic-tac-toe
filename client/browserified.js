@@ -5,16 +5,10 @@ var watchify = require('watchify');
 var _ = require('lodash');
 
 var projectPaths = require('./project-paths');
-
-/*
- * Dependencies
- * material-design-icons: 
- *  Breaks browserify. This is an icon package and does not have package.json main or index.js
- */
 var packageJson = require('./package.json');
 var dependencies = _(packageJson && packageJson.dependencies || {})
     .keys()
-    .without('material-design-icons')
+    .without('material-design-icons') // This is an icon package and does not have package.json main or index.js
     .value();
 
 
