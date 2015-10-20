@@ -75,34 +75,34 @@ function drawCircle(cell) {
     ctx.stroke();
 }
 
-function drawLine(startCell, endCell) {
+function drawLine(start, end) {
     ctx.strokeStyle = pieceColor;
 
     var startX, startY, endX, endY;
 
-    if (startCell.row == endCell.row) { // horizontal
-        startX = startCell.column*cellWidth;
-        startY = (startCell.row + 1/2)*cellHeight;
-        endX = (endCell.column + 1)*cellWidth;
+    if (start.row == end.row) { // horizontal
+        startX = start.column*cellWidth;
+        startY = (start.row + 1/2)*cellHeight;
+        endX = (end.column + 1)*cellWidth;
         endY = startY;
-    } else if (startCell.column == endCell.column) { // vertical
-        startX = (startCell.column + 1/2)*cellWidth;
-        startY = startCell.row*cellHeight;
+    } else if (start.column == end.column) { // vertical
+        startX = (start.column + 1/2)*cellWidth;
+        startY = start.row*cellHeight;
         endX = startX;
-        endY = (endCell.row + 1)*cellHeight;
-    } else if (startCell.row < endCell.row && startCell.column < endCell.column) { // diagonal top-left to bottom-right
-        startX = startCell.column*cellWidth;
-        startY = startCell.row*cellHeight;
-        endX = (endCell.column + 1)*cellWidth;
-        endY = (endCell.row + 1)*cellHeight;
-    } else if (startCell.row < endCell.row && startCell.column > endCell.column) { // diagonal top-right to bottom-left
-        startX = (startCell.column + 1)*cellWidth;
-        startY = startCell.row*cellHeight;
-        endX = endCell.column*cellWidth;
-        endY = (endCell.row + 1)*cellHeight;
+        endY = (end.row + 1)*cellHeight;
+    } else if (start.row < end.row && start.column < end.column) { // diagonal top-left to bottom-right
+        startX = start.column*cellWidth;
+        startY = start.row*cellHeight;
+        endX = (end.column + 1)*cellWidth;
+        endY = (end.row + 1)*cellHeight;
+    } else if (start.row < end.row && start.column > end.column) { // diagonal top-right to bottom-left
+        startX = (start.column + 1)*cellWidth;
+        startY = start.row*cellHeight;
+        endX = end.column*cellWidth;
+        endY = (end.row + 1)*cellHeight;
     } else {
         var template = _.template("Invalid line (<%= startRow %>, <%= startCol %>) to (<%= endRow %>, <%= endCol%>)");
-        throw template({startRow: startCell.row, startCol: startCell.column, endRow: endCell.row, endCol: endCell.column});
+        throw template({startRow: start.row, startCol: start.column, endRow: end.row, endCol: end.column});
     }
 
     ctx.beginPath();
