@@ -26,12 +26,12 @@ window.onload = function () {
     cellHeight = canvas.height/numRows;
 
     drawGameBoard();
-    drawCross(8, 10);
-    drawCircle(10, 8);
-    drawLine(0, 0, 5, 0); // vertical
-    drawLine(1, 1, 1, 6); // horizontal
-    drawLine(2, 2, 7, 7); // diagonal left to right
-    drawLine(0, 17, 5, 12); // diagonal right to left
+    drawCross({row: 8, column: 10});
+    drawCircle({row: 10, column: 8});
+    drawLine({row: 0, column: 0}, {row: 4, column: 0}); // vertical
+    drawLine({row: 1, column: 1}, {row: 1, column: 5}); // horizontal
+    drawLine({row: 2, column: 2}, {row: 6, column: 6}); // diagonal left to right
+    drawLine({row: 0, column: 17}, {row: 4, column: 13}); // diagonal right to left
 };
 
 
@@ -56,56 +56,56 @@ function drawGameBoard() {
 
 }
 
-function drawCross(row, col) {
+function drawCross(cell) {
     ctx.strokeStyle = pieceColor;
 
     ctx.beginPath();
-    ctx.moveTo(col*cellWidth, row*cellHeight);
-    ctx.lineTo((col + 1)*cellWidth, (row + 1)*cellHeight);
+    ctx.moveTo(cell.column*cellWidth, cell.row*cellHeight);
+    ctx.lineTo((cell.column + 1)*cellWidth, (cell.row + 1)*cellHeight);
     ctx.stroke();
 
     ctx.beginPath();
-    ctx.moveTo((col + 1)*cellWidth, row*cellHeight);
-    ctx.lineTo(col*cellWidth, (row + 1)*cellHeight);
+    ctx.moveTo((cell.column + 1)*cellWidth, cell.row*cellHeight);
+    ctx.lineTo(cell.column*cellWidth, (cell.row + 1)*cellHeight);
     ctx.stroke();
 }
 
-function drawCircle(row, col) {
+function drawCircle(cell) {
     ctx.strokeStyle = pieceColor;
 
     ctx.beginPath();
-    ctx.arc((col + 1/2)*cellWidth, (row + 1/2)*cellWidth, cellWidth/2, 0, 2*Math.PI);
+    ctx.arc((cell.column + 1/2)*cellWidth, (cell.row + 1/2)*cellWidth, cellWidth/2, 0, 2*Math.PI);
     ctx.stroke();
 }
 
-function drawLine(startRow, startCol, endRow, endCol) {
+function drawLine(startCell, endCell) {
     ctx.strokeStyle = pieceColor;
 
     var startX, startY, endX, endY;
 
-    if (startRow == endRow) { // horizontal
-        startX = startCol*cellWidth;
-        startY = (startRow + 1/2)*cellHeight;
-        endX = (endCol + 1)*cellWidth;
+    if (startCell.row == endCell.row) { // horizontal
+        startX = startCell.column*cellWidth;
+        startY = (startCell.row + 1/2)*cellHeight;
+        endX = (endCell.column + 1)*cellWidth;
         endY = startY;
-    } else if (startCol == endCol) { // vertical
-        startX = (startCol + 1/2)*cellWidth;
-        startY = startRow*cellHeight;
+    } else if (startCell.column == endCell.column) { // vertical
+        startX = (startCell.column + 1/2)*cellWidth;
+        startY = startCell.row*cellHeight;
         endX = startX;
-        endY = (endRow + 1)*cellHeight;
-    } else if (startRow < endRow && startCol < endCol) { // diagonal top-left to bottom-right
-        startX = startCol*cellWidth;
-        startY = startRow*cellHeight;
-        endX = (endCol + 1)*cellWidth;
-        endY = (endRow + 1)*cellHeight;
-    } else if (startRow < endRow && startCol > endCol) { // diagonal top-right to bottom-left
-        startX = (startCol + 1)*cellWidth;
-        startY = startRow*cellHeight;
-        endX = endCol*cellWidth;
-        endY = (endRow + 1)*cellHeight;
+        endY = (endCell.row + 1)*cellHeight;
+    } else if (startCell.row < endCell.row && startCell.column < endCell.column) { // diagonal top-left to bottom-right
+        startX = startCell.column*cellWidth;
+        startY = startCell.row*cellHeight;
+        endX = (endCell.column + 1)*cellWidth;
+        endY = (endCell.row + 1)*cellHeight;
+    } else if (startCell.row < endCell.row && startCell.column > endCell.column) { // diagonal top-right to bottom-left
+        startX = (startCell.column + 1)*cellWidth;
+        startY = startCell.row*cellHeight;
+        endX = endCell.column*cellWidth;
+        endY = (endCell.row + 1)*cellHeight;
     } else {
-        var template = _.template("Invalid line (<%= startRow %>, <%= startCol %>) to (<%= endRow %>, <%= endCol %>)");
-        throw template({startRow: startRow, startCol: startCol, endRow: endRow, endCol: endCol});
+        var template = _.template("Invalid line (<%= startRow %>, <%= startCol %>) to (<%= endRow %>, <%= endCol%>)");
+        throw template({startRow: startCell.row, startCol: startCell.column, endRow: endCell.row, endCol: endCell.column});
     }
 
     ctx.beginPath();
