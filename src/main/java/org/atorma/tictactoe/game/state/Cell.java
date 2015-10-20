@@ -2,15 +2,17 @@ package org.atorma.tictactoe.game.state;
 
 /**
  * Describes one cell location on the board.
+ * Position row = 0, column = 0 is the upper left
+ * corner.
  */
 public class Cell {
 
     public final int row;
     public final int column;
 
-    public Cell(int x, int y) {
-        this.row = x;
-        this.column = y;
+    public Cell(int row, int column) {
+        this.row = row;
+        this.column = column;
     }
 
 
