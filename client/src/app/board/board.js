@@ -11,6 +11,9 @@ var numCols = 18; // TODO parameterize
 var cellWidth;
 var cellHeight;
 
+var gridColor = "#eee";
+var pieceColor = "#000";
+
 
 window.onload = function () {
     canvas = document.getElementById("canvas");
@@ -33,24 +36,29 @@ window.onload = function () {
 
 
 function drawGameBoard() {
+    ctx.strokeStyle = gridColor;
+
     // Draw horizontal lines
     for (var i = 0; i < numRows - 1; i++) {
         ctx.beginPath();
-        ctx.moveTo(0, cellHeight*(i + 1));
-        ctx.lineTo(canvas.width, cellHeight*(i + 1));
+        ctx.moveTo(0, cellHeight*(i + 1) + 0.5);
+        ctx.lineTo(canvas.width, cellHeight*(i + 1) + 0.5);
         ctx.stroke();
     }
 
     // Draw vertical lines
     for (var i = 0; i < numCols - 1; i++) {
         ctx.beginPath();
-        ctx.moveTo(cellWidth*(i + 1), 0);
-        ctx.lineTo(cellWidth*(i + 1), canvas.height);
+        ctx.moveTo(cellWidth*(i + 1) + 0.5, 0);
+        ctx.lineTo(cellWidth*(i + 1) + 0.5, canvas.height);
         ctx.stroke();
     }
+
 }
 
 function drawCross(row, col) {
+    ctx.strokeStyle = pieceColor;
+
     ctx.beginPath();
     ctx.moveTo(col*cellWidth, row*cellHeight);
     ctx.lineTo((col + 1)*cellWidth, (row + 1)*cellHeight);
@@ -63,12 +71,16 @@ function drawCross(row, col) {
 }
 
 function drawCircle(row, col) {
+    ctx.strokeStyle = pieceColor;
+
     ctx.beginPath();
     ctx.arc((col + 1/2)*cellWidth, (row + 1/2)*cellWidth, cellWidth/2, 0, 2*Math.PI);
     ctx.stroke();
 }
 
 function drawLine(startRow, startCol, endRow, endCol) {
+    ctx.strokeStyle = pieceColor;
+
     var startX, startY, endX, endY;
 
     if (startRow == endRow) { // horizontal
