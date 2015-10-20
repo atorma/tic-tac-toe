@@ -1,1 +1,1 @@
-require("./board");
+require("./board-directive");

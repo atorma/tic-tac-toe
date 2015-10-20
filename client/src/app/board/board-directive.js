@@ -1,15 +1,27 @@
 "use strict";
 
+var angular = require("angular");
 var _ = require("lodash");
 
-var canvas;
-var ctx;
+angular.module("ticTacToe")
+    .directive("board", board);
 
-var numRows = 18; // TODO parameterize
-var numCols = 18; // TODO parameterize
 
-var cellWidth;
-var cellHeight;
+function board() {
+    return {
+        restrict: "E",
+        template: "<canvas></canvas>",
+        scope: {
+            size: "@"
+        },
+        link: link
+    }
+}
+
+var canvas, ctx;
+
+var numRows, numCols;
+var cellWidth, cellHeight;
 
 var gridColor = "#eee";
 var pieceColor = "#000";
@@ -17,9 +29,13 @@ var pieceColor = "#000";
 var currentMethod = drawCross;
 
 
-window.onload = function () {
-    canvas = document.getElementById("canvas");
+function link($scope, iElem, iAttrs) {
+    canvas = iElem.find("canvas")[0];
     ctx = canvas.getContext("2d");
+
+    var size = _.floor(new Number(iAttrs.size));
+    numRows = size;
+    numCols = size;
 
     canvas.width = 400;
     canvas.height = 400;
@@ -28,6 +44,7 @@ window.onload = function () {
     cellHeight = canvas.height/numRows;
 
     drawGameBoard();
+
     canvas.onclick = onCanvasClick;
 };
 
