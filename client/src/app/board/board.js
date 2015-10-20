@@ -14,6 +14,8 @@ var cellHeight;
 var gridColor = "#eee";
 var pieceColor = "#000";
 
+var currentMethod = drawCross;
+
 
 window.onload = function () {
     canvas = document.getElementById("canvas");
@@ -26,12 +28,7 @@ window.onload = function () {
     cellHeight = canvas.height/numRows;
 
     drawGameBoard();
-    drawCross({row: 8, column: 10});
-    drawCircle({row: 10, column: 8});
-    drawLine({row: 0, column: 0}, {row: 4, column: 0}); // vertical
-    drawLine({row: 1, column: 1}, {row: 1, column: 5}); // horizontal
-    drawLine({row: 2, column: 2}, {row: 6, column: 6}); // diagonal left to right
-    drawLine({row: 0, column: 17}, {row: 4, column: 13}); // diagonal right to left
+    canvas.onclick = onCanvasClick;
 };
 
 
@@ -41,16 +38,16 @@ function drawGameBoard() {
     // Draw horizontal lines
     for (var i = 0; i < numRows - 1; i++) {
         ctx.beginPath();
-        ctx.moveTo(0, cellHeight*(i + 1) + 0.5);
-        ctx.lineTo(canvas.width, cellHeight*(i + 1) + 0.5);
+        ctx.moveTo(0, cellHeight*(i + 1));
+        ctx.lineTo(canvas.width, cellHeight*(i + 1));
         ctx.stroke();
     }
 
     // Draw vertical lines
     for (var i = 0; i < numCols - 1; i++) {
         ctx.beginPath();
-        ctx.moveTo(cellWidth*(i + 1) + 0.5, 0);
-        ctx.lineTo(cellWidth*(i + 1) + 0.5, canvas.height);
+        ctx.moveTo(cellWidth*(i + 1), 0);
+        ctx.lineTo(cellWidth*(i + 1), canvas.height);
         ctx.stroke();
     }
 
@@ -112,4 +109,31 @@ function drawLine(startCell, endCell) {
     ctx.moveTo(startX, startY);
     ctx.lineTo(endX, endY);
     ctx.stroke();
+}
+
+function onCanvasClick(e) {
+    var cc = getCanvasCoordinates(e);
+    var cell = getCellCoordinates(cc);
+
+    // TODO temporary, for testing
+    currentMethod(cell);
+    if (currentMethod == drawCross) {
+        currentMethod = drawCircle;
+    } else {
+        currentMethod = drawCross;
+    }
+}
+
+function getCanvasCoordinates(clickEvent) {
+    return {
+        x: clickEvent.pageX - canvas.offsetLeft,
+        y: clickEvent.pageY - canvas.offsetTop
+    }
+}
+
+function getCellCoordinates(canvasCoordinates) {
+    return {
+        row: _.floor(canvasCoordinates.y/cellHeight),
+        column: _.floor(canvasCoordinates.x/cellWidth)
+    }
 }
