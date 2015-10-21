@@ -8,6 +8,9 @@ var projectPaths = require('./project-paths');
 var preprocessors = {};
 preprocessors[projectPaths.tests] = ['browserify'];
 
+var appPath = toPath(projectPaths.build, projectPaths.appDestName);
+var appMapPath = appPath + '.map';
+
 var libsPath = toPath(projectPaths.build, projectPaths.libDestName);
 var libsMapPath = libsPath + '.map';
 
@@ -17,6 +20,8 @@ module.exports = function (config) {
         files: [
             libsPath,
             {pattern: libsMapPath, included: false},
+            appPath,
+            {pattern: appMapPath, included: false},
             projectPaths.tests
         ],
         exclude: [],
@@ -33,7 +38,7 @@ module.exports = function (config) {
         },
         port: 9876,
         colors: true,
-        logLevel: config.LOG_INFO, // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+        logLevel: config.LOG_DEBUG, // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
         autoWatch: true,
         browsers: ['PhantomJS'],
         singleRun: false

@@ -2,32 +2,50 @@
 
 var angular = require("angular");
 require("angular-mocks/ngMock");
-require("../tic-tac-toe");
 
 describe("GameController", function() {
 
     var vm;
     var GAME_EVENTS;
+    var gameService;
+    var currentGame;
     var $scope;
+    var $q;
 
     beforeEach(angular.mock.module("ticTacToe", function($provide) {
 
     }));
 
-
-    beforeEach(angular.mock.inject(function(_GAME_EVENTS_, $rootScope, $controller, $q) {
+    beforeEach(angular.mock.inject(function(_GAME_EVENTS_, $rootScope,_$q_) {
         GAME_EVENTS = _GAME_EVENTS_;
         $scope = $rootScope.$new();
-
-        vm = $controller("GameController", {
-            GAME_EVENTS: GAME_EVENTS,
-            $scope: $scope
-        });
-
+        $q = _$q_;
     }));
 
-    it("is defined", function() {
-       expect(vm).toBeDefined();
+    beforeEach(function() {
+        currentGame = jasmine.createSpyObj("currentGame", [
+            "getMove"
+        ]);
+        gameService = {
+            currentGame: currentGame
+        };
+
+    });
+
+    beforeEach(angular.mock.inject(function($controller) {
+        vm = $controller("GameController", {
+            GAME_EVENTS: GAME_EVENTS,
+            gameService: gameService,
+            $scope: $scope
+        });
+    }));
+
+
+    it("starts by requesting move from the game", function() {
+        vm.startGame();
+        $scope.$digest();
+
+        expect(currentGame.getMove).toHaveBeenCalled();
     });
 
 });
