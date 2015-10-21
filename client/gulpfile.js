@@ -64,7 +64,7 @@ function browserifyBuild(params) {
         .pipe(buffer())
         .pipe(gulpIf(params.ngAnnotate, ngAnnotate()))
         .pipe(sourcemaps.init({loadMaps: true}))
-        .pipe(gulpIf(context.env == PROD, uglify()))
+        .pipe(gulpIf(context.env === PROD, uglify()))
         .pipe(sourcemaps.write('./'))
         .pipe(gulp.dest(projectPaths.build));
 }

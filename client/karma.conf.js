@@ -1,3 +1,5 @@
+"use strict";
+
 var toPath = require('join-path');
 
 var browserified = require('./browserified');
@@ -6,7 +8,7 @@ var projectPaths = require('./project-paths');
 var preprocessors = {};
 preprocessors[projectPaths.tests] = ['browserify'];
 
-var libsPath = toPath(projectPaths.build, projectPaths.appDestName);
+var libsPath = toPath(projectPaths.build, projectPaths.libDestName);
 var libsMapPath = libsPath + '.map';
 
 module.exports = function (config) {
@@ -33,7 +35,7 @@ module.exports = function (config) {
         colors: true,
         logLevel: config.LOG_INFO, // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
         autoWatch: true,
-        browsers: ['Chrome'],
+        browsers: ['PhantomJS'],
         singleRun: false
     });
 };

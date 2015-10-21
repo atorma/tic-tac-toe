@@ -15,7 +15,7 @@ function board() {
             size: "@"
         },
         link: link
-    }
+    };
 }
 
 
@@ -146,16 +146,16 @@ function link($scope, iElem, iAttrs) {
         return {
             x: clickEvent.pageX - canvas.offsetLeft,
             y: clickEvent.pageY - canvas.offsetTop
-        }
+        };
     }
 
     function getCellCoordinates(canvasCoordinates) {
         return {
             row: _.floor(canvasCoordinates.y/cellHeight),
             column: _.floor(canvasCoordinates.x/cellWidth)
-        }
+        };
     }
-};
+}
 
 
 
