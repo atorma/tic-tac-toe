@@ -3,6 +3,7 @@
 var angular = require("angular");
 require("angular-mocks/ngMock");
 
+
 describe("GameController", function() {
 
     var vm;

@@ -11,7 +11,6 @@ function GameController(GAME_EVENTS, gameService, $scope) {
     vm.startGame = startGame;
 
 
-
     function startGame() {
         gameService.currentGame.getMove();
     }

@@ -1,15 +1,16 @@
 "use strict";
 
 var paths = {
-    appSourceMain: 'src/app/tic-tac-toe.js',
-    appSourceAll: ['src/app/**/*.js', '!src/app/**/*.spec.js'],
-    html: ['src/app/**/*.html', '!src/app/**/*.spec.html'],
-    resources: ['src/resources/**'],
+    appSourceMain: 'src/main/tic-tac-toe.js',
+    appSourceAll: 'src/main/**/*.js',
+    html: ['src/main/**/*.html', '!src/main/**/*.spec.html'],
+    resources: ['src/main/resources/**'],
     libResources: ['node_modules/angular-material/angular-material.css'],
-    tests: 'src/app/**/*.spec.js',
+    tests: 'src/test/**/*.spec.js',
     build: '../public',
     appDestName: 'tic-tac-toe.js',
-    libDestName: 'libs.js'
+    libDestName: 'libs.js',
+    testDestName: 'tic-tac-toe.spec.js'
 };
 
 module.exports = paths;
