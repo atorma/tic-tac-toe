@@ -9,16 +9,17 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var browserify = require('browserify');
 var watchify = require('watchify');
-var karma = require('karma').server;
+var karma = require('karma');
 var _ = require('lodash');
-var jshint = require('gulp-jshint');
 var uglify = require('gulp-uglify');
 var ngAnnotate = require('gulp-ng-annotate');
 var preprocess = require('gulp-preprocess');
 var gulpIf = require('gulp-if');
 
+
+
 var projectPaths = require('./project-paths');
-var browserified = require('./browserified');
+var browserifiers = require('./browserifiers');
 var packageJson = require('./package.json');
 
 
@@ -29,11 +30,40 @@ var context = {
     version: packageJson.version
 };
 
+var karmaConf = {
+    configFile: __dirname + '/karma.conf.js',
+    logLevel: "INFO",
+    singleRun: true,
+    autoWatch: false
+};
 
+
+
+gulp.task('clean', function () {
+    return del(projectPaths.build + '/**', {force: true});
+});
 
 gulp.task('build-dev', function (cb) {
     context.env = DEV;
     runSequence('build', cb);
+});
+
+gulp.task('test-dev', function (cb) {
+    context.env = DEV;
+    karmaConf.singleRun = true;
+    karmaConf.autoWatch = false;
+    karmaConf.logLevel = "DEBUG";
+    runSequence('build-dev', 'js-tests', 'start-karma', cb);
+});
+
+gulp.task('develop', function (cb) {
+    runSequence(['build-dev', 'watch'], cb);
+});
+
+gulp.task('tdd', ['develop'], function (cb) {
+    karmaConf.singleRun = false;
+    karmaConf.autoWatch = true;
+    runSequence('develop', 'start-karma', cb);
 });
 
 gulp.task('build-prod', function (cb) {
@@ -41,15 +71,20 @@ gulp.task('build-prod', function (cb) {
     runSequence('build', cb);
 });
 
+gulp.task('test-prod', function (cb) {
+    context.env = PROD;
+    karmaConf.singleRun = true;
+    karmaConf.autoWatch = false;
+    runSequence('build-prod', 'js-tests', 'start-karma', cb);
+});
+
+
+
+
 gulp.task('watch', function (cb) {
     context.env = DEV;
     runSequence(['watch:js-app', 'watch:js-tests', 'watch:html', 'watch:resources'], cb);
 });
-
-gulp.task('clean', function () {
-    return del(projectPaths.build + '/**', {force: true});
-});
-
 
 gulp.task('build', function (cb) {
     runSequence(
@@ -58,12 +93,11 @@ gulp.task('build', function (cb) {
         cb);
 });
 
-
 function browserifyBuild(buildOpts) {
     var browserifyOpts = {
         debug: context.env === DEV
     };
-    var browserified = buildOpts.browserifyBuilder(browserifyOpts);
+    var browserified = buildOpts.browserifier(browserifyOpts);
 
     return browserified.bundle()
         .on('error', gutil.log.bind(gutil.log, "Browserify error:"))
@@ -78,7 +112,7 @@ function browserifyBuild(buildOpts) {
 
 gulp.task('js-libs', function () {
     return browserifyBuild({
-        browserifyBuilder: browserified.getLibs,
+        browserifier: browserifiers.forLibs,
         ngAnnotate: false,
         outputFileName: projectPaths.libDestName
     });
@@ -86,7 +120,7 @@ gulp.task('js-libs', function () {
 
 gulp.task('js-app', function() {
     return browserifyBuild({
-        browserifyBuilder: browserified.getApp,
+        browserifier: browserifiers.forApp,
         ngAnnotate: true,
         outputFileName: projectPaths.appDestName
     });
@@ -94,7 +128,7 @@ gulp.task('js-app', function() {
 
 gulp.task('watch:js-app', function () {
     var watchifier = function(opts) {
-        return watchify(browserified.getApp(opts))
+        return watchify(browserifiers.forApp(opts))
             .on('log', gutil.log.bind(gutil.log, "Watchify (app):"))
             .on('update', build);
     };
@@ -103,7 +137,7 @@ gulp.task('watch:js-app', function () {
 
     function build() {
         return browserifyBuild({
-            browserifyBuilder: watchifier,
+            browserifier: watchifier,
             ngAnnotate: true,
             outputFileName: projectPaths.appDestName
         });
@@ -111,8 +145,9 @@ gulp.task('watch:js-app', function () {
 });
 
 gulp.task('js-tests', function() {
+    context.env = DEV;
     return browserifyBuild({
-        browserifyBuilder: browserified.getTests,
+        browserifier: browserifiers.forTests,
         ngAnnotate: true,
         outputFileName: projectPaths.testDestName
     });
@@ -120,7 +155,7 @@ gulp.task('js-tests', function() {
 
 gulp.task('watch:js-tests', function () {
     var watchifier = function(opts) {
-        return watchify(browserified.getTests(opts))
+        return watchify(browserifiers.forTests(opts))
             .on('log', gutil.log.bind(gutil.log, "Watchify (tests):"))
             .on('update', build);
     };
@@ -129,20 +164,12 @@ gulp.task('watch:js-tests', function () {
 
     function build() {
         return browserifyBuild({
-            browserifyBuilder: watchifier,
+            browserifier: watchifier,
             ngAnnotate: true,
             outputFileName: projectPaths.testDestName
         });
     }
 });
-
-
-gulp.task('jshint', function () {
-    return gulp.src(projectPaths.appSourceAll)
-        .pipe(jshint())
-        .pipe(jshint.reporter('default'));
-});
-
 
 gulp.task('html', function () {
     return gulp.src(projectPaths.html)
@@ -170,26 +197,8 @@ gulp.task('lib-resources', function () {
         .pipe(gulp.dest(projectPaths.build + '/resources'));
 });
 
-gulp.task('test-prod', ['build-prod', 'js-tests'], function () {
-    return karma.start({
-        configFile: __dirname + '/karma.conf.js',
-        singleRun: true
-    });
+gulp.task('start-karma', function(cb) {
+    var server = new karma.Server(karmaConf, cb);
+    server.start();
 });
 
-gulp.task('test-dev', ['build-dev', 'js-tests'], function () {
-    return karma.start({
-        configFile: __dirname + '/karma.conf.js',
-        singleRun: true
-    });
-});
-
-gulp.task('develop', function (cb) {
-    runSequence(['build-dev', 'watch'], cb);
-});
-
-gulp.task('tdd', ['develop'], function (done) {
-    karma.start({
-        configFile: __dirname + '/karma.conf.js'
-    }, done);
-});

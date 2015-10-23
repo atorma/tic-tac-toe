@@ -15,12 +15,12 @@ module.exports = function (config) {
         exclude: [],
         frameworks: ['browserify', 'jasmine'],
         reporters: ['mocha'],
+        browsers: ['PhantomJS'],
         port: 9876,
         colors: true,
-        logLevel: config.LOG_DEBUG, // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-        autoWatch: true,
-        browsers: ['PhantomJS'],
-        singleRun: false
+        logLevel: config.LOG_INFO, // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+        singleRun: true,
+        autoWatch: false
     });
 };
 

@@ -18,25 +18,25 @@ var appDependencies = dependencies; // Add manually defined dependencies to this
 var testFiles = glob.sync(projectPaths.tests);
 
 module.exports = {
-    getLibs: getLibs,
-    getApp: getApp,
-    getTests: getTests,
+    forLibs: forLibs,
+    forApp: forApp,
+    forTests: forTests,
     appDependencies: appDependencies
 };
 
-function getLibs(browserifyOpts) {
+function forLibs(browserifyOpts) {
     return getInstance(browserifyOpts)
         .require(dependencies);
 }
 
-function getApp(browserifyOpts) {
+function forApp(browserifyOpts) {
     return getInstance(browserifyOpts)
         .add(projectPaths.appSourceMain)
         .external(appDependencies);
 }
 
 
-function getTests(browserifyOpts) {
+function forTests(browserifyOpts) {
     return getInstance(browserifyOpts)
         .add(testFiles)
         .external(appDependencies)
