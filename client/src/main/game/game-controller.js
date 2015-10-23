@@ -12,7 +12,18 @@ function GameController(GAME_EVENTS, gameService, $scope) {
 
 
     function startGame() {
-        gameService.currentGame.getMove();
+        play();
+    }
+
+    function play() {
+        getOneMove().then(play);
+    }
+
+    function getOneMove() {
+        return gameService.currentGame.getMove()
+            .then(function(move) {
+                $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, move);
+            });
     }
 
 }

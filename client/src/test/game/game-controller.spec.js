@@ -7,26 +7,34 @@ require("angular-mocks/ngMock");
 describe("GameController", function() {
 
     var vm;
-    var GAME_EVENTS;
+    var GAME_EVENTS, PIECES;
+
     var gameService;
+
     var currentGame;
-    var $scope;
+    var deferredMove;
+
+    var $scope, $childScope;
     var $q;
 
     beforeEach(angular.mock.module("ticTacToe", function($provide) {
-
     }));
 
-    beforeEach(angular.mock.inject(function(_GAME_EVENTS_, $rootScope,_$q_) {
+    beforeEach(angular.mock.inject(function(_GAME_EVENTS_, _PIECES_, $rootScope,_$q_) {
         GAME_EVENTS = _GAME_EVENTS_;
+        PIECES = _PIECES_;
         $scope = $rootScope.$new();
+        $childScope = $scope.$new();
         $q = _$q_;
     }));
 
     beforeEach(function() {
-        currentGame = jasmine.createSpyObj("currentGame", [
-            "getMove"
-        ]);
+        currentGame = {};
+        currentGame.getMove = function() {
+            deferredMove = $q.defer();
+            return deferredMove.promise;
+        };
+
         gameService = {
             currentGame: currentGame
         };
@@ -42,11 +50,52 @@ describe("GameController", function() {
     }));
 
 
-    it("starts by requesting move from the game", function() {
+    it("starts by requesting move from the game and broadcasts it for the game board", function() {
+        var firstMove = {
+            piece: PIECES.CROSS,
+            cell: {row: 4, column: 12}
+        };
+        var broadcastedMove = null;
+
+        $childScope.$on(GAME_EVENTS.MOVE_COMPLETED, function(event, move) {
+            broadcastedMove = move;
+        });
+
         vm.startGame();
+
+        deferredMove.resolve(firstMove);
         $scope.$digest();
 
-        expect(currentGame.getMove).toHaveBeenCalled();
+        expect(broadcastedMove).toEqual(firstMove);
+    });
+
+
+    it("after starting it automatically gets moves and broadcasts them for the game board", function() {
+        vm.startGame();
+        deferredMove.resolve({});
+        $scope.$digest();
+
+        var broadcastedMove;
+        $childScope.$on(GAME_EVENTS.MOVE_COMPLETED, function(event, move) {
+            broadcastedMove = move;
+        });
+
+        for (var i = 1; i <= 10; i++) {
+            var move = {
+                piece: PIECES.NOUGHT,
+                cell: {row: 5, column: 12}
+            };
+            broadcastedMove = null;
+
+            deferredMove.resolve(move);
+            $scope.$digest();
+
+            expect(broadcastedMove).toEqual(move);
+        }
+    });
+
+    xit("stops when game ends and broadcasts winner (if any) to the game board", function() {
+
     });
 
 });

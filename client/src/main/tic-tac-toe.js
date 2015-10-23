@@ -5,6 +5,11 @@ require("angular-material");
 require("angular-route");
 require("angular-ui-router");
 
+var PIECES = {
+    NOUGHT: "O",
+    CROSS: "X"
+};
+
 var GAME_EVENTS = {
     MOVE_COMPLETED: "moveCompleted",
     MOVE_SELECTED: "moveSelected"
@@ -13,6 +18,7 @@ var GAME_EVENTS = {
 angular
     .module("ticTacToe", ["ngMaterial", "ui.router"])
     .constant("GAME_EVENTS", GAME_EVENTS)
+    .constant("PIECES", PIECES)
     .run(makeStateAvailableInScope);
 
 require("./board");
