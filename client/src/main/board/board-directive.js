@@ -26,7 +26,7 @@ function link($scope, iElem, iAttrs) {
     var canvas = iElem.find("canvas")[0];
     var ctx = canvas.getContext("2d");
 
-    var size = _.floor(new Number(iAttrs.size));
+    var size = _.floor(parseInt(iAttrs.size));
     var numRows = size;
     var numCols = size;
 
@@ -59,10 +59,10 @@ function link($scope, iElem, iAttrs) {
         }
 
         // Draw vertical lines
-        for (var i = 0; i < numCols - 1; i++) {
+        for (var j = 0; j < numCols - 1; j++) {
             ctx.beginPath();
-            ctx.moveTo(cellWidth*(i + 1), 0);
-            ctx.lineTo(cellWidth*(i + 1), canvas.height);
+            ctx.moveTo(cellWidth*(j + 1), 0);
+            ctx.lineTo(cellWidth*(j + 1), canvas.height);
             ctx.stroke();
         }
 
@@ -97,12 +97,12 @@ function link($scope, iElem, iAttrs) {
 
         var startX, startY, endX, endY;
 
-        if (start.row == end.row) { // horizontal
+        if (start.row === end.row) { // horizontal
             startX = start.column*cellWidth;
             startY = (start.row + 1/2)*cellHeight;
             endX = (end.column + 1)*cellWidth;
             endY = startY;
-        } else if (start.column == end.column) { // vertical
+        } else if (start.column === end.column) { // vertical
             startX = (start.column + 1/2)*cellWidth;
             startY = start.row*cellHeight;
             endX = startX;
@@ -135,7 +135,7 @@ function link($scope, iElem, iAttrs) {
 
         // TODO temporary, for testing
         currentMethod(cell);
-        if (currentMethod == drawCross) {
+        if (currentMethod === drawCross) {
             currentMethod = drawCircle;
         } else {
             currentMethod = drawCross;
