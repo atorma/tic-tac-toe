@@ -42,7 +42,7 @@ describe("GameController", function() {
 
         var currentGame;
         var deferredTurn;
-        var broadcastedTurn;
+        var broadcastedResult;
 
         beforeEach(function() {
             currentGame = {
@@ -55,9 +55,9 @@ describe("GameController", function() {
         });
 
         beforeEach(function() {
-            broadcastedTurn = null;
-            $childScope.$on(GAME_EVENTS.MOVE_COMPLETED, function(event, move) {
-                broadcastedTurn = move;
+            broadcastedResult = null;
+            $childScope.$on(GAME_EVENTS.MOVE_COMPLETED, function(event, result) {
+                broadcastedResult = result;
             });
         });
 
@@ -82,7 +82,7 @@ describe("GameController", function() {
                 deferredTurn.resolve(turnResult);
                 $scope.$digest();
 
-                expect(broadcastedTurn).toEqual(turnResult);
+                expect(broadcastedResult).toEqual(turnResult);
             }
         });
 
@@ -120,7 +120,7 @@ describe("GameController", function() {
                 $scope.$digest();
             }
 
-            expect(broadcastedTurn).toEqual(lastTurnResult);
+            expect(broadcastedResult).toEqual(lastTurnResult);
         });
 
         it("stops if playing turn fails", function() {
@@ -147,7 +147,7 @@ describe("GameController", function() {
                 $scope.$digest();
             }
 
-            expect(broadcastedTurn.move.cell.row).toEqual(errorTurnNumber - 1);
+            expect(broadcastedResult.move.cell.row).toEqual(errorTurnNumber - 1);
         });
 
     });
