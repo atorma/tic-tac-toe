@@ -10,9 +10,12 @@ function GameController(GAME_EVENTS, gameService, $scope) {
 
     vm.startGame = startGame;
 
-
     function startGame() {
-        play();
+        gameService.startNewGame()
+            .then(function() {
+                $scope.$broadcast(GAME_EVENTS.GAME_STARTED);
+            })
+            .then(play);
     }
 
     function play() {

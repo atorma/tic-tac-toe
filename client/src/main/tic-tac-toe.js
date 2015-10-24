@@ -11,8 +11,9 @@ var PIECES = {
 };
 
 var GAME_EVENTS = {
-    MOVE_COMPLETED: "moveCompleted",
-    MOVE_SELECTED: "moveSelected"
+    GAME_STARTED: "game started",
+    MOVE_COMPLETED: "move completed",
+    MOVE_SELECTED: "move selected"
 };
 
 angular

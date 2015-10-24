@@ -39,6 +39,7 @@ function board(GAME_EVENTS, PIECES) {
 
         drawGameBoard();
 
+        $scope.$on(GAME_EVENTS.GAME_STARTED, onGameStarted);
         $scope.$on(GAME_EVENTS.MOVE_COMPLETED, onMoveCompleted);
 
         canvas.onclick = onCanvasClick;
@@ -64,6 +65,11 @@ function board(GAME_EVENTS, PIECES) {
                 ctx.stroke();
             }
 
+        }
+
+        function onGameStarted(event) {
+            canvas.width = 400; // resizing clears canvas
+            drawGameBoard();
         }
 
         function onMoveCompleted(event, result) {

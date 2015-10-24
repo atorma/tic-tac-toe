@@ -17,7 +17,7 @@ describe("GameController", function() {
     beforeEach(angular.mock.module("ticTacToe", function($provide) {
     }));
 
-    beforeEach(angular.mock.inject(function(_GAME_EVENTS_, _PIECES_, $rootScope,_$q_) {
+    beforeEach(angular.mock.inject(function(_GAME_EVENTS_, _PIECES_, $rootScope, _$q_) {
         GAME_EVENTS = _GAME_EVENTS_;
         PIECES = _PIECES_;
         $scope = $rootScope.$new();
@@ -26,7 +26,10 @@ describe("GameController", function() {
     }));
 
     beforeEach(function() {
-        gameService = {};
+        gameService = jasmine.createSpyObj("gameService", [
+            "startNewGame"
+        ]);
+        gameService.startNewGame.and.returnValue($q.when());
     });
 
     beforeEach(angular.mock.inject(function($controller) {
@@ -38,20 +41,53 @@ describe("GameController", function() {
     }));
 
 
-    describe("runs the current game", function() {
 
-        var currentGame;
+    describe("on starting new game", function() {
+
+        beforeEach(function() {
+            gameService.currentGame = {
+                playTurn: function() {
+                    return $q.when({
+                        gameEnded: true
+                    });
+                }
+            };
+        });
+
+        it("requests game service to start new game", function() {
+            vm.startGame();
+            $scope.$digest();
+
+            expect(gameService.startNewGame).toHaveBeenCalled();
+        });
+
+        it("broadcasts event about starting new game", function() {
+            var broadcastedEvent = null;
+            $childScope.$on(GAME_EVENTS.GAME_STARTED, function(event) {
+                broadcastedEvent = event;
+            });
+
+            vm.startGame();
+            $scope.$digest();
+
+            expect(broadcastedEvent.name).toEqual(GAME_EVENTS.GAME_STARTED);
+        });
+
+    });
+
+
+    describe("after game started", function() {
+
         var deferredTurn;
         var broadcastedResult;
 
         beforeEach(function() {
-            currentGame = {
+            gameService.currentGame = {
                 playTurn: function() {
                     deferredTurn = $q.defer();
                     return deferredTurn.promise;
                 }
             };
-            gameService.currentGame = currentGame;
         });
 
         beforeEach(function() {
@@ -63,10 +99,10 @@ describe("GameController", function() {
 
         beforeEach(function() {
             vm.startGame();
-
+            $scope.$digest();
         });
 
-        it("requesting the game to play turns and broadcasting them to the game board", function() {
+        it("requests the game to play turns and broadcasting them to the game board", function() {
             for (var i = 0; i < 10; i++) {
 
                 var turnResult = {

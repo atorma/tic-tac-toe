@@ -12,8 +12,19 @@
     <script src="tic-tac-toe.js"></script>
 </head>
 
-<body ng-app="ticTacToe">
+<body ng-app="ticTacToe" ng-controller="GameController as vm" ng-strict-di ng-cloak>
+
+<md-toolbar md-scroll-shrink="true">
+    <div class="md-toolbar-tools">
+        <md-button ng-click="vm.startGame()" class="" aria-label="Start">Start</md-button>
+    </div>
+</md-toolbar>
+
+
+<md-content flex layout-padding>
     <board size="18"></board>
+</md-content>
+
 </body>
 
 </html> 
