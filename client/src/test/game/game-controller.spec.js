@@ -11,9 +11,6 @@ describe("GameController", function() {
 
     var gameService;
 
-    var currentGame;
-    var deferredMove;
-
     var $scope, $childScope;
     var $q;
 
@@ -29,16 +26,7 @@ describe("GameController", function() {
     }));
 
     beforeEach(function() {
-        currentGame = {};
-        currentGame.getMove = function() {
-            deferredMove = $q.defer();
-            return deferredMove.promise;
-        };
-
-        gameService = {
-            currentGame: currentGame
-        };
-
+        gameService = {};
     });
 
     beforeEach(angular.mock.inject(function($controller) {
@@ -50,52 +38,120 @@ describe("GameController", function() {
     }));
 
 
-    it("starts by requesting move from the game and broadcasts it for the game board", function() {
-        var firstMove = {
-            piece: PIECES.CROSS,
-            cell: {row: 4, column: 12}
-        };
-        var broadcastedMove = null;
+    describe("runs the current game", function() {
 
-        $childScope.$on(GAME_EVENTS.MOVE_COMPLETED, function(event, move) {
-            broadcastedMove = move;
-        });
+        var currentGame;
+        var deferredTurn;
+        var broadcastedTurn;
 
-        vm.startGame();
-
-        deferredMove.resolve(firstMove);
-        $scope.$digest();
-
-        expect(broadcastedMove).toEqual(firstMove);
-    });
-
-
-    it("after starting it automatically gets moves and broadcasts them for the game board", function() {
-        vm.startGame();
-        deferredMove.resolve({});
-        $scope.$digest();
-
-        var broadcastedMove;
-        $childScope.$on(GAME_EVENTS.MOVE_COMPLETED, function(event, move) {
-            broadcastedMove = move;
-        });
-
-        for (var i = 1; i <= 10; i++) {
-            var move = {
-                piece: PIECES.NOUGHT,
-                cell: {row: 5, column: 12}
+        beforeEach(function() {
+            currentGame = {
+                playTurn: function() {
+                    deferredTurn = $q.defer();
+                    return deferredTurn.promise;
+                }
             };
-            broadcastedMove = null;
+            gameService.currentGame = currentGame;
+        });
 
-            deferredMove.resolve(move);
-            $scope.$digest();
+        beforeEach(function() {
+            broadcastedTurn = null;
+            $childScope.$on(GAME_EVENTS.MOVE_COMPLETED, function(event, move) {
+                broadcastedTurn = move;
+            });
+        });
 
-            expect(broadcastedMove).toEqual(move);
-        }
+        beforeEach(function() {
+            vm.startGame();
+
+        });
+
+        it("requesting the game to play turns and broadcasting them to the game board", function() {
+            for (var i = 0; i < 10; i++) {
+
+                var turnResult = {
+                    move: {
+                        piece: i%2 === 0 ? PIECES.CROSS : PIECES.NOUGHT,
+                        cell: {row: 5, column: 12}
+                    },
+                    gameEnded: false,
+                    winner: null,
+                    winningSequence: null
+                }
+
+                deferredTurn.resolve(turnResult);
+                $scope.$digest();
+
+                expect(broadcastedTurn).toEqual(turnResult);
+            }
+        });
+
+        it("stops when the game ends and broadcasts the result to the game board", function() {
+
+            var lastTurnNumber = 5;
+            var lastTurnResult = {
+                move: {
+                    piece: PIECES.CROSS,
+                    cell: {row: 16, column: 5}
+                },
+                gameEnded: true,
+                winner: PIECES.CROSS,
+                winningSequence: {
+                    start: {row: 12, column: 5},
+                    end: {row: 16, column: 5}
+                }
+            };
+
+            for (var i = 1; i <= 10; i++) {
+
+                var turnResult;
+                if (i === lastTurnNumber) {
+                    turnResult = lastTurnResult;
+                } else {
+                    turnResult = {
+                        move: {},
+                        gameEnded: false,
+                        winner: null,
+                        winningSequence: null
+                    };
+                }
+
+                deferredTurn.resolve(turnResult);
+                $scope.$digest();
+            }
+
+            expect(broadcastedTurn).toEqual(lastTurnResult);
+        });
+
+        it("stops if playing turn fails", function() {
+
+            var errorTurnNumber = 5;
+            var error = {
+                message: "Something went wrong"
+            };
+
+            for (var i = 1; i <= 10; i++) {
+
+                if (i === errorTurnNumber) {
+                    deferredTurn.reject(error);
+                } else {
+                    deferredTurn.resolve({
+                        move: {
+                            cell: {row: i, column: 0}
+                        },
+                        gameEnded: false,
+                        winner: null,
+                        winningSequence: null
+                    });
+                }
+                $scope.$digest();
+            }
+
+            expect(broadcastedTurn.move.cell.row).toEqual(errorTurnNumber - 1);
+        });
+
     });
 
-    xit("stops when game ends and broadcasts winner (if any) to the game board", function() {
 
-    });
 
 });

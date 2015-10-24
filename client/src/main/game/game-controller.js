@@ -16,13 +16,22 @@ function GameController(GAME_EVENTS, gameService, $scope) {
     }
 
     function play() {
-        getOneMove().then(play);
+        playOneTurn()
+            .then(function(result) {
+                if (!result.gameEnded) {
+                    play();
+                }
+            })
+            .catch(function(reason) {
+                // TODO error message or something
+            });
     }
 
-    function getOneMove() {
-        return gameService.currentGame.getMove()
-            .then(function(move) {
-                $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, move);
+    function playOneTurn() {
+        return gameService.currentGame.playTurn()
+            .then(function(result) {
+                $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, result);
+                return result;
             });
     }
 
