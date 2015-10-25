@@ -1,9 +1,11 @@
 package org.atorma.tictactoe.game;
 
+import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
+import org.atorma.tictactoe.game.state.Utils;
 import org.springframework.util.Assert;
 
 import java.util.Collections;
@@ -20,15 +22,27 @@ public class Game {
     private int turnNumber = 1;
 
     public Game(Player player1, Player player2, GameState initialState) {
-        Assert.notNull(player1.getPiece());
-        Assert.notNull(player2.getPiece());
-        Assert.isTrue(player1.getPiece() != player2.getPiece());
+        assignPieces(player1, player2);
         Assert.notNull(initialState);
 
         players.put(player1.getPiece(), player1);
         players.put(player2.getPiece(), player2);
 
         currentState = initialState.getCopy();
+    }
+
+    private void assignPieces(Player player1, Player player2) {
+        if (player1.getPiece() == null && player2.getPiece() == null) {
+            Piece rndPiece = Piece.values()[Utils.random.nextInt(Piece.values().length)];
+            player1.setPiece(rndPiece);
+            player2.setPiece(rndPiece.other());
+        } else if (player1.getPiece() == null && player2.getPiece() != null) {
+            player1.setPiece(player2.getPiece().other());
+        } else if (player1.getPiece() != null && player2.getPiece() == null) {
+            player2.setPiece(player1.getPiece().other());
+        } else if (player1.getPiece() == player2.getPiece()) {
+            throw new IllegalArgumentException("Both players have piece " + player1.getPiece());
+        }
     }
 
     public String getId() {
