@@ -1,19 +1,18 @@
 package org.atorma.tictactoe.game;
 
-import org.atorma.tictactoe.MockitoTests;
+import org.atorma.tictactoe.UnitTests;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-public class GameTests extends MockitoTests {
+public class GameTests extends UnitTests {
 
     @Mock private Player xPlayer;
     @Mock private Player oPlayer;

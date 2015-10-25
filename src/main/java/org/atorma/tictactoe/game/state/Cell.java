@@ -39,12 +39,12 @@ public class Cell {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Cell)) return false;
 
-        Cell that = (Cell) o;
+        Cell cell = (Cell) o;
 
-        if (row != that.row) return false;
-        return column == that.column;
+        if (row != cell.row) return false;
+        return column == cell.column;
 
     }
 

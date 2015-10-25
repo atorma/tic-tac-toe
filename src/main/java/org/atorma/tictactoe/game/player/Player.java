@@ -1,6 +1,7 @@
 package org.atorma.tictactoe.game.player;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
@@ -19,6 +20,12 @@ public interface Player {
      *  The piece given with {@link #setPiece(Piece)}
      */
     Piece getPiece();
+
+    /**
+     * @return
+     *  This player's name
+     */
+    String getName();
 
     /**
      * @return

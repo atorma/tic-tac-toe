@@ -26,15 +26,17 @@ describe("gameService", function() {
     beforeEach(function() {
         initialGameData = {
             id: "game id",
-            O: {
-                id: "id of player who has the CROSS pieces",
-                name: "Name of player CROSS",
-                type: "AI"
-            },
-            X: {
-                id: "id of player who has the NOUGHT pieces",
-                name: "Name of player NOUGHT",
-                type: "HUMAN"
+            players: {
+                O: {
+                    id: "id of player who has the CROSS pieces",
+                    name: "Name of player CROSS",
+                    type: "AI"
+                },
+                X: {
+                    id: "id of player who has the NOUGHT pieces",
+                    name: "Name of player NOUGHT",
+                    type: "HUMAN"
+                }
             },
             currentPlayer: PIECE.O,
             turnNumber: 1,
@@ -55,7 +57,7 @@ describe("gameService", function() {
 
         // TODO start game with parameters: player types, board size, who starts
         it("requests backend to create a new game and sets up current game", function() {
-            $httpBackend.expectPOST("rest/games", {})
+            $httpBackend.expectPOST("games", {})
                 .respond(201, initialGameData);
 
             gameService.startNewGame();
@@ -81,7 +83,7 @@ describe("gameService", function() {
         var turnResponse;
 
         beforeEach(function() {
-            $httpBackend.whenPOST("rest/games")
+            $httpBackend.whenPOST("games")
                .respond(201, initialGameData);
 
             gameService.startNewGame();
@@ -103,7 +105,7 @@ describe("gameService", function() {
         });
 
         it("it sends correct turn request to backend", function() {
-            $httpBackend.expectPOST("rest/games/"+initialGameData.id+"/turns", {
+            $httpBackend.expectPOST("games/"+initialGameData.id+"/turns", {
                 turnNumber: initialGameData.turnNumber
             }).respond(201, turnResponse);
 
@@ -112,7 +114,7 @@ describe("gameService", function() {
         });
 
         it("returns the turn result to the caller", function() {
-            $httpBackend.expectPOST("rest/games/"+initialGameData.id+"/turns")
+            $httpBackend.expectPOST("games/"+initialGameData.id+"/turns")
                 .respond(201, turnResponse);
 
             var turnResult = null;
@@ -126,7 +128,7 @@ describe("gameService", function() {
         });
 
         it("updates the game", function() {
-            $httpBackend.expectPOST("rest/games/"+initialGameData.id+"/turns")
+            $httpBackend.expectPOST("games/"+initialGameData.id+"/turns")
                 .respond(201, turnResponse);
 
             gameService.currentGame.playTurn()

@@ -1,6 +1,6 @@
 package org.atorma.tictactoe.repository.impl;
 
-import org.atorma.tictactoe.MockitoTests;
+import org.atorma.tictactoe.UnitTests;
 import org.atorma.tictactoe.exception.GameNotFoundException;
 import org.atorma.tictactoe.game.Game;
 import org.junit.Before;
@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class InMemoryGameRepositoryTests extends MockitoTests {
+public class InMemoryGameRepositoryTests extends UnitTests {
 
     private InMemoryGameRepository repository;
 

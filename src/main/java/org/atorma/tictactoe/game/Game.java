@@ -1,6 +1,5 @@
 package org.atorma.tictactoe.game;
 
-import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
@@ -18,7 +17,7 @@ public class Game {
     private String id = UUID.randomUUID().toString();
     private Map<Piece, Player> players = new EnumMap<>(Piece.class);
     private GameState currentState;
-    private Cell lastMove;
+    private Move lastMove;
     private int turnNumber = 1;
 
     public Game(Player player1, Player player2, GameState initialState) {
@@ -57,7 +56,7 @@ public class Game {
         return currentState;
     }
 
-    public Cell getLastMove() {
+    public Move getLastMove() {
         return lastMove;
     }
 
@@ -66,8 +65,30 @@ public class Game {
     }
 
     public void playTurn() {
-        lastMove = players.get(currentState.getTurn()).move(currentState, lastMove);
-        currentState = currentState.next(lastMove);
+        Piece movePiece = currentState.getTurn();
+        Cell moveCell = players.get(movePiece).move(currentState, lastMove != null ? lastMove.getCell() : null);
+        currentState = currentState.next(moveCell);
+        lastMove = new Move(movePiece, moveCell);
         turnNumber++;
+    }
+
+
+    public static class Move {
+
+        private final Piece piece;
+        private final Cell cell;
+
+        public Move(Piece piece, Cell cell) {
+            this.piece = piece;
+            this.cell = cell;
+        }
+
+        public Piece getPiece() {
+            return piece;
+        }
+
+        public Cell getCell() {
+            return cell;
+        }
     }
 }

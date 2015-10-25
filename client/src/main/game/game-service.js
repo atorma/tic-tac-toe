@@ -16,7 +16,7 @@ function gameService(PIECES, $http, $q) {
 
 
     function startNewGame() {
-        return $http.post("rest/games", {})
+        return $http.post("games", {})
             .then(function(response) {
                 service.currentGame = new Game(response.data);
             });
@@ -29,7 +29,7 @@ function gameService(PIECES, $http, $q) {
         this.playTurn = playTurn;
 
         function playTurn() {
-            return $http.post("rest/games/"+self.id+"/turns", {
+            return $http.post("games/"+self.id+"/turns", {
                 turnNumber: self.turnNumber
             }).then(function(response) {
                 _.extend(self, response.data);
