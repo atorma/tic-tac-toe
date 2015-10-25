@@ -6,7 +6,7 @@ var _ = require("lodash");
 angular.module("ticTacToe")
     .factory("gameService", gameService);
 
-function gameService(PIECES, $q) {
+function gameService(PIECES, $http, $q) {
 
     var service = {
         currentGame: undefined,
@@ -16,10 +16,27 @@ function gameService(PIECES, $q) {
 
 
     function startNewGame() {
-        service.currentGame = new TestGame();
-        return $q.when();
+        return $http.post("rest/games", {})
+            .then(function(response) {
+                service.currentGame = new Game(response.data);
+            });
     }
 
+    function Game(initialGameData) {
+        var self = this;
+        _.extend(self, initialGameData);
+
+        this.playTurn = playTurn;
+
+        function playTurn() {
+            return $http.post("rest/games/"+self.id+"/turns", {
+                turnNumber: self.turnNumber
+            }).then(function(response) {
+                _.extend(self, response.data);
+                return response.data;
+            });
+        }
+    }
 
     function TestGame() {
         var currentPlayer = PIECES.CROSS;

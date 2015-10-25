@@ -113,7 +113,7 @@ describe("GameController", function() {
                     gameEnded: false,
                     winner: null,
                     winningSequence: null
-                }
+                };
 
                 deferredTurn.resolve(turnResult);
                 $scope.$digest();
