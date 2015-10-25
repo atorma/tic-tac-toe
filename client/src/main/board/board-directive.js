@@ -73,9 +73,9 @@ function board(GAME_EVENTS, PIECES) {
         }
 
         function onMoveCompleted(event, result) {
-            if (result.move.piece === PIECES.CROSS) {
+            if (result.move.piece === PIECES.O) {
                 drawCross(result.move.cell);
-            } else if (result.move.piece === PIECES.NOUGHT) {
+            } else if (result.move.piece === PIECES.X) {
                 drawCircle(result.move.cell);
             }
 

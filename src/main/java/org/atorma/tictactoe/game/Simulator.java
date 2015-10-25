@@ -45,7 +45,7 @@ public class Simulator {
         Cell lastPosition = null;
 
         Player currentPlayer;
-        if (startingState.getTurn() == player1.getSide()) {
+        if (startingState.getTurn() == player1.getPiece()) {
             currentPlayer = player1;
         } else {
             currentPlayer = player2;

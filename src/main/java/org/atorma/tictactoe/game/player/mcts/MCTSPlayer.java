@@ -53,11 +53,11 @@ public class MCTSPlayer implements Player {
         return getName();
     }
 
-    public void setSide(Piece p) {
+    public void setPiece(Piece p) {
         this.mySide = p;
     }
 
-    public Piece getSide() {
+    public Piece getPiece() {
         return this.mySide;
     }
 
@@ -67,7 +67,7 @@ public class MCTSPlayer implements Player {
 
 
     public Cell move(Piece[][] board, Cell opponentsMove) {
-        GameState updatedState = new GameState(params.connectHowMany, board, this.getSide());
+        GameState updatedState = new GameState(params.connectHowMany, board, this.getPiece());
         return move(updatedState, opponentsMove);
     }
 
@@ -138,20 +138,20 @@ public class MCTSPlayer implements Player {
     private MoveNode checkForMandatoryMove() {
         // Check for a decisive move
         NaivePlayer myself = new NaivePlayer();
-        myself.setSide(mySide);
+        myself.setPiece(mySide);
         Cell naiveMove = myself.move(lastMove.getGameState(), null);
         GameState result = lastMove.getGameState().next(naiveMove);
-        if (result.getWinner() == myself.getSide()) {
+        if (result.getWinner() == myself.getPiece()) {
             return lastMove.findMoveTo(naiveMove);
         }
 
         // If opponent would get a decisive move, steal the move
         GameState fakeState = new GameState(lastMove.getGameState(), mySide.other());
         NaivePlayer opponent = new NaivePlayer();
-        opponent.setSide(mySide.other());
+        opponent.setPiece(mySide.other());
         naiveMove = opponent.move(fakeState, null);
         fakeState.update(naiveMove);
-        if (fakeState.getWinner() == opponent.getSide()) {
+        if (fakeState.getWinner() == opponent.getPiece()) {
             return lastMove.findMoveTo(naiveMove);
         }
 
@@ -191,9 +191,9 @@ public class MCTSPlayer implements Player {
         GameState endState;
         if (params.simulationStrategy == MCTSParameters.SimulationStrategy.NAIVE) {
             NaivePlayer player1 = new NaivePlayer();
-            player1.setSide(mySide);
+            player1.setPiece(mySide);
             NaivePlayer player2 = new NaivePlayer();
-            player2.setSide(mySide.other());
+            player2.setPiece(mySide.other());
             Simulator simulator = new Simulator(selected.getGameState(), player1, player2);
             simulator.setCopyBoard(false); // NaivePlayer does not modify the input board when moving, this setting improves performance
             endState = simulateGame(simulator);
@@ -293,7 +293,7 @@ public class MCTSPlayer implements Player {
         // NaivePlayer always tries to elongate its longest sequence, so among equally well
         // rewarding moves, a naive move may be a good choice
         NaivePlayer naivePlayer = new NaivePlayer();
-        naivePlayer.setSide(mySide);
+        naivePlayer.setPiece(mySide);
         Cell naiveMove = naivePlayer.move(opponentsLastMove.getGameState(), opponentsLastMove.getMove());
         for (MoveNode candidate : candidates) {
             if (candidate.getMove().equals(naiveMove)) {

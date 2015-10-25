@@ -6,8 +6,8 @@ require("angular-route");
 require("angular-ui-router");
 
 var PIECES = {
-    NOUGHT: "NOUGHT",
-    CROSS: "CROSS"
+    X: "X",
+    O: "O"
 };
 
 var GAME_EVENTS = {

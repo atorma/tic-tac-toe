@@ -5,44 +5,36 @@ import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 
-/**
- * A computer player.
- */
 public interface Player {
-    /**
-     * This method is called by the game framework to notify you of your side.
-     */
-    void setSide(Piece p);
 
     /**
-     * This should always return the side that you've been informed with by the setSide-method
+     * This method is called by the game framework to set the piece this player is playing.
+     */
+    void setPiece(Piece p);
+
+    /**
+     * This should always return the piece this player been set to play.
      *
-     * @return Piece given with setSide-method
+     * @return
+     *  The piece given with {@link #setPiece(Piece)}
      */
-    Piece getSide();
+    Piece getPiece();
 
     /**
-     * @return your player's name
-     */
-    String getName();
-
-    /**
-     * @return your player's name
+     * @return
+     *  This player's name
      */
     String toString();
 
     /**
-     * Thi is your main implementation point. This method is called to determine your next move.
-     * The given parameters are informational and you can modify them if you want, your
-     * modifications will be ignored. The result of your algorithm is announced with the return
-     * value.
+     * Called by the game framework when this player should make its move.
      *
      * @param currentState
      *  The current state of the game, including the opponent's last move
      * @param opponentsLastMove
-     *  A helper parameter to inform you about the last move made by your opponent.
+     *  The previous move made by the opponent
      * @return
-     *  Cell instance that describes on which board cell you want to place your piece.
+     *  The board cell where this player's next move should be placed
      */
     Cell move(GameState currentState, Cell opponentsLastMove);
 

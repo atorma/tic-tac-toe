@@ -15,8 +15,8 @@ public class UCTBonusTests {
     @Before
     public void setUp() {
         Piece[][] board = new Piece[3][3];
-        board[1][1] = Piece.CROSS;
-        someState = new GameState(3, board, Piece.ROUND);
+        board[1][1] = Piece.X;
+        someState = new GameState(3, board, Piece.O);
     }
 
     @Test

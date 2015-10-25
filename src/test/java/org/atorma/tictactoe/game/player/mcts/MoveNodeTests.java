@@ -11,7 +11,7 @@ public class MoveNodeTests {
 
     @Test
     public void computes_game_state_at_child_nodes_when_expanded() {
-        GameState startingState = new GameState(3, new Piece[3][3], Piece.CROSS);
+        GameState startingState = new GameState(3, new Piece[3][3], Piece.X);
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
         assertEqual(startingState, root.getGameState());
 
@@ -41,7 +41,7 @@ public class MoveNodeTests {
 
     @Test
     public void find_move_returns_correct_move_even_if_node_not_expanded_yet() {
-        GameState startingState = new GameState(3, new Piece[3][3], Piece.CROSS);
+        GameState startingState = new GameState(3, new Piece[3][3], Piece.X);
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
         assertTrue(root.getChildren().isEmpty());
 
@@ -54,7 +54,7 @@ public class MoveNodeTests {
     public void expand_random_in_rectangle_returns_allowed_move_in_rectangle_and_adds_it_as_child_node() {
         Rectangle rectangle = new Rectangle(5, 5, 6, 6); // 2 x 2 rectangle
 
-        GameState state = new GameState(5, new Piece[18][18], Piece.CROSS);
+        GameState state = new GameState(5, new Piece[18][18], Piece.X);
         MoveNode root = new MoveNode(state, null, new WinLossDrawScheme());
         assertTrue(root.getChildren().isEmpty());
         assertFalse(root.isFullyExpandedIn(rectangle));
@@ -87,7 +87,7 @@ public class MoveNodeTests {
         Rectangle rectangle1 = new Rectangle(5, 5, 5, 5); // 1 x 1 rectangle
         Rectangle rectangle2 = new Rectangle(6, 6, 6, 6); // 1 x 1 rectangle
 
-        GameState state = new GameState(5, new Piece[18][18], Piece.CROSS);
+        GameState state = new GameState(5, new Piece[18][18], Piece.X);
         MoveNode root = new MoveNode(state, null, new WinLossDrawScheme());
         assertTrue(root.getChildren().isEmpty());
         assertFalse(root.isFullyExpandedIn(rectangle1, rectangle2));
@@ -109,7 +109,7 @@ public class MoveNodeTests {
     public void expand_random_when_area_is_entire_board() {
         Rectangle rectangle = new Rectangle(0, 0, 2, 2);
 
-        GameState state = new GameState(3, new Piece[3][3], Piece.CROSS);
+        GameState state = new GameState(3, new Piece[3][3], Piece.X);
         MoveNode root = new MoveNode(state, null, new WinLossDrawScheme());
 
         MoveNode expanded;
@@ -127,7 +127,7 @@ public class MoveNodeTests {
 
     @Test
     public void propagate_results_using_win_loss_draw_scheme() {
-        GameState startingState = new GameState(3, new Piece[3][3], Piece.CROSS);
+        GameState startingState = new GameState(3, new Piece[3][3], Piece.X);
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
         root.expandAll();
 
@@ -138,127 +138,127 @@ public class MoveNodeTests {
         MoveNode grandChild1 = child1.getChildren().get(0);
 
         GameState crossWins = new GameState(3, new Piece[][] {
-                {Piece.CROSS, Piece.ROUND, Piece.ROUND},
-                {Piece.ROUND, Piece.CROSS, Piece.ROUND},
-                {null       , Piece.CROSS, Piece.CROSS}
-        }, Piece.ROUND);
+                {Piece.X, Piece.O, Piece.O},
+                {Piece.O, Piece.X, Piece.O},
+                {null       , Piece.X, Piece.X}
+        }, Piece.O);
 
         child1.propagateSimulatedResult(crossWins);
 
         assertEquals(1, root.getNumPlays());
-        assertEquals(1, root.getWins(Piece.CROSS));
-        assertEquals(0, root.getWins(Piece.ROUND));
-        assertEquals(1, root.getExpectedReward(Piece.CROSS), 0);
-        assertEquals(-1, root.getExpectedReward(Piece.ROUND), 0);
+        assertEquals(1, root.getWins(Piece.X));
+        assertEquals(0, root.getWins(Piece.O));
+        assertEquals(1, root.getExpectedReward(Piece.X), 0);
+        assertEquals(-1, root.getExpectedReward(Piece.O), 0);
 
         assertEquals(1, child1.getNumPlays());
-        assertEquals(1, child1.getWins(Piece.CROSS));
-        assertEquals(0, child1.getWins(Piece.ROUND));
-        assertEquals(1, child1.getExpectedReward(Piece.CROSS), 0);
-        assertEquals(-1, child1.getExpectedReward(Piece.ROUND), 0);
+        assertEquals(1, child1.getWins(Piece.X));
+        assertEquals(0, child1.getWins(Piece.O));
+        assertEquals(1, child1.getExpectedReward(Piece.X), 0);
+        assertEquals(-1, child1.getExpectedReward(Piece.O), 0);
 
         assertEquals(0, child2.getNumPlays());
-        assertEquals(0, child2.getWins(Piece.CROSS));
-        assertEquals(0, child2.getWins(Piece.ROUND));
-        assertEquals(0, child2.getExpectedReward(Piece.ROUND), 0);
-        assertEquals(0, child2.getExpectedReward(Piece.CROSS), 0);
+        assertEquals(0, child2.getWins(Piece.X));
+        assertEquals(0, child2.getWins(Piece.O));
+        assertEquals(0, child2.getExpectedReward(Piece.O), 0);
+        assertEquals(0, child2.getExpectedReward(Piece.X), 0);
 
         assertEquals(0, grandChild1.getNumPlays());
-        assertEquals(0, grandChild1.getWins(Piece.CROSS));
-        assertEquals(0, grandChild1.getWins(Piece.ROUND));
-        assertEquals(0, grandChild1.getExpectedReward(Piece.CROSS), 0);
-        assertEquals(0, grandChild1.getExpectedReward(Piece.ROUND), 0);
+        assertEquals(0, grandChild1.getWins(Piece.X));
+        assertEquals(0, grandChild1.getWins(Piece.O));
+        assertEquals(0, grandChild1.getExpectedReward(Piece.X), 0);
+        assertEquals(0, grandChild1.getExpectedReward(Piece.O), 0);
 
 
         grandChild1.propagateSimulatedResult(crossWins);
 
         assertEquals(2, root.getNumPlays());
-        assertEquals(2, root.getWins(Piece.CROSS));
-        assertEquals(0, root.getWins(Piece.ROUND));
-        assertEquals(1, root.getExpectedReward(Piece.CROSS), 0);
-        assertEquals(-1, root.getExpectedReward(Piece.ROUND), 0);
+        assertEquals(2, root.getWins(Piece.X));
+        assertEquals(0, root.getWins(Piece.O));
+        assertEquals(1, root.getExpectedReward(Piece.X), 0);
+        assertEquals(-1, root.getExpectedReward(Piece.O), 0);
 
         assertEquals(2, child1.getNumPlays());
-        assertEquals(2, child1.getWins(Piece.CROSS));
-        assertEquals(0, child1.getWins(Piece.ROUND));
-        assertEquals(1, child1.getExpectedReward(Piece.CROSS), 0);
-        assertEquals(-1, child1.getExpectedReward(Piece.ROUND), 0);
+        assertEquals(2, child1.getWins(Piece.X));
+        assertEquals(0, child1.getWins(Piece.O));
+        assertEquals(1, child1.getExpectedReward(Piece.X), 0);
+        assertEquals(-1, child1.getExpectedReward(Piece.O), 0);
 
         assertEquals(0, child2.getNumPlays());
-        assertEquals(0, child2.getWins(Piece.CROSS));
-        assertEquals(0, child2.getWins(Piece.ROUND));
-        assertEquals(0, child2.getExpectedReward(Piece.CROSS), 0);
-        assertEquals(0, child2.getExpectedReward(Piece.ROUND), 0);
+        assertEquals(0, child2.getWins(Piece.X));
+        assertEquals(0, child2.getWins(Piece.O));
+        assertEquals(0, child2.getExpectedReward(Piece.X), 0);
+        assertEquals(0, child2.getExpectedReward(Piece.O), 0);
 
         assertEquals(1, grandChild1.getNumPlays());
-        assertEquals(1, grandChild1.getWins(Piece.CROSS));
-        assertEquals(0, grandChild1.getWins(Piece.ROUND));
-        assertEquals(1, grandChild1.getExpectedReward(Piece.CROSS), 0);
-        assertEquals(-1, grandChild1.getExpectedReward(Piece.ROUND), 0);
+        assertEquals(1, grandChild1.getWins(Piece.X));
+        assertEquals(0, grandChild1.getWins(Piece.O));
+        assertEquals(1, grandChild1.getExpectedReward(Piece.X), 0);
+        assertEquals(-1, grandChild1.getExpectedReward(Piece.O), 0);
 
 
         GameState roundWins = new GameState(3, new Piece[][] {
-                {Piece.CROSS, Piece.CROSS, Piece.ROUND},
-                {Piece.ROUND, Piece.ROUND, Piece.ROUND},
-                {null       , Piece.CROSS, Piece.CROSS}
-        }, Piece.CROSS);
+                {Piece.X, Piece.X, Piece.O},
+                {Piece.O, Piece.O, Piece.O},
+                {null       , Piece.X, Piece.X}
+        }, Piece.X);
 
         child2.propagateSimulatedResult(roundWins);
 
         assertEquals(3, root.getNumPlays());
-        assertEquals(2, root.getWins(Piece.CROSS));
-        assertEquals(1, root.getWins(Piece.ROUND));
-        assertEquals(0.33333, root.getExpectedReward(Piece.CROSS), 0.01);
-        assertEquals(-0.3333, root.getExpectedReward(Piece.ROUND), 0.01);
+        assertEquals(2, root.getWins(Piece.X));
+        assertEquals(1, root.getWins(Piece.O));
+        assertEquals(0.33333, root.getExpectedReward(Piece.X), 0.01);
+        assertEquals(-0.3333, root.getExpectedReward(Piece.O), 0.01);
 
         assertEquals(2, child1.getNumPlays());
-        assertEquals(2, child1.getWins(Piece.CROSS));
-        assertEquals(0, child1.getWins(Piece.ROUND));
-        assertEquals(1, child1.getExpectedReward(Piece.CROSS), 0);
-        assertEquals(-1, child1.getExpectedReward(Piece.ROUND), 0);
+        assertEquals(2, child1.getWins(Piece.X));
+        assertEquals(0, child1.getWins(Piece.O));
+        assertEquals(1, child1.getExpectedReward(Piece.X), 0);
+        assertEquals(-1, child1.getExpectedReward(Piece.O), 0);
 
         assertEquals(1, child2.getNumPlays());
-        assertEquals(0, child2.getWins(Piece.CROSS));
-        assertEquals(1, child2.getWins(Piece.ROUND));
-        assertEquals(-1, child2.getExpectedReward(Piece.CROSS), 0);
-        assertEquals(1, child2.getExpectedReward(Piece.ROUND), 0);
+        assertEquals(0, child2.getWins(Piece.X));
+        assertEquals(1, child2.getWins(Piece.O));
+        assertEquals(-1, child2.getExpectedReward(Piece.X), 0);
+        assertEquals(1, child2.getExpectedReward(Piece.O), 0);
 
         assertEquals(1, grandChild1.getNumPlays());
-        assertEquals(1, grandChild1.getWins(Piece.CROSS));
-        assertEquals(0, grandChild1.getWins(Piece.ROUND));
-        assertEquals(1, grandChild1.getExpectedReward(Piece.CROSS), 0);
-        assertEquals(-1, grandChild1.getExpectedReward(Piece.ROUND), 0);
+        assertEquals(1, grandChild1.getWins(Piece.X));
+        assertEquals(0, grandChild1.getWins(Piece.O));
+        assertEquals(1, grandChild1.getExpectedReward(Piece.X), 0);
+        assertEquals(-1, grandChild1.getExpectedReward(Piece.O), 0);
 
 
         GameState tie = new GameState(3, new Piece[][] {
-                {Piece.CROSS, Piece.CROSS, Piece.ROUND},
-                {Piece.ROUND, Piece.ROUND, Piece.CROSS},
-                {Piece.CROSS, Piece.ROUND, Piece.CROSS}
-        }, Piece.ROUND);
+                {Piece.X, Piece.X, Piece.O},
+                {Piece.O, Piece.O, Piece.X},
+                {Piece.X, Piece.O, Piece.X}
+        }, Piece.O);
 
         grandChild1.propagateSimulatedResult(tie);
 
         assertEquals(4, root.getNumPlays());
-        assertEquals(2, root.getWins(Piece.CROSS));
-        assertEquals(1, root.getWins(Piece.ROUND));
+        assertEquals(2, root.getWins(Piece.X));
+        assertEquals(1, root.getWins(Piece.O));
 
         assertEquals(3, child1.getNumPlays());
-        assertEquals(2, child1.getWins(Piece.CROSS));
-        assertEquals(0, child1.getWins(Piece.ROUND));
+        assertEquals(2, child1.getWins(Piece.X));
+        assertEquals(0, child1.getWins(Piece.O));
 
         assertEquals(1, child2.getNumPlays());
-        assertEquals(0, child2.getWins(Piece.CROSS));
-        assertEquals(1, child2.getWins(Piece.ROUND));
+        assertEquals(0, child2.getWins(Piece.X));
+        assertEquals(1, child2.getWins(Piece.O));
 
 
-        assertEquals(1, grandChild1.getWins(Piece.CROSS));
-        assertEquals(0, grandChild1.getWins(Piece.ROUND));
+        assertEquals(1, grandChild1.getWins(Piece.X));
+        assertEquals(0, grandChild1.getWins(Piece.O));
         assertEquals(2, grandChild1.getNumPlays());
     }
 
     @Test
     public void getBestMove_and_getExploratoryMove_return_some_move_when_no_visits_to_next_moves() {
-        GameState emptyBoardCrossStarts = new GameState(3, new Piece[3][3], Piece.CROSS);
+        GameState emptyBoardCrossStarts = new GameState(3, new Piece[3][3], Piece.X);
         MoveNode root = new MoveNode(emptyBoardCrossStarts, null, new WinLossDrawScheme());
         root.expandAll();
 
@@ -273,7 +273,7 @@ public class MoveNodeTests {
 
     @Test
     public void getBestMove_returns_move_with_highest_expected_value() {
-        GameState emptyBoardCrossStarts = new GameState(3, new Piece[3][3], Piece.CROSS);
+        GameState emptyBoardCrossStarts = new GameState(3, new Piece[3][3], Piece.X);
         MoveNode root = new MoveNode(emptyBoardCrossStarts, null, new WinLossDrawScheme());
 
         root.expandAll();
@@ -283,15 +283,15 @@ public class MoveNodeTests {
         // Assume these are results of two simulations
 
         GameState crossWinsState = new GameState(3, new Piece[][] {
-                {Piece.CROSS, Piece.ROUND, Piece.ROUND},
-                {Piece.ROUND, Piece.CROSS, Piece.ROUND},
-                {null       , Piece.CROSS, Piece.CROSS}
-        }, Piece.ROUND);
+                {Piece.X, Piece.O, Piece.O},
+                {Piece.O, Piece.X, Piece.O},
+                {null       , Piece.X, Piece.X}
+        }, Piece.O);
         GameState roundWinsState = new GameState(3, new Piece[][] {
-                {Piece.CROSS, Piece.CROSS, Piece.ROUND},
-                {Piece.ROUND, Piece.ROUND, Piece.ROUND},
-                {null       , Piece.CROSS, Piece.CROSS}
-        }, Piece.CROSS);
+                {Piece.X, Piece.X, Piece.O},
+                {Piece.O, Piece.O, Piece.O},
+                {null       , Piece.X, Piece.X}
+        }, Piece.X);
 
         crossWinsMove.propagateSimulatedResult(crossWinsState);
         roundWinsMove.propagateSimulatedResult(roundWinsState);
@@ -302,7 +302,7 @@ public class MoveNodeTests {
 
     @Test
     public void prune_other_branches_on_path_to_root() {
-        GameState startingState = new GameState(3, new Piece[3][3], Piece.CROSS);
+        GameState startingState = new GameState(3, new Piece[3][3], Piece.X);
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
         root.expandAll();
         for (MoveNode child : root.getChildren()) {

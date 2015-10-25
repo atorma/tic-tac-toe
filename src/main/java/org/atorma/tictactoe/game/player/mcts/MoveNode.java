@@ -48,10 +48,10 @@ public class MoveNode {
     }
 
     private MoveNode() {
-        this.wins.put(Piece.CROSS, 0);
-        this.wins.put(Piece.ROUND, 0);
-        this.rewardSums.put(Piece.CROSS, (double) 0);
-        this.rewardSums.put(Piece.ROUND, (double) 0);
+        this.wins.put(Piece.X, 0);
+        this.wins.put(Piece.O, 0);
+        this.rewardSums.put(Piece.X, (double) 0);
+        this.rewardSums.put(Piece.O, (double) 0);
     }
 
     private MoveNode(MoveNode parent, Cell cell) {
@@ -325,8 +325,8 @@ public class MoveNode {
         Piece winner = endState.getWinner();
 
         Map<Piece, Double> rewards = new EnumMap<>(Piece.class);
-        rewards.put(Piece.CROSS, root.rewardScheme.getReward(Piece.CROSS, endState));
-        rewards.put(Piece.ROUND, root.rewardScheme.getReward(Piece.ROUND, endState));
+        rewards.put(Piece.X, root.rewardScheme.getReward(Piece.X, endState));
+        rewards.put(Piece.O, root.rewardScheme.getReward(Piece.O, endState));
 
         MoveNode current = this;
         while (current != null) {
@@ -335,8 +335,8 @@ public class MoveNode {
                 current.wins.put(winner, updatedWins);
             }
 
-            current.rewardSums.put(Piece.CROSS, current.rewardSums.get(Piece.CROSS) + rewards.get(Piece.CROSS));
-            current.rewardSums.put(Piece.ROUND, current.rewardSums.get(Piece.ROUND) + rewards.get(Piece.ROUND));
+            current.rewardSums.put(Piece.X, current.rewardSums.get(Piece.X) + rewards.get(Piece.X));
+            current.rewardSums.put(Piece.O, current.rewardSums.get(Piece.O) + rewards.get(Piece.O));
 
             current.numPlays = current.numPlays + 1;
 
@@ -392,13 +392,13 @@ public class MoveNode {
             sb.append("root");
         }
         sb.append(", ");
-        sb.append(Piece.CROSS).append(" E[r]: ").append(Utils.round(getExpectedReward(Piece.CROSS), 3));
+        sb.append(Piece.X).append(" E[r]: ").append(Utils.round(getExpectedReward(Piece.X), 3));
         sb.append(", ");
-        sb.append(Piece.ROUND).append(" E[r]: ").append(Utils.round(getExpectedReward(Piece.ROUND), 3));
+        sb.append(Piece.O).append(" E[r]: ").append(Utils.round(getExpectedReward(Piece.O), 3));
         sb.append(", ");
-        sb.append(Piece.CROSS).append(" wins: ").append(getWins(Piece.CROSS));
+        sb.append(Piece.X).append(" wins: ").append(getWins(Piece.X));
         sb.append(", ");
-        sb.append(Piece.ROUND).append(" wins: ").append(getWins(Piece.ROUND));
+        sb.append(Piece.O).append(" wins: ").append(getWins(Piece.O));
         sb.append(", ");
         sb.append("Total: ").append(getNumPlays());
         sb.append("}");

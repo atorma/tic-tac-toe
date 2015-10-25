@@ -32,18 +32,18 @@ public class MCTSPlayerTests {
         params.rewardScheme = new WinLossDrawScheme();
 
         Player mctsPlayer = new MCTSPlayer(params);
-        mctsPlayer.setSide(Piece.CROSS);
+        mctsPlayer.setPiece(Piece.X);
 
         Player naivePlayer = new NaivePlayer();
-        naivePlayer.setSide(Piece.ROUND);
+        naivePlayer.setPiece(Piece.O);
 
-        GameState startState = new GameState(3, new Piece[3][3], mctsPlayer.getSide());
+        GameState startState = new GameState(3, new Piece[3][3], mctsPlayer.getPiece());
         Simulator simulator = new Simulator(startState, mctsPlayer, naivePlayer);
 
         GameState endState = simulator.run();
 
         endState.print();
-        assertTrue(mctsPlayer.getSide() == endState.getWinner() || endState.isTie());
+        assertTrue(mctsPlayer.getPiece() == endState.getWinner() || endState.isTie());
     }
 
     @Test
@@ -62,21 +62,21 @@ public class MCTSPlayerTests {
         params.rewardScheme = new WinLossDrawScheme();
 
         Player mctsPlayer = new MCTSPlayer(params);
-        mctsPlayer.setSide(Piece.CROSS);
+        mctsPlayer.setPiece(Piece.X);
 
         Player naivePlayer = new NaivePlayer();
-        naivePlayer.setSide(Piece.ROUND);
+        naivePlayer.setPiece(Piece.O);
 
         // Naive player has started from the optimal position in the middle
         Piece[][] board = new Piece[3][3];
-        board[1][1] = naivePlayer.getSide();
-        GameState startState = new GameState(3, board, mctsPlayer.getSide());
+        board[1][1] = naivePlayer.getPiece();
+        GameState startState = new GameState(3, board, mctsPlayer.getPiece());
 
         Simulator simulator = new Simulator(startState, mctsPlayer, naivePlayer);
         GameState endState = simulator.run();
 
         endState.print();
-        assertTrue(mctsPlayer.getSide() == endState.getWinner() || endState.isTie());
+        assertTrue(mctsPlayer.getPiece() == endState.getWinner() || endState.isTie());
     }
 
     @Test
@@ -96,20 +96,20 @@ public class MCTSPlayerTests {
         params.rewardScheme = new WinLossDrawScheme();
 
         Player mctsPlayer = new MCTSPlayer(params);
-        mctsPlayer.setSide(Piece.CROSS);
+        mctsPlayer.setPiece(Piece.X);
 
         Player naivePlayer = new NaivePlayer();
-        naivePlayer.setSide(Piece.ROUND);
+        naivePlayer.setPiece(Piece.O);
 
         GameState startState = new GameState(params.connectHowMany,
                 new Piece[params.boardRowsNum][params.boardColsNum],
-                mctsPlayer.getSide());
+                mctsPlayer.getPiece());
         Simulator simulator = new Simulator(startState, mctsPlayer, naivePlayer);
 
         GameState endState = simulator.run();
 
         endState.print();
-        assertEquals(mctsPlayer.getSide(), endState.getWinner());
+        assertEquals(mctsPlayer.getPiece(), endState.getWinner());
     }
 
     @Test
@@ -128,20 +128,20 @@ public class MCTSPlayerTests {
         params.rewardScheme = new WinLossDrawScheme();
 
         Player mctsPlayer = new MCTSPlayer(params);
-        mctsPlayer.setSide(Piece.CROSS);
+        mctsPlayer.setPiece(Piece.X);
 
         Player randomPlayer = new RandomPlayer();
-        randomPlayer.setSide(Piece.ROUND);
+        randomPlayer.setPiece(Piece.O);
 
         GameState startState = new GameState(params.connectHowMany,
                 new Piece[params.boardRowsNum][params.boardColsNum],
-                randomPlayer.getSide());
+                randomPlayer.getPiece());
         Simulator simulator = new Simulator(startState, mctsPlayer, randomPlayer);
 
         GameState endState = simulator.run();
 
         endState.print();
-        assertEquals(mctsPlayer.getSide(), endState.getWinner());
+        assertEquals(mctsPlayer.getPiece(), endState.getWinner());
     }
 
     @Test
@@ -161,26 +161,26 @@ public class MCTSPlayerTests {
 
         Piece[][] board = new Piece[18][18];
         // Both have 4 in sequence
-        board[10][8] = Piece.CROSS;
-        board[11][9] = Piece.CROSS;
-        board[12][10] = Piece.CROSS;
-        board[13][11] = Piece.CROSS;
-        board[0][0] = Piece.ROUND;
-        board[1][0] = Piece.ROUND;
-        board[2][0] = Piece.ROUND;
-        board[3][0] = Piece.ROUND;
+        board[10][8] = Piece.X;
+        board[11][9] = Piece.X;
+        board[12][10] = Piece.X;
+        board[13][11] = Piece.X;
+        board[0][0] = Piece.O;
+        board[1][0] = Piece.O;
+        board[2][0] = Piece.O;
+        board[3][0] = Piece.O;
 
         Player mctsPlayer = new MCTSPlayer(params);
-        mctsPlayer.setSide(Piece.CROSS);
+        mctsPlayer.setPiece(Piece.X);
 
-        GameState startState = new GameState(params.connectHowMany, board, mctsPlayer.getSide());
+        GameState startState = new GameState(params.connectHowMany, board, mctsPlayer.getPiece());
         startState.print();
 
         Cell mctsPlayerMove = mctsPlayer.move(startState, new Cell(3, 0));
         GameState endState = startState.next(mctsPlayerMove);
         endState.print();
 
-        assertEquals(endState.getWinner(), mctsPlayer.getSide());
+        assertEquals(endState.getWinner(), mctsPlayer.getPiece());
     }
 
     @Test
@@ -200,20 +200,20 @@ public class MCTSPlayerTests {
 
         Piece[][] board = new Piece[18][18];
         // Cross has 3 in sequence
-        board[10][8] = Piece.CROSS;
-        board[11][8] = Piece.CROSS;
-        board[12][8] = Piece.CROSS;
+        board[10][8] = Piece.X;
+        board[11][8] = Piece.X;
+        board[12][8] = Piece.X;
         // ... but Round has 4 in sequence with one free end
-        board[0][0] = Piece.ROUND;
-        board[1][0] = Piece.ROUND;
-        board[2][0] = Piece.ROUND;
-        board[3][0] = Piece.ROUND;
+        board[0][0] = Piece.O;
+        board[1][0] = Piece.O;
+        board[2][0] = Piece.O;
+        board[3][0] = Piece.O;
 
         Player mctsPlayer = new MCTSPlayer(params);
-        mctsPlayer.setSide(Piece.CROSS);
+        mctsPlayer.setPiece(Piece.X);
 
 
-        GameState startState = new GameState(params.connectHowMany, board, mctsPlayer.getSide());
+        GameState startState = new GameState(params.connectHowMany, board, mctsPlayer.getPiece());
         startState.print();
 
         Cell mctsPlayerMove = mctsPlayer.move(startState, new Cell(3, 0));
@@ -241,21 +241,21 @@ public class MCTSPlayerTests {
 
         Piece[][] board = new Piece[18][18];
         // Cross has 2 in sequence
-        board[11][8] = Piece.CROSS;
-        board[12][8] = Piece.CROSS;
+        board[11][8] = Piece.X;
+        board[12][8] = Piece.X;
         // ... but Round has 3 in sequence with free ends.
-        board[6][0] = Piece.ROUND;
-        board[7][0] = Piece.ROUND;
-        board[8][0] = Piece.ROUND;
+        board[6][0] = Piece.O;
+        board[7][0] = Piece.O;
+        board[8][0] = Piece.O;
 
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
-        mctsPlayer.setSide(Piece.CROSS);
+        mctsPlayer.setPiece(Piece.X);
 
         NaivePlayer naivePlayer = new NaivePlayer();
-        naivePlayer.setSide(Piece.ROUND);
+        naivePlayer.setPiece(Piece.O);
 
 
-        GameState gameState = new GameState(params.connectHowMany, board, mctsPlayer.getSide());
+        GameState gameState = new GameState(params.connectHowMany, board, mctsPlayer.getPiece());
         gameState.print();
 
         Cell mctsPlayerMove = mctsPlayer.move(gameState, new Cell(8, 0));
@@ -293,14 +293,14 @@ public class MCTSPlayerTests {
     @Test
     public void test_when_opponent_has_already_made_first_move() {
         Player mctsPlayer = new MCTSPlayer();
-        mctsPlayer.setSide(Piece.CROSS);
+        mctsPlayer.setPiece(Piece.X);
 
         Player opponent = new RandomPlayer();
-        opponent.setSide(Piece.ROUND);
+        opponent.setPiece(Piece.O);
 
         Piece[][] board = new Piece[18][18];
-        board[2][2] = opponent.getSide();
-        GameState state = new GameState(5, board, mctsPlayer.getSide());
+        board[2][2] = opponent.getPiece();
+        GameState state = new GameState(5, board, mctsPlayer.getPiece());
 
         Cell opponentsMove = new Cell(2, 2);
 
@@ -325,11 +325,11 @@ public class MCTSPlayerTests {
         params.pruneTreeAfterEachMove = false;
 
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
-        mctsPlayer.setSide(Piece.CROSS);
+        mctsPlayer.setPiece(Piece.X);
 
         GameState gameState = new GameState(params.connectHowMany,
                 new Piece[params.boardRowsNum][params.boardColsNum],
-                mctsPlayer.getSide());
+                mctsPlayer.getPiece());
         gameState.print();
 
         // mctsPlayer starts from empty board, can expand anywhere
@@ -381,11 +381,11 @@ public class MCTSPlayerTests {
         params.pruneTreeAfterEachMove = false;
 
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
-        mctsPlayer.setSide(Piece.CROSS);
+        mctsPlayer.setPiece(Piece.X);
 
         GameState gameState = new GameState(params.connectHowMany,
                 new Piece[params.boardRowsNum][params.boardColsNum],
-                mctsPlayer.getSide().other());
+                mctsPlayer.getPiece().other());
         gameState.print();
 
         Cell opponentsMove = new Cell(0, 0);

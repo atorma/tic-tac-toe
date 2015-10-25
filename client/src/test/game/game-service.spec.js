@@ -6,7 +6,7 @@ require("angular-mocks/ngMock");
 
 describe("gameService", function() {
 
-    var PIECES;
+    var PIECE;
     var gameService;
     var initialGameData;
 
@@ -16,7 +16,7 @@ describe("gameService", function() {
     }));
 
     beforeEach(angular.mock.inject(function(_PIECES_, _gameService_, _$q_, $rootScope, _$httpBackend_) {
-        PIECES = _PIECES_;
+        PIECE = _PIECES_;
         gameService = _gameService_;
         $q = _$q_;
         $scope = $rootScope;
@@ -26,17 +26,17 @@ describe("gameService", function() {
     beforeEach(function() {
         initialGameData = {
             id: "game id",
-            CROSS: {
+            O: {
                 id: "id of player who has the CROSS pieces",
                 name: "Name of player CROSS",
                 type: "AI"
             },
-            NOUGHT: {
+            X: {
                 id: "id of player who has the NOUGHT pieces",
                 name: "Name of player NOUGHT",
                 type: "HUMAN"
             },
-            currentPlayer: PIECES.CROSS,
+            currentPlayer: PIECE.O,
             turnNumber: 1,
             move: null,
             gameEnded: false,
@@ -63,8 +63,8 @@ describe("gameService", function() {
 
             expect(gameService.currentGame).toBeDefined();
             expect(gameService.currentGame.id).toEqual(initialGameData.id);
-            expect(gameService.currentGame[PIECES.CROSS]).toEqual(initialGameData[PIECES.CROSS]);
-            expect(gameService.currentGame[PIECES.NOUGHT]).toEqual(initialGameData[PIECES.NOUGHT]);
+            expect(gameService.currentGame[PIECE.O]).toEqual(initialGameData[PIECE.O]);
+            expect(gameService.currentGame[PIECE.X]).toEqual(initialGameData[PIECE.X]);
             expect(gameService.currentGame.currentPlayer).toEqual(initialGameData.currentPlayer);
             expect(gameService.currentGame.turnNumber).toEqual(initialGameData.turnNumber);
             expect(gameService.currentGame.move).toEqual(initialGameData.move);
@@ -91,14 +91,14 @@ describe("gameService", function() {
         beforeEach(function() {
             turnResponse = {
                 move: {
-                    piece: PIECES.CROSS,
+                    piece: PIECE.O,
                     cell: {row: 5, column: 12}
                 },
                 gameEnded: false,
                 winner: null,
                 winningSequence: null,
                 turnNumber: 2,
-                currentPlayer: PIECES.NOUGHT
+                currentPlayer: PIECE.X
             };
         });
 

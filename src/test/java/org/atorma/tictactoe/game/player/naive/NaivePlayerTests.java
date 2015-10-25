@@ -19,12 +19,12 @@ public class NaivePlayerTests {
     @Before
     public void setUp() {
         player = new NaivePlayer();
-        player.setSide(Piece.CROSS);
+        player.setPiece(Piece.X);
     }
 
     @Test
     public void if_no_previous_sequence_then_pick_some_move() {
-        GameState state = new GameState(5, new Piece[18][18], player.getSide());
+        GameState state = new GameState(5, new Piece[18][18], player.getPiece());
         assertNotNull(player.move(state, null));
     }
 
@@ -33,15 +33,15 @@ public class NaivePlayerTests {
         // Row
 
         Piece[][] board = new Piece[18][18];
-        board[2][2] = Piece.CROSS;
-        board[2][3] = Piece.CROSS;
-        board[3][2] = Piece.CROSS;
+        board[2][2] = Piece.X;
+        board[2][3] = Piece.X;
+        board[3][2] = Piece.X;
         // longest
-        board[10][10] = Piece.CROSS;
-        board[10][11] = Piece.CROSS;
-        board[10][12] = Piece.CROSS;
+        board[10][10] = Piece.X;
+        board[10][11] = Piece.X;
+        board[10][12] = Piece.X;
 
-        GameState state = new GameState(5, board, player.getSide());
+        GameState state = new GameState(5, board, player.getPiece());
 
         Cell move = player.move(state, null);
         printMove(move);
@@ -52,15 +52,15 @@ public class NaivePlayerTests {
         // Column
 
         board = new Piece[18][18];
-        board[2][2] = Piece.CROSS;
-        board[2][3] = Piece.CROSS;
-        board[3][2] = Piece.CROSS;
+        board[2][2] = Piece.X;
+        board[2][3] = Piece.X;
+        board[3][2] = Piece.X;
         // longest
-        board[10][10] = Piece.CROSS;
-        board[11][10] = Piece.CROSS;
-        board[12][10] = Piece.CROSS;
+        board[10][10] = Piece.X;
+        board[11][10] = Piece.X;
+        board[12][10] = Piece.X;
 
-        state = new GameState(5, board, player.getSide());
+        state = new GameState(5, board, player.getPiece());
 
         move = player.move(state, null);
         printMove(move);
@@ -70,15 +70,15 @@ public class NaivePlayerTests {
         // Diagonal left-right
 
         board = new Piece[18][18];
-        board[2][2] = Piece.CROSS;
-        board[2][3] = Piece.CROSS;
-        board[3][2] = Piece.CROSS;
+        board[2][2] = Piece.X;
+        board[2][3] = Piece.X;
+        board[3][2] = Piece.X;
         // longest
-        board[10][10] = Piece.CROSS;
-        board[11][11] = Piece.CROSS;
-        board[12][12] = Piece.CROSS;
+        board[10][10] = Piece.X;
+        board[11][11] = Piece.X;
+        board[12][12] = Piece.X;
 
-        state = new GameState(5, board, player.getSide());
+        state = new GameState(5, board, player.getPiece());
 
         move = player.move(state, null);
         printMove(move);
@@ -88,15 +88,15 @@ public class NaivePlayerTests {
         // Diagonal right-left
 
         board = new Piece[18][18];
-        board[2][2] = Piece.CROSS;
-        board[2][3] = Piece.CROSS;
-        board[3][2] = Piece.CROSS;
+        board[2][2] = Piece.X;
+        board[2][3] = Piece.X;
+        board[3][2] = Piece.X;
         // longest
-        board[10][10] = Piece.CROSS;
-        board[11][9] = Piece.CROSS;
-        board[12][8] = Piece.CROSS;
+        board[10][10] = Piece.X;
+        board[11][9] = Piece.X;
+        board[12][8] = Piece.X;
 
-        state = new GameState(5, board, player.getSide());
+        state = new GameState(5, board, player.getPiece());
 
         move = player.move(state, null);
         printMove(move);
@@ -108,19 +108,19 @@ public class NaivePlayerTests {
     public void when_continuing_longest_sequence_not_possible_then_make_as_long_as_possible() {
         Piece[][] board = new Piece[6][6];
         // Vertical (1,2) to (3,2) is longest, but blocked
-        board[0][2] = Piece.ROUND;
-        board[1][2] = Piece.CROSS;
-        board[2][2] = Piece.CROSS;
-        board[3][2] = Piece.CROSS;
-        board[4][2] = Piece.ROUND;
+        board[0][2] = Piece.O;
+        board[1][2] = Piece.X;
+        board[2][2] = Piece.X;
+        board[3][2] = Piece.X;
+        board[4][2] = Piece.O;
         // Should continue (2,1), (2,2) with (2,3)
-        board[2][1] = Piece.CROSS;
+        board[2][1] = Piece.X;
         // These are supposed to confuse sequence selection
-        board[1][0] = Piece.ROUND;
-        board[4][3] = Piece.ROUND;
-        board[2][0] = Piece.ROUND;
+        board[1][0] = Piece.O;
+        board[4][3] = Piece.O;
+        board[2][0] = Piece.O;
 
-        GameState startState = new GameState(5, board, Piece.CROSS);
+        GameState startState = new GameState(5, board, Piece.X);
         startState.print();
 
         Cell move = player.move(startState, null);
@@ -135,20 +135,20 @@ public class NaivePlayerTests {
     public void blocks_obvious_opponent_move() {
         Piece[][] board = new Piece[18][18];
         // Cross has 3 in sequence
-        board[10][8] = Piece.CROSS;
-        board[11][8] = Piece.CROSS;
-        board[12][8] = Piece.CROSS;
+        board[10][8] = Piece.X;
+        board[11][8] = Piece.X;
+        board[12][8] = Piece.X;
         // ... but Round has 4 in sequence with one free end
-        board[0][0] = Piece.ROUND;
-        board[1][0] = Piece.ROUND;
-        board[2][0] = Piece.ROUND;
-        board[3][0] = Piece.ROUND;
+        board[0][0] = Piece.O;
+        board[1][0] = Piece.O;
+        board[2][0] = Piece.O;
+        board[3][0] = Piece.O;
 
-        GameState startState = new GameState(5, board, Piece.CROSS);
+        GameState startState = new GameState(5, board, Piece.X);
         startState.print();
 
         Player player  = new NaivePlayer();
-        player.setSide(Piece.CROSS);
+        player.setPiece(Piece.X);
 
         Cell move = player.move(startState, new Cell(3, 0));
 
@@ -163,22 +163,22 @@ public class NaivePlayerTests {
     public void takes_decisive_move_when_it_has_4_in_sequence() {
         Piece[][] board = new Piece[18][18];
         // Cross has 3 in sequence
-        board[10][8] = Piece.CROSS;
-        board[11][8] = Piece.CROSS;
-        board[12][8] = Piece.CROSS;
+        board[10][8] = Piece.X;
+        board[11][8] = Piece.X;
+        board[12][8] = Piece.X;
         // ... and one other
-        board[0][1] = Piece.CROSS;
+        board[0][1] = Piece.X;
         // ... but Round has 4 in sequence with one free end
-        board[0][0] = Piece.ROUND;
-        board[1][0] = Piece.ROUND;
-        board[2][0] = Piece.ROUND;
-        board[3][0] = Piece.ROUND;
+        board[0][0] = Piece.O;
+        board[1][0] = Piece.O;
+        board[2][0] = Piece.O;
+        board[3][0] = Piece.O;
 
-        GameState startState = new GameState(5, board, Piece.ROUND);
+        GameState startState = new GameState(5, board, Piece.O);
         startState.print();
 
         Player player  = new NaivePlayer();
-        player.setSide(Piece.ROUND);
+        player.setPiece(Piece.O);
 
         Cell move = player.move(startState, new Cell(0, 1));
 
@@ -193,29 +193,29 @@ public class NaivePlayerTests {
     public void takes_decisive_move_when_it_has_2_and_2_with_space_between() {
         Piece[][] board = new Piece[18][18];
         // Cross has 3 in sequence
-        board[10][8] = Piece.CROSS;
-        board[11][8] = Piece.CROSS;
-        board[12][8] = Piece.CROSS;
+        board[10][8] = Piece.X;
+        board[11][8] = Piece.X;
+        board[12][8] = Piece.X;
         // ... and another 3
-        board[0][1] = Piece.CROSS;
-        board[0][2] = Piece.CROSS;
-        board[0][3] = Piece.CROSS;
+        board[0][1] = Piece.X;
+        board[0][2] = Piece.X;
+        board[0][3] = Piece.X;
         // ... but Round will win by putting a piece
-        board[0][0] = Piece.ROUND;
-        board[1][0] = Piece.ROUND;
+        board[0][0] = Piece.O;
+        board[1][0] = Piece.O;
         board[2][0] = null; // ... here
-        board[3][0] = Piece.ROUND;
-        board[4][0] = Piece.ROUND;
+        board[3][0] = Piece.O;
+        board[4][0] = Piece.O;
         // ... instead of continuing the longest sequence which is this
-        board[15][1] = Piece.ROUND;
-        board[16][1] = Piece.ROUND;
-        board[17][1] = Piece.ROUND;
+        board[15][1] = Piece.O;
+        board[16][1] = Piece.O;
+        board[17][1] = Piece.O;
 
-        GameState startState = new GameState(5, board, Piece.ROUND);
+        GameState startState = new GameState(5, board, Piece.O);
         startState.print();
 
         Player player  = new NaivePlayer();
-        player.setSide(Piece.ROUND);
+        player.setPiece(Piece.O);
 
         Cell move = player.move(startState, new Cell(0, 1));
 

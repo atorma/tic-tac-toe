@@ -20,18 +20,13 @@ public class RandomPlayer implements Player {
     }
 
     @Override
-    public void setSide(Piece p) {
+    public void setPiece(Piece p) {
         myPiece = p;
     }
 
     @Override
-    public Piece getSide() {
+    public Piece getPiece() {
         return myPiece;
-    }
-
-    @Override
-    public String getName() {
-        return this.name;
     }
 
     @Override
@@ -41,7 +36,7 @@ public class RandomPlayer implements Player {
 
     @Override
     public String toString() {
-        return getName();
+        return name;
     }
 
 

@@ -39,7 +39,7 @@ function gameService(PIECES, $http, $q) {
     }
 
     function TestGame() {
-        var currentPlayer = PIECES.CROSS;
+        var currentPlayer = PIECES.O;
 
         this.playTurn = playTurn;
 
@@ -71,10 +71,10 @@ function gameService(PIECES, $http, $q) {
                 winningSequence: winningSequence
             };
 
-            if (currentPlayer === PIECES.CROSS) {
-                currentPlayer = PIECES.NOUGHT;
+            if (currentPlayer === PIECES.O) {
+                currentPlayer = PIECES.X;
             } else {
-                currentPlayer = PIECES.CROSS;
+                currentPlayer = PIECES.O;
             }
 
             return $q.when(result);

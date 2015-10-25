@@ -1,10 +1,9 @@
 package org.atorma.tictactoe.game.state;
 
 public enum Piece {
-    CROSS,
-    ROUND;
+    X, O;
 
     public Piece other() {
-        return this == Piece.CROSS ? Piece.ROUND : Piece.CROSS;
+        return this == Piece.X ? Piece.O : Piece.X;
     }
 }

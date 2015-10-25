@@ -178,10 +178,10 @@ public class GameState {
     }
 
     public Piece getWinner() {
-        if (longestSequences.get(Piece.CROSS).length == connectHowMany) {
-            return Piece.CROSS;
-        } else if (longestSequences.get(Piece.ROUND).length == connectHowMany) {
-            return Piece.ROUND;
+        if (longestSequences.get(Piece.X).length == connectHowMany) {
+            return Piece.X;
+        } else if (longestSequences.get(Piece.O).length == connectHowMany) {
+            return Piece.O;
         } else {
             return null;
         }
@@ -350,9 +350,9 @@ public class GameState {
             for (int j = 0; j < board.getNumCols(); j++) {
                 Piece piece = board.get(i, j);
                 String marker;
-                if (piece == Piece.CROSS) {
+                if (piece == Piece.X) {
                     marker = " X ";
-                } else if (piece == Piece.ROUND) {
+                } else if (piece == Piece.O) {
                     marker = " O ";
                 } else {
                     marker = " - ";

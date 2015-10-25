@@ -107,7 +107,7 @@ describe("GameController", function() {
 
                 var turnResult = {
                     move: {
-                        piece: i%2 === 0 ? PIECES.CROSS : PIECES.NOUGHT,
+                        piece: i%2 === 0 ? PIECES.O : PIECES.X,
                         cell: {row: 5, column: 12}
                     },
                     gameEnded: false,
@@ -127,11 +127,11 @@ describe("GameController", function() {
             var lastTurnNumber = 5;
             var lastTurnResult = {
                 move: {
-                    piece: PIECES.CROSS,
+                    piece: PIECES.O,
                     cell: {row: 16, column: 5}
                 },
                 gameEnded: true,
-                winner: PIECES.CROSS,
+                winner: PIECES.O,
                 winningSequence: {
                     start: {row: 12, column: 5},
                     end: {row: 16, column: 5}

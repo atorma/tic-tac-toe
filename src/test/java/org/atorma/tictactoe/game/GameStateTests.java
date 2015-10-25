@@ -15,12 +15,12 @@ public class GameStateTests {
     @Test
     public void get_allowed_moves_when_no_winner() {
         Piece[][] board = {
-                {null, Piece.CROSS, Piece.ROUND},
-                {null, Piece.CROSS, null},
-                {null, Piece.ROUND, null}
+                {null, Piece.X, Piece.O},
+                {null, Piece.X, null},
+                {null, Piece.O, null}
         };
 
-        GameState gameState = new GameState(3, board, Piece.CROSS);
+        GameState gameState = new GameState(3, board, Piece.X);
         List<Cell> allowedMoves = gameState.getAllowedMoves();
 
         assertEquals(5, allowedMoves.size());
@@ -40,12 +40,12 @@ public class GameStateTests {
     @Test
     public void no_allowed_moves_when_winner_found() {
         Piece[][] board = {
-                {Piece.ROUND, Piece.CROSS, Piece.ROUND},
-                {null,        Piece.CROSS, null},
-                {null,        Piece.CROSS, null}
+                {Piece.O, Piece.X, Piece.O},
+                {null,        Piece.X, null},
+                {null,        Piece.X, null}
         };
 
-        GameState gameState = new GameState(3, board, Piece.ROUND);
+        GameState gameState = new GameState(3, board, Piece.O);
         List<Cell> allowedMoves = gameState.getAllowedMoves();
 
         assertEquals(0, allowedMoves.size());
@@ -54,28 +54,28 @@ public class GameStateTests {
     @Test
     public void get_state_after_move() {
         Piece[][] board = {
-                {null, Piece.CROSS, Piece.ROUND},
-                {null, Piece.CROSS, null},
-                {null, Piece.ROUND, null}
+                {null, Piece.X, Piece.O},
+                {null, Piece.X, null},
+                {null, Piece.O, null}
         };
 
-        GameState gameState1 = new GameState(3, board, Piece.CROSS);
-        assertEquals(Piece.CROSS, gameState1.getTurn());
+        GameState gameState1 = new GameState(3, board, Piece.X);
+        assertEquals(Piece.X, gameState1.getTurn());
         assertEquals(4, gameState1.getNumPieces());
         assertEquals(5, gameState1.getAllowedMoves().size());
 
         Cell move = new Cell(0, 0);
         assertTrue(gameState1.isAllowed(move));
         Piece[][] expectedBoard = {
-                {Piece.CROSS, Piece.CROSS, Piece.ROUND},
-                {null,        Piece.CROSS, null},
-                {null,        Piece.ROUND, null}
+                {Piece.X, Piece.X, Piece.O},
+                {null,        Piece.X, null},
+                {null,        Piece.O, null}
         };
 
         GameState gameState2 = gameState1.next(move);
         assertFalse(gameState2.isAllowed(move));
         assertEqualBoards(expectedBoard, getBoardAsArray(gameState2));
-        assertEquals(Piece.ROUND, gameState2.getTurn());
+        assertEquals(Piece.O, gameState2.getTurn());
         assertEquals(5, gameState2.getNumPieces());
         assertEquals(4, gameState2.getAllowedMoves().size());
     }
@@ -102,161 +102,161 @@ public class GameStateTests {
         GameState state;
 
         Piece[][] noWinnerNoTie = {
-                {null, Piece.CROSS, Piece.ROUND},
-                {null, Piece.CROSS, null},
-                {null, Piece.ROUND, null}
+                {null, Piece.X, Piece.O},
+                {null, Piece.X, null},
+                {null, Piece.O, null}
         };
-        state = new GameState(3, noWinnerNoTie, Piece.CROSS);
+        state = new GameState(3, noWinnerNoTie, Piece.X);
         assertEquals(null, state.getWinner());
         assertEquals(false, state.isTie());
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(1, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(2, state.getLongestSequence(Piece.X).length);
+        assertEquals(1, state.getLongestSequence(Piece.O).length);
 
         Piece[][] roundHorizontal = {
-                {null,        Piece.CROSS, Piece.CROSS},
-                {Piece.ROUND, Piece.ROUND, Piece.ROUND},
-                {null,        Piece.CROSS, Piece.CROSS}
+                {null,        Piece.X, Piece.X},
+                {Piece.O, Piece.O, Piece.O},
+                {null,        Piece.X, Piece.X}
         };
-        state = new GameState(3, roundHorizontal, Piece.ROUND);
-        assertEquals(Piece.ROUND, state.getWinner());
+        state = new GameState(3, roundHorizontal, Piece.O);
+        assertEquals(Piece.O, state.getWinner());
         assertEquals(false, state.isTie());
 
         Piece[][] crossVertical = {
-                {Piece.ROUND, Piece.ROUND, Piece.CROSS},
-                {null,        Piece.CROSS, Piece.CROSS},
-                {Piece.ROUND, Piece.ROUND, Piece.CROSS}
+                {Piece.O, Piece.O, Piece.X},
+                {null,        Piece.X, Piece.X},
+                {Piece.O, Piece.O, Piece.X}
         };
-        state = new GameState(3, crossVertical, Piece.ROUND);
-        assertEquals(Piece.CROSS, state.getWinner());
+        state = new GameState(3, crossVertical, Piece.O);
+        assertEquals(Piece.X, state.getWinner());
         assertEquals(false, state.isTie());
 
         Piece[][] roundDiagTopLeft = {
-                {Piece.ROUND, Piece.ROUND, Piece.CROSS},
-                {Piece.CROSS, Piece.ROUND, Piece.CROSS},
-                {null,        Piece.CROSS, Piece.ROUND}
+                {Piece.O, Piece.O, Piece.X},
+                {Piece.X, Piece.O, Piece.X},
+                {null,        Piece.X, Piece.O}
         };
-        state = new GameState(3, roundDiagTopLeft, Piece.ROUND);
-        assertEquals(Piece.ROUND, state.getWinner());
+        state = new GameState(3, roundDiagTopLeft, Piece.O);
+        assertEquals(Piece.O, state.getWinner());
         assertEquals(false, state.isTie());
 
         Piece[][] crossDiagTopRight = {
-                {Piece.ROUND, Piece.ROUND, Piece.CROSS},
-                {Piece.ROUND, Piece.CROSS, Piece.CROSS},
-                {Piece.CROSS, Piece.ROUND, Piece.ROUND}
+                {Piece.O, Piece.O, Piece.X},
+                {Piece.O, Piece.X, Piece.X},
+                {Piece.X, Piece.O, Piece.O}
         };
-        state = new GameState(3, crossDiagTopRight, Piece.ROUND);
-        assertEquals(Piece.CROSS, state.getWinner());
+        state = new GameState(3, crossDiagTopRight, Piece.O);
+        assertEquals(Piece.X, state.getWinner());
         assertEquals(false, state.isTie());
 
         Piece[][] tie = {
-                {Piece.CROSS, Piece.ROUND, Piece.CROSS},
-                {Piece.ROUND, Piece.ROUND, Piece.CROSS},
-                {Piece.CROSS, Piece.CROSS, Piece.ROUND}
+                {Piece.X, Piece.O, Piece.X},
+                {Piece.O, Piece.O, Piece.X},
+                {Piece.X, Piece.X, Piece.O}
         };
-        state = new GameState(3, tie, Piece.ROUND);
+        state = new GameState(3, tie, Piece.O);
         assertEquals(null, state.getWinner());
         assertEquals(true, state.isTie());
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(2, state.getLongestSequence(Piece.X).length);
+        assertEquals(2, state.getLongestSequence(Piece.O).length);
 
     }
 
     @Test // correctness of the assertions best verified by pen and paper...
     public void get_longest_sequence_after_consecutive_moves() {
-        GameState state = new GameState(5, new Piece[10][10], Piece.CROSS);
+        GameState state = new GameState(5, new Piece[10][10], Piece.X);
         printBoardAndLongestSequences(state);
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(0, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(0, state.getLongestSequence(Piece.X).length);
+        assertEquals(0, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(5, 5));
         printBoardAndLongestSequences(state);
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(0, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(1, state.getLongestSequence(Piece.X).length);
+        assertEquals(0, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(1, 3));
         printBoardAndLongestSequences(state);
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(1, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(1, state.getLongestSequence(Piece.X).length);
+        assertEquals(1, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(3, 3));
         printBoardAndLongestSequences(state);
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(1, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(1, state.getLongestSequence(Piece.X).length);
+        assertEquals(1, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(2, 2));
         printBoardAndLongestSequences(state);
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(1, state.getLongestSequence(Piece.X).length);
+        assertEquals(2, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(4, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(3, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(3, state.getLongestSequence(Piece.X).length);
+        assertEquals(2, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(1, 2));
         printBoardAndLongestSequences(state);
-        assertEquals(3, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(3, state.getLongestSequence(Piece.X).length);
+        assertEquals(2, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(6, 6));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(2, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(7, 7));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(2, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(1, 1));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(2, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(1, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(3, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(3, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(2, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(3, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(3, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(1, 5));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(4, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(4, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(1, 6));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(4, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(4, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(3, 1));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(4, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(4, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(3, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(4, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(4, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(0, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(4, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(4, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(5, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(4, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(4, state.getLongestSequence(Piece.O).length);
 
         state = state.next(new Cell(4, 0));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(5, state.getLongestSequence(Piece.ROUND).length);
+        assertEquals(4, state.getLongestSequence(Piece.X).length);
+        assertEquals(5, state.getLongestSequence(Piece.O).length);
     }
 
     private void printBoardAndLongestSequences(GameState gameState) {
@@ -269,79 +269,79 @@ public class GameStateTests {
     @Test
      public void check_longest_sequence_on_diagonal_top_left_bottom_right_and_on_column() {
         // Cross: diagonal left-right (5, 12) to (9, 16), Round: column (2, 2) to (5, 2)
-        GameState state = new GameState(5, new Piece[18][18], Piece.CROSS);
-        assertEquals(Piece.CROSS, state.getTurn());
+        GameState state = new GameState(5, new Piece[18][18], Piece.X);
+        assertEquals(Piece.X, state.getTurn());
         state = state.next(new Cell(5, 12));
-        assertEquals(Piece.ROUND, state.getTurn());
+        assertEquals(Piece.O, state.getTurn());
         state = state.next(new Cell(2, 2));
-        assertEquals(Piece.CROSS, state.getTurn());
+        assertEquals(Piece.X, state.getTurn());
         state = state.next(new Cell(6, 13));
-        assertEquals(Piece.ROUND, state.getTurn());
+        assertEquals(Piece.O, state.getTurn());
         state = state.next(new Cell(3, 2));
-        assertEquals(Piece.CROSS, state.getTurn());
+        assertEquals(Piece.X, state.getTurn());
         state = state.next(new Cell(7, 14));
-        assertEquals(Piece.ROUND, state.getTurn());
+        assertEquals(Piece.O, state.getTurn());
         state = state.next(new Cell(4, 2));
-        assertEquals(Piece.CROSS, state.getTurn());
+        assertEquals(Piece.X, state.getTurn());
         state = state.next(new Cell(8, 15));
-        assertEquals(Piece.ROUND, state.getTurn());
+        assertEquals(Piece.O, state.getTurn());
         state = state.next(new Cell(5, 2));
-        assertEquals(Piece.CROSS, state.getTurn());
+        assertEquals(Piece.X, state.getTurn());
         state = state.next(new Cell(9, 16));
-        assertEquals(Piece.ROUND, state.getTurn());
+        assertEquals(Piece.O, state.getTurn());
 
         printBoardAndLongestSequences(state);
 
-        assertEquals(5, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(5, state.getLongestSequence(Piece.CROSS).start.getRow());
-        assertEquals(12, state.getLongestSequence(Piece.CROSS).start.getColumn());
-        assertEquals(9, state.getLongestSequence(Piece.CROSS).end.getRow());
-        assertEquals(16, state.getLongestSequence(Piece.CROSS).end.getColumn());
+        assertEquals(5, state.getLongestSequence(Piece.X).length);
+        assertEquals(5, state.getLongestSequence(Piece.X).start.getRow());
+        assertEquals(12, state.getLongestSequence(Piece.X).start.getColumn());
+        assertEquals(9, state.getLongestSequence(Piece.X).end.getRow());
+        assertEquals(16, state.getLongestSequence(Piece.X).end.getColumn());
 
-        assertEquals(4, state.getLongestSequence(Piece.ROUND).length);
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).start.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).start.getColumn());
-        assertEquals(5, state.getLongestSequence(Piece.ROUND).end.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).end.getColumn());
+        assertEquals(4, state.getLongestSequence(Piece.O).length);
+        assertEquals(2, state.getLongestSequence(Piece.O).start.getRow());
+        assertEquals(2, state.getLongestSequence(Piece.O).start.getColumn());
+        assertEquals(5, state.getLongestSequence(Piece.O).end.getRow());
+        assertEquals(2, state.getLongestSequence(Piece.O).end.getColumn());
     }
 
     @Test
     public void check_longest_sequence_on_diagonal_top_right_bottom_left_and_on_row() {
         // Cross: diagonal right-left (5, 12) to (9, 8), Round: row (2, 2) to (2, 5)
-        GameState state = new GameState(5, new Piece[18][18], Piece.CROSS);
-        assertEquals(Piece.CROSS, state.getTurn());
+        GameState state = new GameState(5, new Piece[18][18], Piece.X);
+        assertEquals(Piece.X, state.getTurn());
         state = state.next(new Cell(5, 12));
-        assertEquals(Piece.ROUND, state.getTurn());
+        assertEquals(Piece.O, state.getTurn());
         state = state.next(new Cell(2, 2));
-        assertEquals(Piece.CROSS, state.getTurn());
+        assertEquals(Piece.X, state.getTurn());
         state = state.next(new Cell(6, 11));
-        assertEquals(Piece.ROUND, state.getTurn());
+        assertEquals(Piece.O, state.getTurn());
         state = state.next(new Cell(2, 3));
-        assertEquals(Piece.CROSS, state.getTurn());
+        assertEquals(Piece.X, state.getTurn());
         state = state.next(new Cell(7, 10));
-        assertEquals(Piece.ROUND, state.getTurn());
+        assertEquals(Piece.O, state.getTurn());
         state = state.next(new Cell(2, 4));
-        assertEquals(Piece.CROSS, state.getTurn());
+        assertEquals(Piece.X, state.getTurn());
         state = state.next(new Cell(8, 9));
-        assertEquals(Piece.ROUND, state.getTurn());
+        assertEquals(Piece.O, state.getTurn());
         state = state.next(new Cell(2, 5));
-        assertEquals(Piece.CROSS, state.getTurn());
+        assertEquals(Piece.X, state.getTurn());
         state = state.next(new Cell(9, 8));
-        assertEquals(Piece.ROUND, state.getTurn());
+        assertEquals(Piece.O, state.getTurn());
 
         printBoardAndLongestSequences(state);
 
-        assertEquals(5, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(5, state.getLongestSequence(Piece.CROSS).start.getRow());
-        assertEquals(12, state.getLongestSequence(Piece.CROSS).start.getColumn());
-        assertEquals(9, state.getLongestSequence(Piece.CROSS).end.getRow());
-        assertEquals(8, state.getLongestSequence(Piece.CROSS).end.getColumn());
+        assertEquals(5, state.getLongestSequence(Piece.X).length);
+        assertEquals(5, state.getLongestSequence(Piece.X).start.getRow());
+        assertEquals(12, state.getLongestSequence(Piece.X).start.getColumn());
+        assertEquals(9, state.getLongestSequence(Piece.X).end.getRow());
+        assertEquals(8, state.getLongestSequence(Piece.X).end.getColumn());
 
-        assertEquals(4, state.getLongestSequence(Piece.ROUND).length);
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).start.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).start.getColumn());
-        assertEquals(2, state.getLongestSequence(Piece.ROUND).end.getRow());
-        assertEquals(5, state.getLongestSequence(Piece.ROUND).end.getColumn());
+        assertEquals(4, state.getLongestSequence(Piece.O).length);
+        assertEquals(2, state.getLongestSequence(Piece.O).start.getRow());
+        assertEquals(2, state.getLongestSequence(Piece.O).start.getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.O).end.getRow());
+        assertEquals(5, state.getLongestSequence(Piece.O).end.getColumn());
     }
 
     @Test
@@ -350,118 +350,118 @@ public class GameStateTests {
         GameState state;
 
         board = new Piece[][] {
-                {Piece.CROSS,   Piece.CROSS,    null},
+                {Piece.X,   Piece.X,    null},
                 {null,          null,           null},
                 {null,          null,           null}
         };
-        state = new GameState(3, board, Piece.CROSS);
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getColumn());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).end.getRow());
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).end.getColumn());
+        state = new GameState(3, board, Piece.X);
+        assertEquals(2, state.getLongestSequence(Piece.X).length);
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
+        assertEquals(0, state.getLongestSequence(Piece.X).end.getRow());
+        assertEquals(1, state.getLongestSequence(Piece.X).end.getColumn());
 
         board = new Piece[][] {
-                {null,          Piece.CROSS,    Piece.CROSS},
+                {null,          Piece.X,    Piece.X},
                 {null,          null,           null},
                 {null,          null,           null}
         };
-        state = new GameState(3, board, Piece.CROSS);
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getRow());
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).start.getColumn());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).end.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).end.getColumn());
+        state = new GameState(3, board, Piece.X);
+        assertEquals(2, state.getLongestSequence(Piece.X).length);
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
+        assertEquals(1, state.getLongestSequence(Piece.X).start.getColumn());
+        assertEquals(0, state.getLongestSequence(Piece.X).end.getRow());
+        assertEquals(2, state.getLongestSequence(Piece.X).end.getColumn());
 
         board = new Piece[][] {
-                {Piece.CROSS,   null,           null},
+                {Piece.X,   null,           null},
                 {null,          null,           null},
                 {null,          null,           null}
         };
-        state = new GameState(3, board, Piece.CROSS);
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getColumn());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).end.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).end.getColumn());
+        state = new GameState(3, board, Piece.X);
+        assertEquals(1, state.getLongestSequence(Piece.X).length);
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
+        assertEquals(0, state.getLongestSequence(Piece.X).end.getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).end.getColumn());
 
         board = new Piece[][] {
                 {null,          null,           null},
                 {null,          null,           null},
-                {Piece.CROSS,   null,           null}
+                {Piece.X,   null,           null}
         };
-        state = new GameState(3, board, Piece.CROSS);
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).start.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getColumn());
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).end.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).end.getColumn());
+        state = new GameState(3, board, Piece.X);
+        assertEquals(1, state.getLongestSequence(Piece.X).length);
+        assertEquals(2, state.getLongestSequence(Piece.X).start.getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.X).end.getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).end.getColumn());
 
         board = new Piece[][] {
-                {Piece.CROSS,   null,           null},
-                {null,          Piece.CROSS,    null},
+                {Piece.X,   null,           null},
+                {null,          Piece.X,    null},
                 {null,          null,           null}
         };
-        state = new GameState(3, board, Piece.CROSS);
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getColumn());
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).end.getRow());
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).end.getColumn());
+        state = new GameState(3, board, Piece.X);
+        assertEquals(2, state.getLongestSequence(Piece.X).length);
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
+        assertEquals(1, state.getLongestSequence(Piece.X).end.getRow());
+        assertEquals(1, state.getLongestSequence(Piece.X).end.getColumn());
 
         board = new Piece[][] {
-                {Piece.CROSS,   null,           null},
-                {null,          Piece.CROSS,    null},
-                {null,          null,           Piece.CROSS}
+                {Piece.X,   null,           null},
+                {null,          Piece.X,    null},
+                {null,          null,           Piece.X}
         };
-        state = new GameState(3, board, Piece.CROSS);
-        assertEquals(3, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getColumn());
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).end.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).end.getColumn());
+        state = new GameState(3, board, Piece.X);
+        assertEquals(3, state.getLongestSequence(Piece.X).length);
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.X).end.getRow());
+        assertEquals(2, state.getLongestSequence(Piece.X).end.getColumn());
 
         board = new Piece[][] {
-                {null,          null,           Piece.CROSS},
+                {null,          null,           Piece.X},
                 {null,          null,           null},
                 {null,          null,           null}
         };
-        state = new GameState(3, board, Piece.CROSS);
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).start.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).start.getColumn());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).end.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).end.getColumn());
+        state = new GameState(3, board, Piece.X);
+        assertEquals(1, state.getLongestSequence(Piece.X).length);
+        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
+        assertEquals(2, state.getLongestSequence(Piece.X).start.getColumn());
+        assertEquals(0, state.getLongestSequence(Piece.X).end.getRow());
+        assertEquals(2, state.getLongestSequence(Piece.X).end.getColumn());
 
         board = new Piece[][] {
                 {null,          null,           null},
-                {null,          Piece.CROSS,    null},
-                {Piece.CROSS,   null,           null}
+                {null,          Piece.X,    null},
+                {Piece.X,   null,           null}
         };
-        state = new GameState(3, board, Piece.CROSS);
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).length);
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).start.getRow());
-        assertEquals(1, state.getLongestSequence(Piece.CROSS).start.getColumn());
-        assertEquals(2, state.getLongestSequence(Piece.CROSS).end.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.CROSS).end.getColumn());
+        state = new GameState(3, board, Piece.X);
+        assertEquals(2, state.getLongestSequence(Piece.X).length);
+        assertEquals(1, state.getLongestSequence(Piece.X).start.getRow());
+        assertEquals(1, state.getLongestSequence(Piece.X).start.getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.X).end.getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).end.getColumn());
     }
 
     @Test
     public void get_all_sequences() {
         Piece[][] board = new Piece[6][6];
-        board[1][2] = Piece.CROSS;
-        board[2][1] = Piece.CROSS;
-        board[2][2] = Piece.CROSS;
-        board[3][2] = Piece.CROSS;
-        board[0][4] = Piece.ROUND;
-        board[0][5] = Piece.ROUND;
+        board[1][2] = Piece.X;
+        board[2][1] = Piece.X;
+        board[2][2] = Piece.X;
+        board[3][2] = Piece.X;
+        board[0][4] = Piece.O;
+        board[0][5] = Piece.O;
 
-        GameState gameState = new GameState(3, board, Piece.CROSS);
+        GameState gameState = new GameState(3, board, Piece.X);
         Map<Piece, List<GameState.Sequence>> sequences = gameState.getAllSequences();
 
         System.out.println(sequences);
-        assertEquals(11, sequences.get(Piece.CROSS).size());
-        assertEquals(7, sequences.get(Piece.ROUND).size());
+        assertEquals(11, sequences.get(Piece.X).size());
+        assertEquals(7, sequences.get(Piece.O).size());
     }
 
 

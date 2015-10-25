@@ -30,11 +30,11 @@ public class NaivePlayer implements Player {
     }
 
 
-    public void setSide(Piece p) {
+    public void setPiece(Piece p) {
         this.mySide = p;
     }
 
-    public Piece getSide() {
+    public Piece getPiece() {
         return this.mySide;
     }
 
