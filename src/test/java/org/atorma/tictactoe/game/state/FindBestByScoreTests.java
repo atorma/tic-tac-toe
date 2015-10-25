@@ -1,6 +1,5 @@
-package org.atorma.tictactoe.game.utils;
+package org.atorma.tictactoe.game.state;
 
-import org.atorma.tictactoe.game.state.Utils;
 import org.junit.Test;
 
 import java.util.Arrays;
