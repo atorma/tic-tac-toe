@@ -1,6 +1,7 @@
 package org.atorma.tictactoe.game;
 
 import org.atorma.tictactoe.game.player.Player;
+import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.springframework.util.Assert;
@@ -15,6 +16,7 @@ public class Game {
     private String id = UUID.randomUUID().toString();
     private Map<Piece, Player> players = new EnumMap<>(Piece.class);
     private GameState currentState;
+    private Cell lastMove;
     private int turnNumber = 1;
 
     public Game(Player player1, Player player2, GameState initialState) {
@@ -41,11 +43,17 @@ public class Game {
         return currentState;
     }
 
+    public Cell getLastMove() {
+        return lastMove;
+    }
+
     public int getTurnNumber() {
         return turnNumber;
     }
 
     public void playTurn() {
-
+        lastMove = players.get(currentState.getTurn()).move(currentState, lastMove);
+        currentState = currentState.next(lastMove);
+        turnNumber++;
     }
 }
