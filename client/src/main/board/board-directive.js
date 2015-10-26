@@ -88,13 +88,16 @@ function board(GAME_EVENTS, PIECES) {
             ctx.strokeStyle = PIECE_COLOR;
 
             ctx.beginPath();
-            ctx.moveTo(cell.column*cellWidth, cell.row*cellHeight);
-            ctx.lineTo((cell.column + 1)*cellWidth, (cell.row + 1)*cellHeight);
-            ctx.stroke();
 
-            ctx.beginPath();
-            ctx.moveTo((cell.column + 1)*cellWidth, cell.row*cellHeight);
-            ctx.lineTo(cell.column*cellWidth, (cell.row + 1)*cellHeight);
+            // Upper left to lower right
+            ctx.moveTo(cell.column*cellWidth + 0.2*cellWidth, cell.row*cellHeight + 0.2*cellHeight);
+            ctx.lineTo((cell.column + 1)*cellWidth - 0.2*cellWidth, (cell.row + 1)*cellHeight - 0.2*cellHeight);
+
+            // Upper right to to lower left
+            ctx.moveTo((cell.column + 1)*cellWidth - 0.2*cellWidth, cell.row*cellHeight + 0.2*cellHeight);
+            ctx.lineTo(cell.column*cellWidth + 0.2*cellWidth, (cell.row + 1)*cellHeight - 0.2*cellHeight);
+
+            ctx.lineWidth = 3;
             ctx.stroke();
         }
 
@@ -103,7 +106,8 @@ function board(GAME_EVENTS, PIECES) {
             ctx.strokeStyle = PIECE_COLOR;
 
             ctx.beginPath();
-            ctx.arc((cell.column + 1/2)*cellWidth, (cell.row + 1/2)*cellWidth, cellWidth/2, 0, 2*Math.PI);
+            ctx.arc((cell.column + 1/2)*cellWidth, (cell.row + 1/2)*cellWidth, (cellWidth - 3)/2 - 0.1*cellHeight, 0, 2*Math.PI);
+            ctx.lineWidth = 3;
             ctx.stroke();
         }
 
@@ -112,35 +116,17 @@ function board(GAME_EVENTS, PIECES) {
 
             var startX, startY, endX, endY;
 
-            if (start.row === end.row) { // horizontal
-                startX = start.column*cellWidth;
-                startY = (start.row + 1/2)*cellHeight;
-                endX = (end.column + 1)*cellWidth;
-                endY = startY;
-            } else if (start.column === end.column) { // vertical
-                startX = (start.column + 1/2)*cellWidth;
-                startY = start.row*cellHeight;
-                endX = startX;
-                endY = (end.row + 1)*cellHeight;
-            } else if (start.row < end.row && start.column < end.column) { // diagonal top-left to bottom-right
-                startX = start.column*cellWidth;
-                startY = start.row*cellHeight;
-                endX = (end.column + 1)*cellWidth;
-                endY = (end.row + 1)*cellHeight;
-            } else if (start.row < end.row && start.column > end.column) { // diagonal top-right to bottom-left
-                startX = (start.column + 1)*cellWidth;
-                startY = start.row*cellHeight;
-                endX = end.column*cellWidth;
-                endY = (end.row + 1)*cellHeight;
-            } else {
-                var template = _.template("Invalid line (<%= startRow %>, <%= startCol %>) to (<%= endRow %>, <%= endCol%>)");
-                throw template({startRow: start.row, startCol: start.column, endRow: end.row, endCol: end.column});
-            }
+            startX = (start.column + 1/2)*cellWidth;
+            startY = (start.row + 1/2)*cellHeight;
+            endX = (end.column + 1/2)*cellWidth;
+            endY = (end.row + 1/2)*cellHeight;
 
-            ctx.strokeStyle = PIECE_COLOR;
             ctx.beginPath();
             ctx.moveTo(startX, startY);
             ctx.lineTo(endX, endY);
+
+            ctx.strokeStyle = "yellow";
+            ctx.lineWidth = 4;
             ctx.stroke();
         }
 
@@ -149,6 +135,7 @@ function board(GAME_EVENTS, PIECES) {
             var cell = getCellCoordinates(cc);
 
             // TODO handle human player move selection
+            //drawCross(cell);
         }
 
         function getCanvasCoordinates(clickEvent) {
