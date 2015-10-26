@@ -48,6 +48,18 @@ public class GameController {
         return new GameDTO(game);
     }
 
+    @RequestMapping(value = "/{gameId}", method = RequestMethod.DELETE)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteGame(@PathVariable("gameId") String gameId) {
+        try {
+            Game game = gameRepository.findById(gameId);
+            gameRepository.delete(game);
+        } catch (GameNotFoundException e) {
+            // OK, it's gone already
+        }
+    }
+
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public void gameNotFound(GameNotFoundException e) {

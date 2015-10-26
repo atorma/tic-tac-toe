@@ -6,7 +6,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-public class ApplicationMvcTests extends ApplicationTests {
+/**
+ * Base class for testing the actual application using MockMVC to send requests.
+ */
+public abstract class ApplicationMvcTests extends ApplicationTests {
 
     @Autowired WebApplicationContext webAppContext;
     protected MockMvc mockMvc;

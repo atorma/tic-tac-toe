@@ -177,6 +177,15 @@ public class GameState {
         return longestSequences.get(player);
     }
 
+    /**
+     * Returns the winner of this game (if any). The winning sequence
+     * is obtained using {@link #getLongestSequence(Piece)}.
+     *
+     * @return
+     *  the winner of this game, null if no winner
+     *
+     * @see #getLongestSequence(Piece)
+     */
     public Piece getWinner() {
         if (longestSequences.get(Piece.X).length == connectHowMany) {
             return Piece.X;

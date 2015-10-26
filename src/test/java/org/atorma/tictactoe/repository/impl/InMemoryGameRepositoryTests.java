@@ -23,7 +23,7 @@ public class InMemoryGameRepositoryTests extends UnitTests {
     }
 
     @Test
-    public void save_and_find_by_id() {
+    public void after_saving_game_is_found_by_id() {
         Game game = mock(Game.class);
         when(game.getId()).thenReturn(UUID.randomUUID().toString());
 
@@ -34,6 +34,18 @@ public class InMemoryGameRepositoryTests extends UnitTests {
         Game foundGame = repository.findById(game.getId());
 
         assertThat(foundGame, is(game));
+    }
+
+    @Test(expected = GameNotFoundException.class)
+    public void after_deleting_game_not_found_by_id() {
+        Game game = mock(Game.class);
+        when(game.getId()).thenReturn(UUID.randomUUID().toString());
+
+        Game savedGame = repository.save(game);
+
+        repository.delete(savedGame);
+
+        repository.findById(game.getId());
     }
 
     @Test(expected = GameNotFoundException.class)

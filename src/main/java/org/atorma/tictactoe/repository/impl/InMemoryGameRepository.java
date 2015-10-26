@@ -30,4 +30,11 @@ public class InMemoryGameRepository implements GameRepository {
         games.put(game.getId(), game);
         return game;
     }
+
+    @Override
+    public void delete(Game game) {
+        if (game != null) {
+            games.remove(game.getId());
+        }
+    }
 }

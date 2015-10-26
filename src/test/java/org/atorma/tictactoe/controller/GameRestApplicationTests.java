@@ -3,24 +3,44 @@ package org.atorma.tictactoe.controller;
 import com.jayway.jsonpath.JsonPath;
 import org.atorma.tictactoe.ApplicationMvcTests;
 import org.atorma.tictactoe.game.Game;
+import org.atorma.tictactoe.game.player.Player;
+import org.atorma.tictactoe.game.player.naive.NaivePlayer;
+import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.atorma.tictactoe.repository.GameRepository;
 import org.jglue.fluentjson.JsonBuilderFactory;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class GameRestApplicationTests extends ApplicationMvcTests {
 
-    @Autowired private GameRepository gameRepository;
+    @Autowired GameRepository gameRepository;
+
+    Game existingGame;
+
+    @Before
+    public void setUp() {
+        Player player1 = new NaivePlayer();
+        Player player2 = new NaivePlayer();
+        GameState initialState = new GameState(3, new Piece[3][3], Piece.O);
+        Game game = new Game(player1, player2, initialState);
+        existingGame = gameRepository.save(game);
+    }
+
 
     @Test
     public void create_game() throws Exception {
@@ -48,33 +68,32 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .andExpect(jsonPath("$.players.O.name").value(createdGame.getPlayers().get(Piece.O).toString()));
     }
 
+
+
     @Test
     public void play_turn() throws Exception {
-        String initialResponse = mockMvc.perform(post("/games")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-                .andReturn().getResponse().getContentAsString();
-        String gameId = JsonPath.read(initialResponse, "$.id");
-        Game game = gameRepository.findById(gameId);
-
         String turnJson = JsonBuilderFactory.buildObject()
-                .add("turnNumber", game.getTurnNumber())
+                .add("turnNumber", existingGame.getTurnNumber())
                 .end()
                 .toString();
 
-        mockMvc.perform(post("/games/{id}/turns", game.getId())
+        Piece winner = existingGame.getCurrentState().getWinner();
+        mockMvc.perform(post("/games/{id}/turns", existingGame.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(turnJson))
+                .andDo(print())
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.move.piece").value(game.getLastMove().getPiece().toString()))
-                .andExpect(jsonPath("$.move.cell.row").value(game.getLastMove().getCell().getRow()))
-                .andExpect(jsonPath("$.move.cell.column").value(game.getLastMove().getCell().getColumn()))
-                .andExpect(jsonPath("$.turnNumber").value(game.getTurnNumber()))
-                .andExpect(jsonPath("$.currentPlayer").value(game.getCurrentState().getTurn().toString()))
-                .andExpect(jsonPath("$.gameEnded").value(game.getCurrentState().isAtEnd()))
-                .andExpect(jsonPath("$.winner").value(nullValue()))
+                .andExpect(jsonPath("$.move.piece").value(existingGame.getLastMove().getPiece().toString()))
+                .andExpect(jsonPath("$.move.cell.row").value(existingGame.getLastMove().getCell().getRow()))
+                .andExpect(jsonPath("$.move.cell.column").value(existingGame.getLastMove().getCell().getColumn()))
+                .andExpect(jsonPath("$.turnNumber").value(existingGame.getTurnNumber()))
+                .andExpect(jsonPath("$.currentPlayer").value(existingGame.getCurrentState().getTurn().toString()))
+                .andExpect(jsonPath("$.gameEnded").value(existingGame.getCurrentState().isAtEnd()))
+                .andExpect(jsonPath("$.winner").value(winner != null ? winner.toString() : null))
+                .andExpect(jsonPath("$.winningSequence").value(winner != null ? notNullValue() : nullValue()))
                 ;
     }
+
 
     @Test
     public void http_not_found_if_game_not_found_by_id() throws Exception {
@@ -91,21 +110,30 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
 
     @Test
     public void http_bad_request_if_requesting_to_play_turn_with_wrong_number() throws Exception {
-        String initialResponse = mockMvc.perform(post("/games")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{}"))
-                .andReturn().getResponse().getContentAsString();
-        String gameId = JsonPath.read(initialResponse, "$.id");
-
         String turnJson = JsonBuilderFactory.buildObject()
                 .add("turnNumber", 999)
                 .end()
                 .toString();
 
-        mockMvc.perform(post("/games/{id}/turns", gameId)
+        mockMvc.perform(post("/games/{id}/turns", existingGame.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(turnJson))
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    public void delete_game() throws Exception {
+        mockMvc.perform(delete("/games/{id}", existingGame.getId()))
+                .andExpect(status().isNoContent());
+
+        String turnJson = JsonBuilderFactory.buildObject()
+                .add("turnNumber", existingGame.getTurnNumber())
+                .end()
+                .toString();
+
+        mockMvc.perform(post("/games/{id}/turns", existingGame.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(turnJson))
+                .andExpect(status().isNotFound());
+    }
 }

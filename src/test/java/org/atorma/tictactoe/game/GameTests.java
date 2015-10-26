@@ -54,7 +54,7 @@ public class GameTests extends UnitTests {
         game.playTurn();
 
         assertEquals(afterXPlayerMove, game.getCurrentState());
-        assertEquals(xPlayerMove, game.getLastMove());
+        assertEquals(xPlayerMove, game.getLastMove().getCell());
         assertEquals(2, game.getTurnNumber());
 
         Cell oPlayerMove = new Cell(6, 6);
@@ -66,7 +66,7 @@ public class GameTests extends UnitTests {
         game.playTurn();
 
         assertEquals(afterOPlayerMove, game.getCurrentState());
-        assertEquals(oPlayerMove, game.getLastMove());
+        assertEquals(oPlayerMove, game.getLastMove().getCell());
         assertEquals(3, game.getTurnNumber());
     }
 }
