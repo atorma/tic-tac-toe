@@ -2,6 +2,7 @@ package org.atorma.tictactoe.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import org.atorma.tictactoe.ApplicationMvcTests;
+import org.atorma.tictactoe.exception.GameNotFoundException;
 import org.atorma.tictactoe.game.Game;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
@@ -86,7 +87,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .andExpect(jsonPath("$.gameEnded").value(existingGame.getState().isAtEnd()))
                 .andExpect(jsonPath("$.winner").value(winner != null ? winner.toString() : null))
                 .andExpect(jsonPath("$.winningSequence").value(winner != null ? notNullValue() : nullValue()))
-                .andExpect(jsonPath("$.board[" + lastMove.getCell().getRow() + "][" + lastMove.getCell().getColumn() +"]").value(lastMove.getPiece().toString()))
+                .andExpect(jsonPath("$.board[" + lastMove.getCell().getRow() + "][" + lastMove.getCell().getColumn() + "]").value(lastMove.getPiece().toString()))
         ;
     }
 
@@ -143,19 +144,11 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
+    @Test(expected = GameNotFoundException.class)
     public void delete_game() throws Exception {
         mockMvc.perform(delete("/games/{id}", existingGame.getId()))
                 .andExpect(status().isNoContent());
 
-        String turnJson = JsonBuilderFactory.buildObject()
-                .add("turnNumber", existingGame.getTurnNumber())
-                .end()
-                .toString();
-
-        mockMvc.perform(post("/games/{id}/turns", existingGame.getId())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(turnJson))
-                .andExpect(status().isNotFound());
+        gameRepository.findById(existingGame.getId());
     }
 }
