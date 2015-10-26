@@ -61,11 +61,33 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
 
         resultActions
                 .andExpect(jsonPath("$.turnNumber").value(createdGame.getTurnNumber()))
-                .andExpect(jsonPath("$.currentPlayer").value(createdGame.getCurrentState().getTurn().toString()))
-                .andExpect(jsonPath("$.gameEnded").value(createdGame.getCurrentState().isAtEnd()))
-                .andExpect(jsonPath("$.winner").value(createdGame.getCurrentState().getWinner()))
+                .andExpect(jsonPath("$.currentPlayer").value(createdGame.getState().getTurn().toString()))
+                .andExpect(jsonPath("$.gameEnded").value(createdGame.getState().isAtEnd()))
+                .andExpect(jsonPath("$.winner").value(createdGame.getState().getWinner()))
                 .andExpect(jsonPath("$.players.X.name").value(createdGame.getPlayers().get(Piece.X).toString()))
                 .andExpect(jsonPath("$.players.O.name").value(createdGame.getPlayers().get(Piece.O).toString()));
+    }
+
+    @Test
+    public void get_game_state() throws Exception {
+
+        existingGame.playTurn();
+        Game.Move lastMove = existingGame.getLastMove();
+        Piece winner = existingGame.getState().getWinner();
+
+        mockMvc.perform(get("/games/{id}", existingGame.getId()))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.move.piece").value(lastMove.getPiece().toString()))
+                .andExpect(jsonPath("$.move.cell.row").value(lastMove.getCell().getRow()))
+                .andExpect(jsonPath("$.move.cell.column").value(lastMove.getCell().getColumn()))
+                .andExpect(jsonPath("$.turnNumber").value(existingGame.getTurnNumber()))
+                .andExpect(jsonPath("$.currentPlayer").value(existingGame.getState().getTurn().toString()))
+                .andExpect(jsonPath("$.gameEnded").value(existingGame.getState().isAtEnd()))
+                .andExpect(jsonPath("$.winner").value(winner != null ? winner.toString() : null))
+                .andExpect(jsonPath("$.winningSequence").value(winner != null ? notNullValue() : nullValue()))
+                .andExpect(jsonPath("$.board[" + lastMove.getCell().getRow() + "][" + lastMove.getCell().getColumn() +"]").value(lastMove.getPiece().toString()))
+        ;
     }
 
 
@@ -77,7 +99,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .end()
                 .toString();
 
-        Piece winner = existingGame.getCurrentState().getWinner();
+        Piece winner = existingGame.getState().getWinner();
         mockMvc.perform(post("/games/{id}/turns", existingGame.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(turnJson))
@@ -87,8 +109,8 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .andExpect(jsonPath("$.move.cell.row").value(existingGame.getLastMove().getCell().getRow()))
                 .andExpect(jsonPath("$.move.cell.column").value(existingGame.getLastMove().getCell().getColumn()))
                 .andExpect(jsonPath("$.turnNumber").value(existingGame.getTurnNumber()))
-                .andExpect(jsonPath("$.currentPlayer").value(existingGame.getCurrentState().getTurn().toString()))
-                .andExpect(jsonPath("$.gameEnded").value(existingGame.getCurrentState().isAtEnd()))
+                .andExpect(jsonPath("$.currentPlayer").value(existingGame.getState().getTurn().toString()))
+                .andExpect(jsonPath("$.gameEnded").value(existingGame.getState().isAtEnd()))
                 .andExpect(jsonPath("$.winner").value(winner != null ? winner.toString() : null))
                 .andExpect(jsonPath("$.winningSequence").value(winner != null ? notNullValue() : nullValue()))
                 ;

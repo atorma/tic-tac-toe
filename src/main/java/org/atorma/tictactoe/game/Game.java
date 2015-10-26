@@ -16,7 +16,7 @@ public class Game {
 
     private String id = UUID.randomUUID().toString();
     private Map<Piece, Player> players = new EnumMap<>(Piece.class);
-    private GameState currentState;
+    private GameState state;
     private Move lastMove;
     private int turnNumber = 1;
 
@@ -27,7 +27,7 @@ public class Game {
         players.put(player1.getPiece(), player1);
         players.put(player2.getPiece(), player2);
 
-        currentState = initialState.getCopy();
+        state = initialState.getCopy();
     }
 
     private void assignPieces(Player player1, Player player2) {
@@ -52,8 +52,8 @@ public class Game {
         return Collections.unmodifiableMap(players);
     }
 
-    public GameState getCurrentState() {
-        return currentState;
+    public GameState getState() {
+        return state;
     }
 
     public Move getLastMove() {
@@ -65,9 +65,9 @@ public class Game {
     }
 
     public void playTurn() {
-        Piece movePiece = currentState.getTurn();
-        Cell moveCell = players.get(movePiece).move(currentState, lastMove != null ? lastMove.getCell() : null);
-        currentState = currentState.next(moveCell);
+        Piece movePiece = state.getTurn();
+        Cell moveCell = players.get(movePiece).move(state, lastMove != null ? lastMove.getCell() : null);
+        state = state.next(moveCell);
         lastMove = new Move(movePiece, moveCell);
         turnNumber++;
     }

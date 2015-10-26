@@ -1,12 +1,13 @@
 package org.atorma.tictactoe.controller;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonView;
 import org.atorma.tictactoe.exception.GameNotFoundException;
 import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.Game;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.mcts.MCTSPlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
-import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.atorma.tictactoe.repository.GameRepository;
@@ -25,13 +26,18 @@ public class GameController {
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
-    public GameDTO createGame() {
+    public GameDetailDTO createGame() {
         NaivePlayer naivePlayer = new NaivePlayer();
         MCTSPlayer mctsPlayer = new MCTSPlayer();
         GameState initialState = new GameState(5, new Piece[18][18], Piece.X);
         Game game = new Game(naivePlayer, mctsPlayer, initialState);
         game = gameRepository.save(game);
-        return new GameDTO(game);
+        return new GameDetailDTO(game);
+    }
+
+    @RequestMapping(value = "/{gameId}", method = RequestMethod.GET)
+    public GameDetailDTO getGame(@PathVariable("gameId") String gameId) {
+        return new GameDetailDTO(gameRepository.findById(gameId));
     }
 
     @RequestMapping(value = "/{gameId}/turns", method = RequestMethod.POST)
@@ -77,17 +83,13 @@ public class GameController {
     }
 
 
+    @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE)
     public static class GameDTO {
 
-        private final Game game;
-        private final Map<Piece, PlayerDTO> players;
+        public final Game game;
 
         public GameDTO(Game game) {
             this.game = game;
-            this.players = new EnumMap<>(Piece.class);
-            for (Piece p : Piece.values()) {
-                players.put(p, new PlayerDTO(game.getPlayers().get(p)));
-            }
         }
 
         public String getId() {
@@ -103,30 +105,50 @@ public class GameController {
         }
 
         public Piece getCurrentPlayer() {
-            return game.getCurrentState().getTurn();
+            return game.getState().getTurn();
         }
 
         public boolean isGameEnded() {
-            return game.getCurrentState().isAtEnd();
+            return game.getState().isAtEnd();
         }
 
         public Piece getWinner() {
-            return game.getCurrentState().getWinner();
+            return game.getState().getWinner();
         }
 
         public GameState.Sequence getWinningSequence() {
-            Piece winner = game.getCurrentState().getWinner();
+            Piece winner = game.getState().getWinner();
             if (winner != null) {
-                return game.getCurrentState().getLongestSequence(winner);
+                return game.getState().getLongestSequence(winner);
             } else {
                 return null;
             }
         }
+    }
+
+    public static class GameDetailDTO extends GameDTO {
+
+        public GameDetailDTO(Game game) {
+            super(game);
+        }
 
         public Map<Piece, PlayerDTO> getPlayers() {
+            Map<Piece, PlayerDTO> players = new EnumMap<>(Piece.class);
+            for (Piece p : Piece.values()) {
+                players.put(p, new PlayerDTO(game.getPlayers().get(p)));
+            }
             return players;
         }
 
+        public Piece[][] getBoard() {
+            Piece[][] board = new Piece[game.getState().getBoardRows()][game.getState().getBoardCols()];
+            for (int i = 0; i < game.getState().getBoardRows(); i++) {
+                for (int j = 0; j < game.getState().getBoardCols(); j++) {
+                    board[i][j] = game.getState().getPiece(i, j);
+                }
+            }
+            return board;
+        }
     }
 
     public static class PlayerDTO {

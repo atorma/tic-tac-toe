@@ -33,7 +33,7 @@ public class GameTests extends UnitTests {
 
         assertSame(xPlayer, game.getPlayers().get(Piece.X));
         assertSame(oPlayer, game.getPlayers().get(Piece.O));
-        assertEquals(state.getCopy(), game.getCurrentState());
+        assertEquals(state.getCopy(), game.getState());
         assertNull(game.getLastMove());
         assertEquals(1, game.getTurnNumber());
         assertNotNull(game.getId());
@@ -53,7 +53,7 @@ public class GameTests extends UnitTests {
 
         game.playTurn();
 
-        assertEquals(afterXPlayerMove, game.getCurrentState());
+        assertEquals(afterXPlayerMove, game.getState());
         assertEquals(xPlayerMove, game.getLastMove().getCell());
         assertEquals(2, game.getTurnNumber());
 
@@ -65,7 +65,7 @@ public class GameTests extends UnitTests {
 
         game.playTurn();
 
-        assertEquals(afterOPlayerMove, game.getCurrentState());
+        assertEquals(afterOPlayerMove, game.getState());
         assertEquals(oPlayerMove, game.getLastMove().getCell());
         assertEquals(3, game.getTurnNumber());
     }
