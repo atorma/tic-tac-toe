@@ -27,9 +27,11 @@ describe("GameController", function() {
 
     beforeEach(function() {
         gameService = jasmine.createSpyObj("gameService", [
-            "startNewGame"
+            "startNewGame",
+            "endCurrentGame"
         ]);
         gameService.startNewGame.and.returnValue($q.when());
+        gameService.endCurrentGame.and.returnValue($q.when());
     });
 
     beforeEach(angular.mock.inject(function($controller) {
@@ -157,6 +159,26 @@ describe("GameController", function() {
             }
 
             expect(broadcastedResult).toEqual(lastTurnResult);
+        });
+
+        it("requests game service to end game when game ends", function() {
+            var lastTurnResult = {
+                move: {
+                    piece: PIECES.O,
+                    cell: {row: 16, column: 5}
+                },
+                gameEnded: true,
+                winner: PIECES.O,
+                winningSequence: {
+                    start: {row: 12, column: 5},
+                    end: {row: 16, column: 5}
+                }
+            };
+
+            deferredTurn.resolve(lastTurnResult);
+            $scope.$digest();
+
+            expect(gameService.endCurrentGame).toHaveBeenCalled();
         });
 
         it("stops if playing turn fails", function() {

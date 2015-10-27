@@ -75,7 +75,17 @@ describe("gameService", function() {
             expect(gameService.currentGame.winningSequence).toEqual(initialGameData.winningSequence);
         });
 
+        it("ends current game if ongoing", function() {
+            spyOn(gameService, "endCurrentGame").and.returnValue($q.when());
 
+            $httpBackend.whenPOST("games", {})
+                .respond(201, initialGameData);
+
+            gameService.startNewGame();
+            $httpBackend.flush();
+
+            expect(gameService.endCurrentGame).toHaveBeenCalled();
+        });
     });
 
     describe("when turn played", function() {
@@ -144,7 +154,23 @@ describe("gameService", function() {
 
     });
 
+    describe("when current game ended", function() {
 
+        it("sends request to delete game to backend and clears current game", function() {
+            gameService.currentGame = {
+                id: "abc-123"
+            };
+
+            $httpBackend.expectDELETE("games/abc-123")
+                .respond(203);
+
+            gameService.endCurrentGame();
+            $httpBackend.flush();
+
+            expect(gameService.currentGame).toBeUndefined();
+        });
+
+    });
 
 
 });

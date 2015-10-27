@@ -23,6 +23,8 @@ function GameController(GAME_EVENTS, gameService, $scope) {
             .then(function(result) {
                 if (!result.gameEnded) {
                     play();
+                } else {
+                    gameService.endCurrentGame();
                 }
             })
             .catch(function(reason) {
