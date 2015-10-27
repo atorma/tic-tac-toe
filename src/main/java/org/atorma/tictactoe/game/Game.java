@@ -5,6 +5,8 @@ import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.atorma.tictactoe.game.state.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.util.Collections;
@@ -13,6 +15,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Game {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
     private String id = UUID.randomUUID().toString();
     private Map<Piece, Player> players = new EnumMap<>(Piece.class);
@@ -42,6 +45,7 @@ public class Game {
         } else if (player1.getPiece() == player2.getPiece()) {
             throw new IllegalArgumentException("Both players have piece " + player1.getPiece());
         }
+        LOGGER.debug("Pieces assigned. {}: {}, {}: {}", player1.getName(), player1.getPiece(), player2.getName(), player2.getPiece());
     }
 
     public String getId() {
@@ -69,6 +73,7 @@ public class Game {
         Cell moveCell = players.get(movePiece).move(state, lastMove != null ? lastMove.getCell() : null);
         state = state.next(moveCell);
         lastMove = new Move(movePiece, moveCell);
+        LOGGER.debug("Turn {}: {} to {}", turnNumber, movePiece, moveCell);
         turnNumber++;
     }
 

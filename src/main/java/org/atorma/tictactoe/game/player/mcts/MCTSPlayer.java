@@ -5,6 +5,8 @@ import org.atorma.tictactoe.game.*;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.state.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.List;
  * * https://en.wikipedia.org/wiki/Monte_Carlo_tree_search
  */
 public class MCTSPlayer implements Player {
+    private static Logger LOGGER = LoggerFactory.getLogger(MCTSPlayer.class);
 
     public static MCTSParameters DEFAULT_PARAMS = new MCTSParameters();
 
@@ -95,7 +98,7 @@ public class MCTSPlayer implements Player {
 
         lastMove = new MoveNode(startingState, opponentsMove, params.rewardScheme);
 
-        System.out.println("New game started!");
+        LOGGER.debug("New game started!");
     }
 
 
@@ -116,8 +119,8 @@ public class MCTSPlayer implements Player {
             bestMove = selectNextMoveBasedOnExpectedReward(lastMove);
         }
 
-        System.out.println(numIter + " rollouts in " + (System.currentTimeMillis() - planningStartTime) + " ms");
-        System.out.println("Chose " + (isMandatoryMove ? "mandatory" : "MCTS") + " " + bestMove.printStatsFor(mySide));
+        LOGGER.debug(numIter + " rollouts in " + (System.currentTimeMillis() - planningStartTime) + " ms");
+        LOGGER.debug("Chose " + (isMandatoryMove ? "mandatory" : "MCTS") + " " + bestMove.printStatsFor(mySide));
 
         /*
         List<MoveNode> choices = new ArrayList<MoveNode>(bestMove.getParent().getChildren());

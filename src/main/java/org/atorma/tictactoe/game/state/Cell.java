@@ -54,4 +54,12 @@ public class Cell {
         result = 31 * result + column;
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Cell{" +
+                "row=" + row +
+                ", column=" + column +
+                '}';
+    }
 }
