@@ -51,6 +51,8 @@ public class GameController {
         }
 
         game.playTurn();
+        game = gameRepository.save(game);
+
         return new GameDTO(game);
     }
 
@@ -68,12 +70,12 @@ public class GameController {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public void gameNotFound(GameNotFoundException e) {
+    public void handleException(GameNotFoundException e) {
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public void gameNotFound(TicTacToeException e) {
+    public void handleException(TicTacToeException e) {
     }
 
 
