@@ -6,15 +6,34 @@ var _ = require("lodash");
 angular.module("ticTacToe")
     .factory("gameService", gameService);
 
-function gameService(PIECES, $http, $q) {
+function gameService($http, $q) {
 
     var service = {
         currentGame: undefined,
+        getPlayers: getPlayers,
         startNewGame: startNewGame,
         endCurrentGame: endCurrentGame
     };
     return service;
 
+
+    function getPlayers() {
+        // TODO
+        return $q.when([
+            {
+                name: "Monte Carlo Tree Search",
+                type: "AI"
+            },
+            {
+                name: "Naive",
+                type: "AI"
+            },
+            {
+                name: "Random",
+                type: "AI"
+            }
+        ]);
+    }
 
     function startNewGame() {
         return service.endCurrentGame()

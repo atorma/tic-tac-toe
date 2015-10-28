@@ -48,14 +48,14 @@
                     <md-input-container flex>
                         <label>Crosses (X)</label>
                         <md-select ng-model="vm.gameConfig.players[vm.PIECES.X]">
-                            <md-option ng-value="player" ng-repeat="player in vm.players">{{player.name}}</md-option>
+                            <md-option ng-value="player" ng-repeat="player in vm.playerList">{{player.name}}</md-option>
                         </md-select>
                     </md-input-container>
 
                     <md-input-container flex>
                         <label>Noughts (O)</label>
                         <md-select ng-model="vm.gameConfig.players[vm.PIECES.O]">
-                            <md-option ng-value="player" ng-repeat="player in vm.players">{{player.name}}</md-option>
+                            <md-option ng-value="player" ng-repeat="player in vm.playerList">{{player.name}}</md-option>
                         </md-select>
                     </md-input-container>
 

@@ -10,6 +10,7 @@ describe("GameController", function() {
     var GAME_EVENTS, PIECES;
 
     var gameService;
+    var players;
 
     var $scope, $childScope;
     var $q;
@@ -28,20 +29,52 @@ describe("GameController", function() {
     beforeEach(function() {
         gameService = jasmine.createSpyObj("gameService", [
             "startNewGame",
-            "endCurrentGame"
+            "endCurrentGame",
+            "getPlayers"
         ]);
         gameService.startNewGame.and.returnValue($q.when());
-        gameService.endCurrentGame.and.returnValue($q.when());
+        gameService.endCurrentGame.and.returnValue($q.when())
+
+        players = [
+            {
+                name: "Monte Carlo Tree Search",
+                type: "AI"
+            },
+            {
+                name: "Naive",
+                type: "AI"
+            },
+            {
+                name: "Random",
+                type: "AI"
+            }
+        ];
+        gameService.getPlayers.and.returnValue($q.when(players));
     });
 
     beforeEach(angular.mock.inject(function($controller) {
         vm = $controller("GameController", {
-            GAME_EVENTS: GAME_EVENTS,
             gameService: gameService,
             $scope: $scope
         });
+
+        $scope.$digest();
     }));
 
+
+    describe("before starting game", function() {
+
+        it("provides default game configuration", function() {
+            expect(vm.PIECES).toEqual(PIECES);
+            expect(vm.playerList).toEqual(players);
+
+            expect(vm.gameConfig.board.rows).toBe(18);
+            expect(vm.gameConfig.board.columns).toBe(18);
+            expect(vm.gameConfig.players[PIECES.X]).toBeDefined();
+            expect(vm.gameConfig.players[PIECES.O]).toBeDefined();
+        });
+
+    });
 
 
     describe("on starting new game", function() {
@@ -52,27 +85,34 @@ describe("GameController", function() {
                     return $q.when({
                         gameEnded: true
                     });
-                }
+                },
+                board: [[null, null, null], [null, null, null], [null, null, null]]
             };
         });
 
         it("requests game service to start new game", function() {
+            var gameConfig = {
+                board: {rows: 3, columns: 3},
+                players: {}
+            };
+            vm.gameConfig = gameConfig;
+
             vm.startGame();
             $scope.$digest();
 
-            expect(gameService.startNewGame).toHaveBeenCalled();
+            expect(gameService.startNewGame).toHaveBeenCalledWith(gameConfig);
         });
 
         it("broadcasts event about starting new game", function() {
-            var broadcastedEvent = null;
-            $childScope.$on(GAME_EVENTS.GAME_STARTED, function(event) {
-                broadcastedEvent = event;
+            var broadcastedGame = null;
+            $childScope.$on(GAME_EVENTS.GAME_STARTED, function(event, game) {
+                broadcastedGame = game;
             });
 
             vm.startGame();
             $scope.$digest();
 
-            expect(broadcastedEvent.name).toEqual(GAME_EVENTS.GAME_STARTED);
+            expect(broadcastedGame).toEqual(gameService.currentGame);
         });
 
     });
