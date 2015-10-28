@@ -14,15 +14,73 @@
 
 <body ng-app="ticTacToe" ng-controller="GameController as vm" ng-strict-di ng-cloak>
 
-<md-toolbar>
-    <div class="md-toolbar-tools">
-        <md-button ng-click="vm.startGame()" class="" aria-label="Start">Start</md-button>
-    </div>
-</md-toolbar>
-
-
 <md-content flex layout-padding>
-    <board size="18"></board>
+
+    <section>
+        <form name="gameConfig" novalidate>
+
+            <div layout="column">
+
+                <div layout="row">
+
+                    <h2 class="md-subhead" flex>Board size</h2>
+
+                    <md-input-container flex>
+                        <label>Rows</label>
+                        <input type="number" name="rows"
+                               required min="3" max="20"
+                               ng-model="vm.gameConfig.board.rows"/>
+                    </md-input-container>
+
+                    <md-input-container flex>
+                        <label>Columns</label>
+                        <input type="number" name="columns"
+                               required min="3" max="20"
+                               ng-model="vm.gameConfig.board.columns"/>
+                    </md-input-container>
+
+                </div>
+
+                <div layout="row">
+
+                    <h2 class="md-subhead" flex>Players</h2>
+
+                    <md-input-container flex>
+                        <label>Crosses (X)</label>
+                        <md-select ng-model="vm.gameConfig.players[vm.PIECES.X]">
+                            <md-option ng-value="player" ng-repeat="player in vm.players">{{player.name}}</md-option>
+                        </md-select>
+                    </md-input-container>
+
+                    <md-input-container flex>
+                        <label>Noughts (O)</label>
+                        <md-select ng-model="vm.gameConfig.players[vm.PIECES.O]">
+                            <md-option ng-value="player" ng-repeat="player in vm.players">{{player.name}}</md-option>
+                        </md-select>
+                    </md-input-container>
+
+                </div>
+
+            </div>
+
+        </form>
+    </section>
+
+    <section>
+
+        <div layout="row">
+            <md-button flex ng-click="vm.startGame()">Start</md-button>
+            <md-button flex>Pause</md-button>
+            <md-button flex>End</md-button>
+        </div>
+
+        <div layout="row" layout-align="center center">
+            <board size="18"></board>
+        </div>
+
+    </section>
+
+
 </md-content>
 
 </body>

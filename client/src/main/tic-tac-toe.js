@@ -22,6 +22,7 @@ angular
     .constant("PIECES", PIECES)
     .run(makeStateAvailableInScope);
 
+require("./route-config");
 require("./board");
 require("./game");
 

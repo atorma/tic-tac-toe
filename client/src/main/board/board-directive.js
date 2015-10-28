@@ -12,7 +12,7 @@ var GRID_COLOR = "#eee";
 var PIECE_COLOR = "#000";
 
 
-function board(GAME_EVENTS, PIECES) {
+function board(GAME_EVENTS, PIECES, $log) {
     return {
         restrict: "E",
         template: "<canvas></canvas>",
@@ -135,6 +135,7 @@ function board(GAME_EVENTS, PIECES) {
             var cell = getCellCoordinates(cc);
 
             // TODO handle human player move selection
+            $log.debug("Clicked cell " + angular.toJson(cell));
             //drawCross(cell);
         }
 
