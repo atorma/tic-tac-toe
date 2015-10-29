@@ -8,7 +8,7 @@ import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.atorma.tictactoe.repository.GameRepository;
+import org.atorma.tictactoe.application.GameRepository;
 import org.jglue.fluentjson.JsonBuilderFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +45,20 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
 
     @Test
     public void create_game() throws Exception {
-        String gameOptionsJson = JsonBuilderFactory.buildObject()
+        String gameOptionsJson =
+                JsonBuilderFactory.buildObject()
+                    .addObject("board")
+                        .add("rows", 5)
+                        .add("columns", 6)
+                    .end()
+                    .addObject("players")
+                        .addObject(Piece.X.toString())
+                            .add("id", 1)
+                        .end()
+                        .addObject(Piece.O.toString())
+                            .add("id", 1)
+                        .end()
+                    .end()
                 .end()
                 .toString();
 

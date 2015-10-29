@@ -1,4 +1,4 @@
-package org.atorma.tictactoe.repository;
+package org.atorma.tictactoe.application;
 
 import org.atorma.tictactoe.game.Game;
 

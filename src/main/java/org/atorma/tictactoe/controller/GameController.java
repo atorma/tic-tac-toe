@@ -1,7 +1,6 @@
 package org.atorma.tictactoe.controller;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonView;
 import org.atorma.tictactoe.exception.GameNotFoundException;
 import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.Game;
@@ -10,7 +9,7 @@ import org.atorma.tictactoe.game.player.mcts.MCTSPlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.atorma.tictactoe.repository.GameRepository;
+import org.atorma.tictactoe.application.GameRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +23,7 @@ public class GameController {
 
     private GameRepository gameRepository;
 
-    @RequestMapping(value = "", method = RequestMethod.POST)
+    @RequestMapping(method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
     public GameDetailDTO createGame() {
         NaivePlayer naivePlayer = new NaivePlayer();

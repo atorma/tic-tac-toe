@@ -1,4 +1,4 @@
-package org.atorma.tictactoe.repository.impl;
+package org.atorma.tictactoe.application.impl;
 
 import org.atorma.tictactoe.UnitTests;
 import org.atorma.tictactoe.exception.GameNotFoundException;

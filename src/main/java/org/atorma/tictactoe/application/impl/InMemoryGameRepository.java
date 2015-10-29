@@ -1,6 +1,6 @@
-package org.atorma.tictactoe.repository.impl;
+package org.atorma.tictactoe.application.impl;
 
-import org.atorma.tictactoe.repository.GameRepository;
+import org.atorma.tictactoe.application.GameRepository;
 import org.atorma.tictactoe.exception.GameNotFoundException;
 import org.atorma.tictactoe.game.Game;
 import org.slf4j.Logger;
