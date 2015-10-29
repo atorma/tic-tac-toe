@@ -37,16 +37,16 @@ describe("GameController", function() {
 
         players = [
             {
-                name: "Monte Carlo Tree Search",
-                type: "AI"
+                id: "123",
+                name: "Monte Carlo Tree Search"
             },
             {
-                name: "Naive",
-                type: "AI"
+                id: "456",
+                name: "Naive"
             },
             {
-                name: "Random",
-                type: "AI"
+                id: "789",
+                name: "Random"
             }
         ];
         gameService.getPlayers.and.returnValue($q.when(players));

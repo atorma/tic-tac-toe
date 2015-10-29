@@ -8,8 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 public class PlayerRegistryTests extends ApplicationTests {
 
@@ -19,7 +20,7 @@ public class PlayerRegistryTests extends ApplicationTests {
     @Test
     public void get_player_information() {
         List<PlayerInfo> playerInfoList = playerRegistry.getPlayerInformation();
-        assertTrue(playerInfoList.size() > 0);
+        assertThat(playerInfoList.size(), greaterThan(0));
     }
 
     @Test
@@ -28,7 +29,7 @@ public class PlayerRegistryTests extends ApplicationTests {
         PlayerInfo playerInfo = playerInfoList.get(random.nextInt(playerInfoList.size()));
 
         Player player = playerRegistry.createPlayer(playerInfo);
-        assertNotNull(player);
+        assertThat(player, notNullValue());
     }
 
 }
