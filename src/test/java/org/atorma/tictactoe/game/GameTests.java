@@ -21,9 +21,7 @@ public class GameTests extends UnitTests {
 
     @Before
     public void setUp() {
-        when(xPlayer.getName()).thenReturn("xPlayer");
         when(xPlayer.getPiece()).thenReturn(Piece.X);
-        when(oPlayer.getName()).thenReturn("oPlayer");
         when(oPlayer.getPiece()).thenReturn(Piece.O);
 
         when(state.getCopy()).thenReturn(state);

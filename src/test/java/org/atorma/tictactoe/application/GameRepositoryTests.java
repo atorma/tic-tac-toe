@@ -18,7 +18,7 @@ public class GameRepositoryTests extends ApplicationTests {
     @Test
     public void save_and_find() {
         GameState initialState = new GameState(3, new Piece[3][3], Piece.O);
-        Game game = new Game(new NaivePlayer("Naive 1"), new NaivePlayer("Naive 2"), initialState);
+        Game game = new Game(new NaivePlayer(), new NaivePlayer(), initialState);
         game = gameRepository.save(game);
         assertThat(gameRepository.findById(game.getId()), equalTo(game));
     }

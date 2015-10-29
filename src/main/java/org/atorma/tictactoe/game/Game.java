@@ -24,8 +24,10 @@ public class Game {
     private int turnNumber = 1;
 
     public Game(Player player1, Player player2, GameState initialState) {
-        assignPieces(player1, player2);
+        Assert.isTrue(player1 != player2);
         Assert.notNull(initialState);
+
+        assignPieces(player1, player2);
 
         players.put(player1.getPiece(), player1);
         players.put(player2.getPiece(), player2);
@@ -45,7 +47,7 @@ public class Game {
         } else if (player1.getPiece() == player2.getPiece()) {
             throw new IllegalArgumentException("Both players have piece " + player1.getPiece());
         }
-        LOGGER.debug("Pieces assigned. {}: {}, {}: {}", player1.getName(), player1.getPiece(), player2.getName(), player2.getPiece());
+        LOGGER.debug("Pieces assigned. {}: {}, {}: {}", player1.getPiece(), player1, player2.getPiece(), player2);
     }
 
     public String getId() {

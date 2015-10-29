@@ -1,15 +1,34 @@
 package org.atorma.tictactoe.game.player;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 
+/**
+ * Interface of Tic-tac-toe AI implementations.
+ */
 public interface Player {
 
     /**
-     * This method is called by the game framework to set the piece this player is playing.
+     * Called by the game framework when this player should make its move.
+     * <p/>
+     * If the number of pieces in the current state is less than in the
+     * previous state, the player should take it as a signal that
+     * a new game has started.
+     *
+     * @param currentState
+     *  The current state of the game, including the opponent's last move
+     * @param opponentsLastMove
+     *  The previous move made by the opponent, null if this player
+     *  has the first move of the game
+     * @return
+     *  The board cell where this player's next move should be placed
+     */
+    Cell move(GameState currentState, Cell opponentsLastMove);
+
+    /**
+     * Sets piece this player has.
      */
     void setPiece(Piece p);
 
@@ -20,29 +39,5 @@ public interface Player {
      *  The piece given with {@link #setPiece(Piece)}
      */
     Piece getPiece();
-
-    /**
-     * @return
-     *  This player's name
-     */
-    String getName();
-
-    /**
-     * @return
-     *  This player's name
-     */
-    String toString();
-
-    /**
-     * Called by the game framework when this player should make its move.
-     *
-     * @param currentState
-     *  The current state of the game, including the opponent's last move
-     * @param opponentsLastMove
-     *  The previous move made by the opponent
-     * @return
-     *  The board cell where this player's next move should be placed
-     */
-    Cell move(GameState currentState, Cell opponentsLastMove);
 
 }

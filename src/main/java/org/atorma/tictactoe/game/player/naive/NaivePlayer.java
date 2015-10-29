@@ -18,16 +18,7 @@ import java.util.List;
  */
 public class NaivePlayer implements Player {
 
-    private final String name;
     private Piece mySide;
-
-    public NaivePlayer() {
-        this("NaivePlayer");
-    }
-
-    public NaivePlayer(String name) {
-        this.name = name;
-    }
 
 
     public void setPiece(Piece p) {
@@ -163,12 +154,8 @@ public class NaivePlayer implements Player {
         return candidates;
     }
 
-    public String getName() {
-        return this.name;
-    }
-
     @Override
     public String toString() {
-        return getName();
+        return "Naive";
     }
 }

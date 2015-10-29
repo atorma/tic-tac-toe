@@ -77,9 +77,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .andExpect(jsonPath("$.turnNumber").value(createdGame.getTurnNumber()))
                 .andExpect(jsonPath("$.currentPlayer").value(createdGame.getState().getTurn().toString()))
                 .andExpect(jsonPath("$.gameEnded").value(createdGame.getState().isAtEnd()))
-                .andExpect(jsonPath("$.winner").value(createdGame.getState().getWinner()))
-                .andExpect(jsonPath("$.players.X.name").value(createdGame.getPlayers().get(Piece.X).toString()))
-                .andExpect(jsonPath("$.players.O.name").value(createdGame.getPlayers().get(Piece.O).toString()));
+                .andExpect(jsonPath("$.winner").value(createdGame.getState().getWinner()));
     }
 
     @Test
@@ -104,12 +102,10 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
         ;
     }
 
-
-
     @Test
     public void play_turn() throws Exception {
         String turnJson = JsonBuilderFactory.buildObject()
-                .add("turnNumber", existingGame.getTurnNumber())
+                    .add("turnNumber", existingGame.getTurnNumber())
                 .end()
                 .toString();
 
@@ -134,7 +130,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
     @Test
     public void http_not_found_if_game_not_found_by_id() throws Exception {
         String turnJson = JsonBuilderFactory.buildObject()
-                .add("turnNumber", 1)
+                    .add("turnNumber", 1)
                 .end()
                 .toString();
 
@@ -147,7 +143,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
     @Test
     public void http_bad_request_if_requesting_to_play_turn_with_wrong_number() throws Exception {
         String turnJson = JsonBuilderFactory.buildObject()
-                .add("turnNumber", 999)
+                    .add("turnNumber", 999)
                 .end()
                 .toString();
 

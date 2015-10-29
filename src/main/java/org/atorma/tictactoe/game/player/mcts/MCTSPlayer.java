@@ -20,41 +20,28 @@ import java.util.List;
  * * https://en.wikipedia.org/wiki/Monte_Carlo_tree_search
  */
 public class MCTSPlayer implements Player {
-    private static Logger LOGGER = LoggerFactory.getLogger(MCTSPlayer.class);
-
-    public static MCTSParameters DEFAULT_PARAMS = new MCTSParameters();
+    private static final Logger LOGGER = LoggerFactory.getLogger(MCTSPlayer.class);
+    public static final MCTSParameters DEFAULT_PARAMS = new MCTSParameters();
 
     private MCTSParameters params;
-
-    private String name;
     private Piece mySide;
-
     private MoveNode lastMove; // Last move overall, may be my move or opponent's move, depending on algorithm progress
-
     private long planningStartTime;
 
-
-    public MCTSPlayer(MCTSParameters params, String name) {
-        this.name = name;
-        this.params = params;
-    }
-
-    public MCTSPlayer(MCTSParameters params) {
-        this(params, "MCTS");
-    }
 
     public MCTSPlayer() {
         this(DEFAULT_PARAMS);
     }
 
-
-    public String getName() {
-        return this.name;
+    public MCTSPlayer(MCTSParameters params) {
+        this.params = params;
     }
+
 
     public String toString() {
-        return getName();
+        return "MCTS";
     }
+
 
     public void setPiece(Piece p) {
         this.mySide = p;
@@ -63,6 +50,7 @@ public class MCTSPlayer implements Player {
     public Piece getPiece() {
         return this.mySide;
     }
+
 
     public MoveNode getLastMove() {
         return lastMove;

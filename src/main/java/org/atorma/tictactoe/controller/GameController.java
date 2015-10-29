@@ -133,14 +133,6 @@ public class GameController {
             super(game);
         }
 
-        public Map<Piece, PlayerDTO> getPlayers() {
-            Map<Piece, PlayerDTO> players = new EnumMap<>(Piece.class);
-            for (Piece p : Piece.values()) {
-                players.put(p, new PlayerDTO(game.getPlayers().get(p)));
-            }
-            return players;
-        }
-
         public Piece[][] getBoard() {
             Piece[][] board = new Piece[game.getState().getBoardRows()][game.getState().getBoardCols()];
             for (int i = 0; i < game.getState().getBoardRows(); i++) {
@@ -149,19 +141,6 @@ public class GameController {
                 }
             }
             return board;
-        }
-    }
-
-    public static class PlayerDTO {
-
-        private final Player player;
-
-        public PlayerDTO(Player player) {
-            this.player = player;
-        }
-
-        public String getName() {
-            return player.getName();
         }
     }
 
