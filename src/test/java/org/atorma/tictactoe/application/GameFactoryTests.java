@@ -8,7 +8,7 @@ import org.atorma.tictactoe.game.state.Piece;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
@@ -26,14 +26,16 @@ public class GameFactoryTests extends ApplicationTests {
         params.firstPlayer = Piece.O;
         params.board.rows = 3;
         params.board.columns = 4;
-        params.players.player1 = playerRegistry.getPlayerInformation().stream()
+        params.players.put(Piece.X, playerRegistry.getPlayerInformation().stream()
                 .filter(x -> x.getName().equals("Random"))
                 .findFirst()
-                .get();
-        params.players.player2 = playerRegistry.getPlayerInformation().stream()
+                .get()
+        );
+        params.players.put(Piece.O, playerRegistry.getPlayerInformation().stream()
                 .filter(x -> x.getName().equals("Naive"))
                 .findFirst()
-                .get();
+                .get()
+        );
 
         Game game = gameFactory.createGame(params);
 
@@ -42,8 +44,8 @@ public class GameFactoryTests extends ApplicationTests {
         assertThat(game.getState().getTurn(), is(params.firstPlayer));
         assertThat(game.getState().getBoardRows(), is(params.board.rows));
         assertThat(game.getState().getBoardCols(), is(params.board.columns));
-        assertThat(game.getPlayers().get(Piece.X).getClass() == NaivePlayer.class && game.getPlayers().get(Piece.O).getClass() == RandomPlayer.class
-                || game.getPlayers().get(Piece.O).getClass() == NaivePlayer.class && game.getPlayers().get(Piece.X).getClass() == RandomPlayer.class, is(true));
+        assertThat(game.getPlayers().get(Piece.X), instanceOf(RandomPlayer.class));
+        assertThat(game.getPlayers().get(Piece.O), instanceOf(NaivePlayer.class));
     }
 
 }
