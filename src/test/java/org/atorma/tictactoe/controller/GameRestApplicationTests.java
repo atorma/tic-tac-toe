@@ -2,6 +2,7 @@ package org.atorma.tictactoe.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import org.atorma.tictactoe.ApplicationMvcTests;
+import org.atorma.tictactoe.application.PlayerRegistry;
 import org.atorma.tictactoe.exception.GameNotFoundException;
 import org.atorma.tictactoe.game.Game;
 import org.atorma.tictactoe.game.player.Player;
@@ -16,9 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -30,6 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class GameRestApplicationTests extends ApplicationMvcTests {
 
     @Autowired GameRepository gameRepository;
+    @Autowired PlayerRegistry playerRegistry;
 
     Game existingGame;
 
@@ -47,16 +47,20 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
     public void create_game() throws Exception {
         String gameOptionsJson =
                 JsonBuilderFactory.buildObject()
+                    .add("connectHowMany", 3)
+                    .add("firstPlayer", Piece.O.toString())
                     .addObject("board")
                         .add("rows", 5)
                         .add("columns", 6)
                     .end()
                     .addObject("players")
                         .addObject(Piece.X.toString())
-                            .add("id", 1)
+                            .add("id", playerRegistry.getPlayerInformation().get(1).getId())
+                            .add("name", "Whatever")
                         .end()
                         .addObject(Piece.O.toString())
-                            .add("id", 1)
+                            .add("id", playerRegistry.getPlayerInformation().get(2).getId())
+                            .add("name", "Whatever")
                         .end()
                     .end()
                 .end()
@@ -65,19 +69,23 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
         ResultActions resultActions = mockMvc.perform(post("/games")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(gameOptionsJson))
+                .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.turnNumber").value(1))
+                .andExpect(jsonPath("$.currentPlayer").value(Piece.O.toString()))
+                .andExpect(jsonPath("$.connectHowMany").value(3))
+                .andExpect(jsonPath("$.board").value(hasSize(5)))
+                .andExpect(jsonPath("$.board[0]").value(hasSize(6)))
+                .andExpect(jsonPath("$.move").value(nullValue()))
+                .andExpect(jsonPath("$.gameEnded").value(false))
+                .andExpect(jsonPath("$.winner").value(nullValue()))
+                .andExpect(jsonPath("$.winningSequence").value(nullValue()))
                 ;
 
         String gameId = JsonPath.read(resultActions.andReturn().getResponse().getContentAsString(), "$.id");
         Game createdGame = gameRepository.findById(gameId);
         assertThat(createdGame.getId(), equalTo(gameId));
-
-        resultActions
-                .andExpect(jsonPath("$.turnNumber").value(createdGame.getTurnNumber()))
-                .andExpect(jsonPath("$.currentPlayer").value(createdGame.getState().getTurn().toString()))
-                .andExpect(jsonPath("$.gameEnded").value(createdGame.getState().isAtEnd()))
-                .andExpect(jsonPath("$.winner").value(createdGame.getState().getWinner()));
     }
 
     @Test
@@ -98,6 +106,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .andExpect(jsonPath("$.gameEnded").value(existingGame.getState().isAtEnd()))
                 .andExpect(jsonPath("$.winner").value(winner != null ? winner.toString() : null))
                 .andExpect(jsonPath("$.winningSequence").value(winner != null ? notNullValue() : nullValue()))
+                .andExpect(jsonPath("$.connectHowMany").value(existingGame.getState().getConnectHowMany()))
                 .andExpect(jsonPath("$.board[" + lastMove.getCell().getRow() + "][" + lastMove.getCell().getColumn() + "]").value(lastMove.getPiece().toString()))
         ;
     }

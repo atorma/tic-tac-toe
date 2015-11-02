@@ -1,5 +1,7 @@
 package org.atorma.tictactoe.application;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.util.Assert;
 
 public class PlayerInfo {
@@ -7,7 +9,8 @@ public class PlayerInfo {
     private String id;
     private String name;
 
-    public PlayerInfo(String id, String name) {
+    @JsonCreator
+    public PlayerInfo(@JsonProperty("id") String id, @JsonProperty("name") String name) {
         Assert.hasText(id);
         Assert.hasText(name);
         this.id = id;
