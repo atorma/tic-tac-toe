@@ -33,7 +33,7 @@ describe("GameController", function() {
             "getPlayers"
         ]);
         gameService.startNewGame.and.returnValue($q.when());
-        gameService.endCurrentGame.and.returnValue($q.when())
+        gameService.endCurrentGame.and.returnValue($q.when());
 
         players = [
             {
