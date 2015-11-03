@@ -35,10 +35,10 @@ function gameService($http, $q) {
         ]);
     }
 
-    function startNewGame() {
+    function startNewGame(gameParams) {
         return service.endCurrentGame()
             .then(function() {
-                return $http.post("games", {});
+                return $http.post("games", gameParams);
             })
             .then(function(response) {
                 service.currentGame = new Game(response.data);

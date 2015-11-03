@@ -55,12 +55,21 @@ describe("gameService", function() {
 
     describe("when new game started", function() {
 
-        // TODO start game with parameters: player types, board size, who starts
         it("requests backend to create a new game and sets up current game", function() {
-            $httpBackend.expectPOST("games", {})
+            var gameParams = {
+                connectHowMany: 5,
+                firstPlayer: PIECE.X,
+                board: {rows: 18, columns: 18},
+                players: {
+                    "X": {id: "player-1-id", name: "player 1 type"},
+                    "O": {id: "player-2-id", name: "player 2 type"}
+                }
+            };
+
+            $httpBackend.expectPOST("games", gameParams)
                 .respond(201, initialGameData);
 
-            gameService.startNewGame();
+            gameService.startNewGame(gameParams);
             $httpBackend.flush();
 
             expect(gameService.currentGame).toBeDefined();
@@ -141,7 +150,7 @@ describe("gameService", function() {
             $httpBackend.expectPOST("games/"+initialGameData.id+"/turns")
                 .respond(201, turnResponse);
 
-            gameService.currentGame.playTurn()
+            gameService.currentGame.playTurn();
             $httpBackend.flush();
 
             expect(gameService.currentGame.currentPlayer).toEqual(turnResponse.currentPlayer);
