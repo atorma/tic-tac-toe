@@ -27,10 +27,10 @@ function board(GAME_EVENTS, PIECES, $log) {
         var canvas = iElem.find("canvas")[0];
         var ctx = canvas.getContext("2d");
 
-        var size = _.floor(parseInt(iAttrs.size));
-        var numRows = size;
-        var numCols = size;
+        var numRows = 18;
+        var numCols = 18;
 
+        // TODO fit to parent container
         canvas.width = 400;
         canvas.height = 400;
 
@@ -67,8 +67,15 @@ function board(GAME_EVENTS, PIECES, $log) {
 
         }
 
-        function onGameStarted(event) {
+        function onGameStarted(event, game) {
             canvas.width = 400; // resizing clears canvas
+
+            numRows = game.board.length;
+            numCols = game.board[0].length;
+
+            cellWidth = canvas.width/numCols;
+            cellHeight = canvas.height/numRows;
+
             drawGameBoard();
         }
 
