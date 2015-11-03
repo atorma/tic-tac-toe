@@ -89,6 +89,109 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
     }
 
     @Test
+    public void status_bad_request_when_trying_to_create_game_with_bad_options() throws Exception {
+        String invalidOptionsJson;
+
+        invalidOptionsJson = JsonBuilderFactory.buildObject()
+                        .add("connectHowMany", 1) // !
+                        .add("firstPlayer", Piece.O.toString())
+                        .addObject("board")
+                            .add("rows", 5)
+                            .add("columns", 6)
+                        .end()
+                        .addObject("players")
+                            .addObject(Piece.X.toString())
+                                .add("id", playerRegistry.getPlayerInformation().get(1).getId())
+                                .add("name", "Whatever")
+                            .end()
+                            .addObject(Piece.O.toString())
+                                .add("id", playerRegistry.getPlayerInformation().get(2).getId())
+                                .add("name", "Whatever")
+                            .end()
+                        .end()
+                    .end()
+                    .toString();
+
+        mockMvc.perform(post("/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidOptionsJson))
+                .andExpect(status().isBadRequest());
+
+
+        invalidOptionsJson = JsonBuilderFactory.buildObject()
+                        .add("connectHowMany", 3)
+                        .add("firstPlayer", Piece.O.toString())
+                        .addObject("board")
+                            .add("rows", 2) // !
+                            .add("columns", 6)
+                        .end()
+                        .addObject("players")
+                            .addObject(Piece.X.toString())
+                                .add("id", playerRegistry.getPlayerInformation().get(1).getId())
+                                .add("name", "Whatever")
+                            .end()
+                            .addObject(Piece.O.toString())
+                                .add("id", playerRegistry.getPlayerInformation().get(2).getId())
+                                .add("name", "Whatever")
+                            .end()
+                        .end()
+                    .end()
+                    .toString();
+
+        mockMvc.perform(post("/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidOptionsJson))
+                .andExpect(status().isBadRequest());
+
+        invalidOptionsJson = JsonBuilderFactory.buildObject()
+                        .add("connectHowMany", 5)
+                        .add("firstPlayer", (String) null) // !
+                        .addObject("board")
+                            .add("rows", 18)
+                            .add("columns", 18)
+                        .end()
+                        .addObject("players")
+                            .addObject(Piece.X.toString())
+                                .add("id", playerRegistry.getPlayerInformation().get(1).getId())
+                                .add("name", "Whatever")
+                            .end()
+                            .addObject(Piece.O.toString())
+                                .add("id", playerRegistry.getPlayerInformation().get(2).getId())
+                                .add("name", "Whatever")
+                            .end()
+                        .end()
+                    .end()
+                    .toString();
+
+        mockMvc.perform(post("/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidOptionsJson))
+                .andExpect(status().isBadRequest());
+
+        invalidOptionsJson = JsonBuilderFactory.buildObject()
+                        .add("connectHowMany", 5)
+                        .add("firstPlayer", Piece.O.toString())
+                        .addObject("board")
+                            .add("rows", 18)
+                            .add("columns", 18)
+                        .end()
+                        .addObject("players")
+                            .addObject(Piece.O.toString())
+                                .add("id", playerRegistry.getPlayerInformation().get(1).getId())
+                                .add("name", "Whatever")
+                            .end()
+                            .add(Piece.X.toString(), (String) null) // !
+                        .end()
+                    .end()
+                    .toString();
+
+        mockMvc.perform(post("/games")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(invalidOptionsJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void get_game_state() throws Exception {
 
         existingGame.playTurn();
