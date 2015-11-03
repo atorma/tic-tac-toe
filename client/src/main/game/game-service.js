@@ -18,21 +18,10 @@ function gameService($http, $q) {
 
 
     function getPlayers() {
-        // TODO
-        return $q.when([
-            {
-                name: "Monte Carlo Tree Search",
-                type: "AI"
-            },
-            {
-                name: "Naive",
-                type: "AI"
-            },
-            {
-                name: "Random",
-                type: "AI"
-            }
-        ]);
+        return $http.get("players")
+            .then(function(response) {
+                return response.data;
+            });
     }
 
     function startNewGame(gameParams) {

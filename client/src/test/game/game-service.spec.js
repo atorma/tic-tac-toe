@@ -53,6 +53,25 @@ describe("gameService", function() {
         $httpBackend.verifyNoOutstandingRequest();
     });
 
+
+    describe("player list", function() {
+        it("is fetched from backend", function() {
+            var actualPlayerList = [{id: "id1", name: "player 1"}, {id: "id2", name: "player 2"}];
+            $httpBackend.expectGET("players")
+                .respond(200, actualPlayerList);
+
+            var result = null;
+            gameService.getPlayers()
+                .then(function(players) {
+                    result = players;
+                });
+            $httpBackend.flush();
+
+            expect(result).toEqual(actualPlayerList);
+        });
+
+    });
+
     describe("when new game started", function() {
 
         it("requests backend to create a new game and sets up current game", function() {
