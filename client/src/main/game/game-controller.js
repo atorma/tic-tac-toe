@@ -24,6 +24,8 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
             PIECES: PIECES,
 
             gameConfig: {
+                connectHowMany: 5,
+                firstPlayer: PIECES.X,
                 board: {
                     rows: 18,
                     columns: 18

@@ -68,6 +68,8 @@ describe("GameController", function() {
             expect(vm.PIECES).toEqual(PIECES);
             expect(vm.playerList).toEqual(players);
 
+            expect(vm.gameConfig.connectHowMany).toBe(5);
+            expect(vm.gameConfig.firstPlayer).toBe(PIECES.X);
             expect(vm.gameConfig.board.rows).toBe(18);
             expect(vm.gameConfig.board.columns).toBe(18);
             expect(vm.gameConfig.players[PIECES.X]).toBeDefined();
