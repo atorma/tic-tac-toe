@@ -11,12 +11,14 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
 
     vm.init = init;
     vm.startGame = startGame;
-
+    vm.setPaused = setPaused;
 
     init();
 
 
     function init() {
+        vm.gameExists = false;
+        vm.paused = false;
 
         return $q.all({
             playerList: gameService.getPlayers(),
@@ -45,6 +47,7 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     function startGame() {
         gameService.startNewGame(vm.gameConfig)
             .then(function() {
+                vm.gameExists = true;
                 $scope.$broadcast(GAME_EVENTS.GAME_STARTED, gameService.currentGame);
             })
             .then(play);
@@ -53,10 +56,11 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     function play() {
         playOneTurn()
             .then(function(result) {
-                if (!result.gameEnded) {
+                if (!result.gameEnded && !vm.paused) {
                     play();
-                } else {
+                } else if (result.gameEnded) {
                     gameService.endCurrentGame();
+                    vm.gameExists = false;
                 }
             })
             .catch(function(reason) {
@@ -72,4 +76,10 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
             });
     }
 
+    function setPaused(isPaused) {
+        vm.paused = isPaused;
+        if (!isPaused) {
+            play();
+        }
+    }
 }

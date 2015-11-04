@@ -76,6 +76,10 @@ describe("GameController", function() {
             expect(vm.gameConfig.players[PIECES.O]).toBeDefined();
         });
 
+        it("there is no game and pause is off", function() {
+            expect(vm.gameExists).toBe(false);
+            expect(vm.paused).toBe(false);
+        });
     });
 
 
@@ -85,7 +89,7 @@ describe("GameController", function() {
             gameService.currentGame = {
                 playTurn: function() {
                     return $q.when({
-                        gameEnded: true
+                        gameEnded: true // to prevent infinite loop
                     });
                 },
                 board: [[null, null, null], [null, null, null], [null, null, null]]
@@ -120,10 +124,11 @@ describe("GameController", function() {
     });
 
 
+
     describe("after game started", function() {
 
         var deferredTurn;
-        var broadcastedResult;
+        var lastBroadcastedResult;
 
         beforeEach(function() {
             gameService.currentGame = {
@@ -135,15 +140,20 @@ describe("GameController", function() {
         });
 
         beforeEach(function() {
-            broadcastedResult = null;
+            lastBroadcastedResult = null;
             $childScope.$on(GAME_EVENTS.MOVE_COMPLETED, function(event, result) {
-                broadcastedResult = result;
+                lastBroadcastedResult = result;
             });
         });
 
         beforeEach(function() {
             vm.startGame();
             $scope.$digest();
+        });
+
+        it("flags that game exists", function() {
+            expect(vm.gameExists).toBe(true);
+            expect(vm.paused).toBe(false);
         });
 
         it("requests the game to play turns and broadcasting them to the game board", function() {
@@ -162,7 +172,7 @@ describe("GameController", function() {
                 deferredTurn.resolve(turnResult);
                 $scope.$digest();
 
-                expect(broadcastedResult).toEqual(turnResult);
+                expect(lastBroadcastedResult).toEqual(turnResult);
             }
         });
 
@@ -200,7 +210,7 @@ describe("GameController", function() {
                 $scope.$digest();
             }
 
-            expect(broadcastedResult).toEqual(lastTurnResult);
+            expect(lastBroadcastedResult).toEqual(lastTurnResult);
         });
 
         it("requests game service to end game when game ends", function() {
@@ -221,23 +231,24 @@ describe("GameController", function() {
             $scope.$digest();
 
             expect(gameService.endCurrentGame).toHaveBeenCalled();
+            expect(vm.gameExists).toBe(false);
         });
 
         it("stops if playing turn fails", function() {
 
-            var errorTurnNumber = 5;
+            var errorIteration = 5;
             var error = {
                 message: "Something went wrong"
             };
 
             for (var i = 1; i <= 10; i++) {
 
-                if (i === errorTurnNumber) {
+                if (i === errorIteration) {
                     deferredTurn.reject(error);
                 } else {
                     deferredTurn.resolve({
                         move: {
-                            cell: {row: i, column: 0}
+                            cell: {row: i, column: 0} // cell row records iteration number to facilitate testing
                         },
                         gameEnded: false,
                         winner: null,
@@ -247,11 +258,64 @@ describe("GameController", function() {
                 $scope.$digest();
             }
 
-            expect(broadcastedResult.move.cell.row).toEqual(errorTurnNumber - 1);
+            expect(lastBroadcastedResult.move.cell.row).toEqual(errorIteration - 1);
         });
 
+
+        it("setting to paused prevents next turn from being played", function() {
+            var pauseIteration = 5;
+
+            for (var i = 1; i <= 10; i++) {
+
+                deferredTurn.resolve({
+                    move: {
+                        cell: {row: i, column: 0} // cell row records iteration number to facilitate testing
+                    },
+                    gameEnded: false,
+                    winner: null,
+                    winningSequence: null
+                });
+
+                if (i === pauseIteration) {
+                    vm.setPaused(true);
+                }
+
+                $scope.$digest();
+
+            }
+
+            expect(vm.paused).toBe(true);
+            expect(lastBroadcastedResult.move.cell.row).toEqual(pauseIteration);
+        });
+
+        it("unpausing resumes playing", function() {
+            var pauseIteration = 3;
+            var unpauseIteration = 6;
+
+            for (var i = 1; i <= 10; i++) {
+
+                deferredTurn.resolve({
+                    move: {
+                        cell: {row: i, column: 0} // cell row records iteration number to facilitate testing
+                    },
+                    gameEnded: false,
+                    winner: null,
+                    winningSequence: null
+                });
+
+                if (i === pauseIteration) {
+                    vm.setPaused(true);
+                } else if (i === unpauseIteration) {
+                    vm.setPaused(false);
+                }
+
+                $scope.$digest();
+
+            }
+
+            expect(vm.paused).toBe(false);
+            expect(lastBroadcastedResult.move.cell.row).toEqual(10);
+        });
     });
-
-
 
 });
