@@ -29,6 +29,7 @@
                         <label>Rows</label>
                         <input type="number" name="rows"
                                required min="3" max="20"
+                               ng-disabled="vm.gameExists"
                                ng-model="vm.gameConfig.board.rows"/>
                     </md-input-container>
 
@@ -36,6 +37,7 @@
                         <label>Columns</label>
                         <input type="number" name="columns"
                                required min="3" max="20"
+                               ng-disabled="vm.gameExists"
                                ng-model="vm.gameConfig.board.columns"/>
                     </md-input-container>
 
@@ -43,6 +45,7 @@
                         <label>Connect</label>
                         <input type="number" name="connectHowMany"
                                required min="3" max="5"
+                               ng-disabled="vm.gameExists"
                                ng-model="vm.gameConfig.connectHowMany"/>
                     </md-input-container>
 
@@ -54,17 +57,27 @@
 
                     <md-input-container flex>
                         <label>Crosses (X)</label>
-                        <md-select ng-model="vm.gameConfig.players[vm.PIECES.X]">
+                        <md-select ng-disabled="vm.gameExists"
+                                   ng-model="vm.gameConfig.players[vm.PIECES.X]">
                             <md-option ng-value="player" ng-repeat="player in vm.playerList">{{player.name}}</md-option>
                         </md-select>
                     </md-input-container>
 
                     <md-input-container flex>
                         <label>Noughts (O)</label>
-                        <md-select ng-model="vm.gameConfig.players[vm.PIECES.O]">
+                        <md-select ng-disabled="vm.gameExists"
+                                   ng-model="vm.gameConfig.players[vm.PIECES.O]">
                             <md-option ng-value="player" ng-repeat="player in vm.playerList">{{player.name}}</md-option>
                         </md-select>
                     </md-input-container>
+
+                </div>
+
+                <div layout="row" layout-align="end">
+
+                    <md-button class="md-primary md-raised"
+                               ng-disabled="vm.gameExists"
+                               ng-click="vm.startGame()">Create</md-button>
 
                 </div>
 
@@ -75,11 +88,30 @@
 
     <section>
 
-        <div layout="row">
-            <md-button flex ng-click="vm.startGame()">Start</md-button>
-            <md-button flex>Pause</md-button>
-            <md-button flex>End</md-button>
+        <div layout="row" layout-align="center center">
+
+            <md-button ng-disabled="!(vm.paused && vm.gameExists)"
+                       class="md-raised"
+                       ng-click="vm.setPaused(false)">
+                <md-icon md-svg-icon="play"></md-icon> Play
+            </md-button>
+
+            <md-button ng-disabled="!(!vm.paused && vm.gameExists)"
+                       class="md-raised"
+                       ng-click="vm.setPaused(true)">
+                <md-icon md-svg-icon="pause"></md-icon> Pause
+            </md-button>
+
+            <md-button ng-disabled="!(vm.gameExists)"
+                       class="md-warn md-raised"
+                       ng-click="vm.endGame()">
+                <md-icon md-svg-icon="stop"></md-icon> End
+            </md-button>
         </div>
+
+    </section>
+
+    <section>
 
         <div layout="row" layout-align="center center">
             <board size="18"></board>
