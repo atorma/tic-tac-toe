@@ -12,7 +12,7 @@ describe("GameController", function() {
     var gameService;
     var players;
 
-    var $scope, $childScope;
+    var $scope;
     var $q;
 
     beforeEach(angular.mock.module("ticTacToe", function($provide) {
@@ -21,8 +21,10 @@ describe("GameController", function() {
     beforeEach(angular.mock.inject(function(_GAME_EVENTS_, _PIECES_, $rootScope, _$q_) {
         GAME_EVENTS = _GAME_EVENTS_;
         PIECES = _PIECES_;
+
         $scope = $rootScope.$new();
-        $childScope = $scope.$new();
+        spyOn($scope, "$broadcast").and.callThrough();
+
         $q = _$q_;
     }));
 
@@ -110,15 +112,10 @@ describe("GameController", function() {
         });
 
         it("broadcasts event about starting new game", function() {
-            var broadcastedGame = null;
-            $childScope.$on(GAME_EVENTS.GAME_STARTED, function(event, game) {
-                broadcastedGame = game;
-            });
-
             vm.startGame();
             $scope.$digest();
 
-            expect(broadcastedGame).toEqual(gameService.currentGame);
+            expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.GAME_STARTED, gameService.currentGame);
         });
 
     });
@@ -128,7 +125,6 @@ describe("GameController", function() {
     describe("after game started", function() {
 
         var deferredTurn;
-        var lastBroadcastedResult;
 
         beforeEach(function() {
             gameService.currentGame = {
@@ -137,13 +133,6 @@ describe("GameController", function() {
                     return deferredTurn.promise;
                 }
             };
-        });
-
-        beforeEach(function() {
-            lastBroadcastedResult = null;
-            $childScope.$on(GAME_EVENTS.MOVE_COMPLETED, function(event, result) {
-                lastBroadcastedResult = result;
-            });
         });
 
         beforeEach(function() {
@@ -157,12 +146,13 @@ describe("GameController", function() {
         });
 
         it("requests the game to play turns and broadcasting them to the game board", function() {
-            for (var i = 0; i < 10; i++) {
+            for (var i = 1; i <= 10; i++) {
 
                 var turnResult = {
+                    turnNumber: i,
                     move: {
                         piece: i%2 === 0 ? PIECES.O : PIECES.X,
-                        cell: {row: 5, column: 12}
+                        cell: {row: i, column: i}
                     },
                     gameEnded: false,
                     winner: null,
@@ -172,17 +162,17 @@ describe("GameController", function() {
                 deferredTurn.resolve(turnResult);
                 $scope.$digest();
 
-                expect(lastBroadcastedResult).toEqual(turnResult);
+                expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, turnResult);
             }
         });
 
         it("stops when the game ends and broadcasts the result to the game board", function() {
-
-            var lastTurnNumber = 5;
-            var lastTurnResult = {
+            var endIteration = 5;
+            var endResult = {
+                turnNumber: endIteration,
                 move: {
                     piece: PIECES.O,
-                    cell: {row: 16, column: 5}
+                    cell: {row: endIteration, column: 0}
                 },
                 gameEnded: true,
                 winner: PIECES.O,
@@ -195,11 +185,15 @@ describe("GameController", function() {
             for (var i = 1; i <= 10; i++) {
 
                 var turnResult;
-                if (i === lastTurnNumber) {
-                    turnResult = lastTurnResult;
+                if (i === endIteration) {
+                    turnResult = endResult;
                 } else {
                     turnResult = {
-                        move: {},
+                        turnNumber: i,
+                        move: {
+                            piece: i%2 === 0 ? PIECES.O : PIECES.X,
+                            cell: {row: i, column: i}
+                        },
                         gameEnded: false,
                         winner: null,
                         winningSequence: null
@@ -210,7 +204,8 @@ describe("GameController", function() {
                 $scope.$digest();
             }
 
-            expect(lastBroadcastedResult).toEqual(lastTurnResult);
+            expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, endResult);
+            expect($scope.$broadcast).not.toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, jasmine.objectContaining({turnNumber: endIteration + 1}));
         });
 
         it("requests game service to end game when game ends", function() {
@@ -247,8 +242,10 @@ describe("GameController", function() {
                     deferredTurn.reject(error);
                 } else {
                     deferredTurn.resolve({
+                        turnNumber: i,
                         move: {
-                            cell: {row: i, column: 0} // cell row records iteration number to facilitate testing
+                            piece: i%2 === 0 ? PIECES.O : PIECES.X,
+                            cell: {row: i, column: i}
                         },
                         gameEnded: false,
                         winner: null,
@@ -258,17 +255,20 @@ describe("GameController", function() {
                 $scope.$digest();
             }
 
-            expect(lastBroadcastedResult.move.cell.row).toEqual(errorIteration - 1);
+            expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, jasmine.objectContaining({turnNumber: errorIteration - 1}));
+            expect($scope.$broadcast).not.toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, jasmine.objectContaining({turnNumber: errorIteration}));
         });
 
-        it("setting to paused prevents next turn from being played", function() {
+        it("setting to paused prevents next turn from being played and stores next result without broadcasting it", function() {
             var pauseIteration = 5;
 
             for (var i = 1; i <= 10; i++) {
 
                 deferredTurn.resolve({
+                    turnNumber: i,
                     move: {
-                        cell: {row: i, column: 0} // cell row records iteration number to facilitate testing
+                        piece: i%2 === 0 ? PIECES.O : PIECES.X,
+                        cell: {row: i, column: i}
                     },
                     gameEnded: false,
                     winner: null,
@@ -284,18 +284,31 @@ describe("GameController", function() {
             }
 
             expect(vm.paused).toBe(true);
-            expect(lastBroadcastedResult.move.cell.row).toEqual(pauseIteration);
+            expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, jasmine.objectContaining({turnNumber: pauseIteration - 1}));
+            expect($scope.$broadcast).not.toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, jasmine.objectContaining({turnNumber: pauseIteration}));
+            expect(vm.pausedResult).toEqual({
+                turnNumber: pauseIteration,
+                move: {
+                    piece: pauseIteration%2 === 0 ? PIECES.O : PIECES.X,
+                    cell: {row: pauseIteration, column: pauseIteration}
+                },
+                gameEnded: false,
+                winner: null,
+                winningSequence: null
+            });
         });
 
-        it("unpausing resumes playing", function() {
+        it("unpausing broadcasts paused result and resumes playing", function() {
             var pauseIteration = 3;
             var unpauseIteration = 6;
 
             for (var i = 1; i <= 10; i++) {
 
                 deferredTurn.resolve({
+                    turnNumber: i,
                     move: {
-                        cell: {row: i, column: 0} // cell row records iteration number to facilitate testing
+                        piece: i%2 === 0 ? PIECES.O : PIECES.X,
+                        cell: {row: i, column: i}
                     },
                     gameEnded: false,
                     winner: null,
@@ -313,7 +326,11 @@ describe("GameController", function() {
             }
 
             expect(vm.paused).toBe(false);
-            expect(lastBroadcastedResult.move.cell.row).toEqual(10);
+            expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, jasmine.objectContaining({turnNumber: pauseIteration}));
+            for (i = unpauseIteration + 1; i <= 10; i++) {
+                expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, jasmine.objectContaining({turnNumber: i}));
+            }
+            expect(vm.pausedResult).toBeUndefined();
         });
 
         it("ending game stops play and requests service to end game", function() {
@@ -322,8 +339,10 @@ describe("GameController", function() {
             for (var i = 1; i <= 10; i++) {
 
                 deferredTurn.resolve({
+                    turnNumber: i,
                     move: {
-                        cell: {row: i, column: 0} // cell row records iteration number to facilitate testing
+                        piece: i%2 === 0 ? PIECES.O : PIECES.X,
+                        cell: {row: i, column: i}
                     },
                     gameEnded: false,
                     winner: null,
@@ -338,7 +357,7 @@ describe("GameController", function() {
 
             }
 
-            expect(lastBroadcastedResult.move.cell.row).toEqual(endIteration - 1); // -1 because we don't care about results after ending game
+            expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, jasmine.objectContaining({turnNumber: endIteration - 1})); // -1 because we don't care what the result is after ending game
             expect(gameService.endCurrentGame).toHaveBeenCalled();
             expect(vm.gameExists).toBe(false);
             expect(vm.paused).toBe(false);

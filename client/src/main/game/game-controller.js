@@ -70,8 +70,10 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     function playOneTurn() {
         return gameService.currentGame.playTurn()
             .then(function(result) {
-                if (vm.gameExists) {
+                if (vm.gameExists && !vm.paused) {
                     $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, result);
+                } else if (vm.gameExists && vm.paused) {
+                    vm.pausedResult = result;
                 }
                 return result;
             });
@@ -80,6 +82,10 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     function setPaused(isPaused) {
         vm.paused = isPaused;
         if (!isPaused) {
+            if (vm.pausedResult) {
+                $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, vm.pausedResult);
+            }
+            vm.pausedResult = undefined;
             play();
         }
     }
