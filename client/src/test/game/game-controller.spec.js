@@ -261,7 +261,6 @@ describe("GameController", function() {
             expect(lastBroadcastedResult.move.cell.row).toEqual(errorIteration - 1);
         });
 
-
         it("setting to paused prevents next turn from being played", function() {
             var pauseIteration = 5;
 
@@ -315,6 +314,34 @@ describe("GameController", function() {
 
             expect(vm.paused).toBe(false);
             expect(lastBroadcastedResult.move.cell.row).toEqual(10);
+        });
+
+        it("ending game stops play and requests service to end game", function() {
+            var endIteration = 5;
+
+            for (var i = 1; i <= 10; i++) {
+
+                deferredTurn.resolve({
+                    move: {
+                        cell: {row: i, column: 0} // cell row records iteration number to facilitate testing
+                    },
+                    gameEnded: false,
+                    winner: null,
+                    winningSequence: null
+                });
+
+                if (i === endIteration) {
+                    vm.endGame();
+                }
+
+                $scope.$digest();
+
+            }
+
+            expect(lastBroadcastedResult.move.cell.row).toEqual(endIteration - 1); // -1 because we don't care about results after ending game
+            expect(gameService.endCurrentGame).toHaveBeenCalled();
+            expect(vm.gameExists).toBe(false);
+            expect(vm.paused).toBe(false);
         });
     });
 

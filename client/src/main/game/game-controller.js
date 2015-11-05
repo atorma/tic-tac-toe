@@ -12,6 +12,7 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     vm.init = init;
     vm.startGame = startGame;
     vm.setPaused = setPaused;
+    vm.endGame = endGame;
 
     init();
 
@@ -56,22 +57,22 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     function play() {
         playOneTurn()
             .then(function(result) {
-                if (!result.gameEnded && !vm.paused) {
+                if (!vm.gameExists) {
+                    return;
+                } else if (!result.gameEnded && !vm.paused) {
                     play();
                 } else if (result.gameEnded) {
-                    gameService.endCurrentGame();
-                    vm.gameExists = false;
+                    endGame();
                 }
-            })
-            .catch(function(reason) {
-                // TODO error message or something
             });
     }
 
     function playOneTurn() {
         return gameService.currentGame.playTurn()
             .then(function(result) {
-                $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, result);
+                if (vm.gameExists) {
+                    $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, result);
+                }
                 return result;
             });
     }
@@ -81,5 +82,11 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
         if (!isPaused) {
             play();
         }
+    }
+
+    function endGame() {
+        gameService.endCurrentGame(); // async, but we don't care whether it succeeds or fails
+        vm.gameExists = false;
+        vm.paused = false;
     }
 }
