@@ -49,7 +49,7 @@ public class GameController {
         }
 
         game.playTurn();
-        game = gameRepository.save(game);
+        game = gameRepository.save(game); // FIXME this can resurrect a deleted game when delete is invoked concurrently with playTurn()
 
         return new GameDTO(game);
     }
