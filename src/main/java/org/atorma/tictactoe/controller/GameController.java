@@ -49,7 +49,7 @@ public class GameController {
         }
 
         game.playTurn();
-        game = gameRepository.save(game); // FIXME this can resurrect a deleted game when delete is invoked concurrently with playTurn()
+        game = gameRepository.save(game);
 
         return new GameDTO(game);
     }
@@ -88,6 +88,8 @@ public class GameController {
     public void setGameFactory(GameFactory gameFactory) {
         this.gameFactory = gameFactory;
     }
+
+
 
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE)
     public static class GameDTO {

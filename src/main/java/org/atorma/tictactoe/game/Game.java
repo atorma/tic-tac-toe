@@ -22,6 +22,7 @@ public class Game {
     private GameState state;
     private Move lastMove;
     private int turnNumber = 1;
+    private boolean deleted = false;
 
     public Game(Player player1, Player player2, GameState initialState) {
         Assert.isTrue(player1 != player2);
@@ -77,6 +78,14 @@ public class Game {
         lastMove = new Move(movePiece, moveCell);
         LOGGER.debug("Turn {}: {} to {}", turnNumber, movePiece, moveCell);
         turnNumber++;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 
 

@@ -1,6 +1,7 @@
 package org.atorma.tictactoe.application.impl;
 
 import org.atorma.tictactoe.application.GameRepository;
+import org.atorma.tictactoe.exception.GameDeletedException;
 import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.game.Game;
 import org.slf4j.Logger;
@@ -30,6 +31,10 @@ public class InMemoryGameRepository implements GameRepository {
     public Game save(Game game) {
         Assert.notNull(game);
         Assert.notNull(game.getId());
+        if (game.isDeleted()) {
+            throw new GameDeletedException("Game " + game.getId() + " is deleted");
+        }
+
         games.put(game.getId(), game);
         LOGGER.debug("Game {} saved", game.getId());
         return game;
@@ -38,6 +43,7 @@ public class InMemoryGameRepository implements GameRepository {
     @Override
     public void delete(Game game) {
         if (game != null) {
+            game.setDeleted(true);
             games.remove(game.getId());
             LOGGER.debug("Game {} deleted", game.getId());
         }
