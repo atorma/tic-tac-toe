@@ -85,7 +85,7 @@ describe("GameController", function() {
     });
 
 
-    describe("on starting new game", function() {
+    describe("on creating new game", function() {
 
         beforeEach(function() {
             gameService.currentGame = {
@@ -118,6 +118,14 @@ describe("GameController", function() {
             expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.GAME_STARTED, gameService.currentGame);
         });
 
+        it("flags that game exists and it is paused", function() {
+            vm.startGame();
+            $scope.$digest();
+
+            expect(vm.gameExists).toBe(true);
+            expect(vm.paused).toBe(true);
+        });
+
     });
 
 
@@ -136,16 +144,13 @@ describe("GameController", function() {
         });
 
         beforeEach(function() {
-            vm.startGame();
+            vm.startGame().then(function() {
+                vm.setPaused(false);
+            });
             $scope.$digest();
         });
 
-        it("flags that game exists", function() {
-            expect(vm.gameExists).toBe(true);
-            expect(vm.paused).toBe(false);
-        });
-
-        it("requests the game to play turns and broadcasting them to the game board", function() {
+        it("requests the game to play turns and broadcasts them to the game board", function() {
             for (var i = 1; i <= 10; i++) {
 
                 var turnResult = {

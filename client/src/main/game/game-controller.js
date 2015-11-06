@@ -46,12 +46,12 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     }
 
     function startGame() {
-        gameService.startNewGame(vm.gameConfig)
+        return gameService.startNewGame(vm.gameConfig)
             .then(function() {
                 vm.gameExists = true;
+                vm.paused = true;
                 $scope.$broadcast(GAME_EVENTS.GAME_STARTED, gameService.currentGame);
-            })
-            .then(play);
+            });
     }
 
     function play() {
@@ -84,8 +84,8 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
         if (!isPaused) {
             if (vm.pausedResult) {
                 $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, vm.pausedResult);
+                vm.pausedResult = undefined;
             }
-            vm.pausedResult = undefined;
             play();
         }
     }
