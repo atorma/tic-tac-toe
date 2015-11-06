@@ -1,7 +1,7 @@
 package org.atorma.tictactoe.application.impl;
 
 import org.atorma.tictactoe.application.GameRepository;
-import org.atorma.tictactoe.exception.GameNotFoundException;
+import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.game.Game;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +20,7 @@ public class InMemoryGameRepository implements GameRepository {
     public Game findById(String id) {
         Game game = games.get(id);
         if (game == null) {
-            throw new GameNotFoundException("Game id " + id + " not found");
+            throw new NotFoundException("Game id " + id + " not found");
         } else {
             return game;
         }

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.atorma.tictactoe.application.GameFactory;
 import org.atorma.tictactoe.application.GameParams;
 import org.atorma.tictactoe.application.GameRepository;
-import org.atorma.tictactoe.exception.GameNotFoundException;
+import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.Game;
 import org.atorma.tictactoe.game.state.GameState;
@@ -60,7 +60,7 @@ public class GameController {
         try {
             Game game = gameRepository.findById(gameId);
             gameRepository.delete(game);
-        } catch (GameNotFoundException e) {
+        } catch (NotFoundException e) {
             // OK, it's gone already
         }
     }
@@ -68,12 +68,14 @@ public class GameController {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public void handleException(GameNotFoundException e) {
+    public void handleException(NotFoundException e) {
+        LOGGER.warn("Object not found", e);
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleException(TicTacToeException e) {
+        LOGGER.warn("Application error (Bad Request)", e);
     }
 
 

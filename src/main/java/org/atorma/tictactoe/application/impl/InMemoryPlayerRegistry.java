@@ -2,6 +2,7 @@ package org.atorma.tictactoe.application.impl;
 
 import org.atorma.tictactoe.application.PlayerInfo;
 import org.atorma.tictactoe.application.PlayerRegistry;
+import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.mcts.MCTSPlayer;
@@ -43,14 +44,14 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
     public Player createPlayer(PlayerInfo playerInfo) {
         Class<? extends Player> playerClass = playerClasses.get(playerInfo.getId());
         if (playerClass == null) {
-            throw new TicTacToeException("Cannot find player id = " + playerInfo.getId() + ", name = " + playerInfo.getName());
+            throw new NotFoundException("Cannot find player id = " + playerInfo.getId() + ", name = " + playerInfo.getName());
         }
         try {
             Player player = playerClass.newInstance();
             // TODO configure using input
             return player;
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new TicTacToeException("Error when creating player", e);
+            throw new RuntimeException("Error when creating player", e);
         }
     }
 }

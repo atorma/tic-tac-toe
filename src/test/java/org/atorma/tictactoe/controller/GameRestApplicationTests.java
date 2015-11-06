@@ -3,7 +3,7 @@ package org.atorma.tictactoe.controller;
 import com.jayway.jsonpath.JsonPath;
 import org.atorma.tictactoe.ApplicationMvcTests;
 import org.atorma.tictactoe.application.PlayerRegistry;
-import org.atorma.tictactoe.exception.GameNotFoundException;
+import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.game.Game;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
@@ -265,7 +265,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test(expected = GameNotFoundException.class)
+    @Test(expected = NotFoundException.class)
     public void delete_game() throws Exception {
         mockMvc.perform(delete("/games/{id}", existingGame.getId()))
                 .andExpect(status().isNoContent());

@@ -1,7 +1,7 @@
 package org.atorma.tictactoe.application.impl;
 
 import org.atorma.tictactoe.UnitTests;
-import org.atorma.tictactoe.exception.GameNotFoundException;
+import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.game.Game;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class InMemoryGameRepositoryTests extends UnitTests {
         assertThat(foundGame, is(game));
     }
 
-    @Test(expected = GameNotFoundException.class)
+    @Test(expected = NotFoundException.class)
     public void after_deleting_game_not_found_by_id() {
         Game game = mock(Game.class);
         when(game.getId()).thenReturn(UUID.randomUUID().toString());
@@ -48,7 +48,7 @@ public class InMemoryGameRepositoryTests extends UnitTests {
         repository.findById(game.getId());
     }
 
-    @Test(expected = GameNotFoundException.class)
+    @Test(expected = NotFoundException.class)
     public void exception_when_no_game_with_given_id() {
         repository.findById("aargh");
     }
