@@ -69,11 +69,13 @@ public class GameController {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public void handleException(NotFoundException e) {
+        LOGGER.warn("Object not found", e);
     }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public void handleException(TicTacToeException e) {
+        LOGGER.warn("Application error (Bad Request)", e);
     }
 
 
