@@ -51,7 +51,7 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
             // TODO configure using input
             return player;
         } catch (InstantiationException | IllegalAccessException e) {
-            throw new TicTacToeException("Error when creating player", e);
+            throw new RuntimeException("Error when creating player", e);
         }
     }
 }
