@@ -104,7 +104,7 @@
 
     <section>
 
-        <div layout="row" layout-align="center center">
+        <div layout="row" layout-align="start center">
 
             <md-button class="md-primary md-raised"
                        ng-if="!vm.gameExists"
@@ -139,7 +139,18 @@
 
     <section>
 
-        <div layout="row" layout-padding layout-margin>
+        <div layout="row" layout-padding="">
+            <span flex>Rounds played: {{vm.gameStats.roundsPlayed}}</span>
+            <span flex>X wins: {{vm.gameStats.wins[vm.PIECES.X]}}</span>
+            <span flex>O wins: {{vm.gameStats.wins[vm.PIECES.O]}}</span>
+            <span flex>Ties: {{vm.gameStats.ties}}</span>
+        </div>
+
+    </section>
+
+    <section>
+
+        <div layout="row" layout-padding>
             <board flex="100" num-rows="vm.gameConfig.board.rows" num-cols="vm.gameConfig.board.columns"></board>
         </div>
 

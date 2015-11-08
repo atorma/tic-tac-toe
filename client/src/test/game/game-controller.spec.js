@@ -136,6 +136,17 @@ describe("GameController", function() {
             expect(vm.paused).toBe(false);
         });
 
+        it("resets initial game stats", function() {
+            vm.gamStats = {roundsPlayed: 100};
+
+            vm.startGame();
+            $scope.$digest();
+
+            expect(vm.gameStats.roundsPlayed).toBe(0);
+            expect(vm.gameStats.wins[PIECES.X]).toEqual(0);
+            expect(vm.gameStats.wins[PIECES.O]).toEqual(0);
+            expect(vm.gameStats.ties).toEqual(0);
+        });
     });
 
 
@@ -363,6 +374,54 @@ describe("GameController", function() {
             expect(vm.gameExists).toBe(false);
             expect(vm.paused).toBe(false);
         });
+    });
+
+    describe("multi-round game", function() {
+
+        beforeEach(function() {
+            vm.gameConfig.rounds = 10;
+
+            vm.startGame();
+            $scope.$digest();
+        });
+
+        it("starts new rounds automatically and updates game stats", function() {
+
+            for (var r = 1; r <= 6; r++) {
+                for (var i = 1; i <= 10; i++) {
+
+                    var gameEnded = i === 10;
+                    var winner = null;
+                    if (gameEnded && r <= 3) {
+                        winner = PIECES.X;
+                    } else if (gameEnded && r <= 5) {
+                        winner = PIECES.O;
+                    } else {
+                        winner = null; // tie
+                    }
+
+                    var turnResult = {
+                        turnNumber: i,
+                        move: {
+                            piece: i%2 === 0 ? PIECES.O : PIECES.X,
+                            cell: {row: i, column: i}
+                        },
+                        gameEnded: gameEnded,
+                        winner: winner,
+                        winningSequence: null
+                    };
+
+                    deferredTurn.resolve(turnResult);
+                    $scope.$digest();
+                }
+            }
+
+            expect(vm.gameStats.roundsPlayed).toBe(6);
+            expect(vm.gameStats.wins[PIECES.X]).toBe(3);
+            expect(vm.gameStats.wins[PIECES.O]).toBe(2);
+            expect(vm.gameStats.ties).toBe(1);
+        });
+
     });
 
 });

@@ -20,6 +20,7 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     function init() {
         vm.gameExists = false;
         vm.paused = false;
+        resetStats();
 
         return $q.all({
             playerList: gameService.getPlayers(),
@@ -47,17 +48,23 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     }
 
     function startGame() {
+        return initRound()
+            .then(resetStats)
+            .then(play);
+    }
+
+    function initRound() {
         var gameConfig = _.cloneDeep(vm.gameConfig);
         if (gameConfig.firstPlayer === 'RANDOM') {
             gameConfig.firstPlayer = _.values(PIECES)[_.random(1)];
         }
+
         return gameService.startNewGame(gameConfig)
             .then(function() {
                 vm.gameExists = true;
                 vm.paused = false;
                 $scope.$broadcast(GAME_EVENTS.GAME_STARTED, gameService.currentGame);
-            })
-            .then(play);
+            });
     }
 
     function play() {
@@ -68,7 +75,14 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
                 } else if (!result.gameEnded && !vm.paused) {
                     play();
                 } else if (result.gameEnded) {
-                    endGame();
+                    gameService.endCurrentGame(); // async, but we don't care whether it succeeds or fails
+                    updateStats(result);
+                    if (vm.gameStats.roundsPlayed < vm.gameConfig.rounds) {
+                        initRound().then(play);
+                    } else {
+                        vm.gameExists = false;
+                        vm.paused = false;
+                    }
                 }
             });
     }
@@ -83,6 +97,27 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
                 }
                 return result;
             });
+    }
+
+    function resetStats() {
+        vm.gameStats = {
+            roundsPlayed: 0,
+            ties: 0,
+            wins: {}
+        };
+        vm.gameStats.wins[PIECES.X] = 0;
+        vm.gameStats.wins[PIECES.O] = 0;
+    }
+
+    function updateStats(result) {
+        if (result.gameEnded) {
+            vm.gameStats.roundsPlayed++;
+            if (result.winner) {
+                vm.gameStats.wins[result.winner]++;
+            } else {
+                vm.gameStats.ties++;
+            }
+        }
     }
 
     function setPaused(isPaused) {
