@@ -15,29 +15,39 @@ var PIECE_COLOR = "#000";
 function board(GAME_EVENTS, PIECES, $log) {
     return {
         restrict: "E",
-        template: "<canvas></canvas>",
+        template: '<canvas style="margin: auto; display: block"></canvas>',
         scope: {
-            size: "@"
+            numRows: "=",
+            numCols: "="
         },
         link: link
     };
 
-    function link($scope, iElem, iAttrs) {
+    function link($scope, iElem) {
 
         var canvas = iElem.find("canvas")[0];
         var ctx = canvas.getContext("2d");
 
-        var numRows = 18;
-        var numCols = 18;
+        var numRows, numCols;
 
-        // TODO fit to parent container
-        canvas.width = 400;
-        canvas.height = 400;
+        var cellSize; // square cell width = height
+        var canvasWidth, canvasHeight;
 
-        var cellWidth = canvas.width/numCols;
-        var cellHeight = canvas.height/numRows;
 
-        drawGameBoard();
+        $scope.$watch("numRows", function(value) {
+            numRows = value;
+            if (numRows && numCols) {
+                resizeCanvas();
+                drawGameBoard();
+            }
+        });
+        $scope.$watch("numCols", function(value) {
+            numCols = value;
+            if (numRows && numCols) {
+                resizeCanvas();
+                drawGameBoard();
+            }
+        });
 
         $scope.$on(GAME_EVENTS.GAME_STARTED, onGameStarted);
         $scope.$on(GAME_EVENTS.MOVE_COMPLETED, onMoveCompleted);
@@ -46,36 +56,76 @@ function board(GAME_EVENTS, PIECES, $log) {
 
         //---------------------------------------------------//
 
+        function resizeCanvas() {
+            // We assume that the parent container can adapt to content vertically but not horizontally
+
+            // 1st pass: resize to available width
+            $log.debug("1st pass: Parent width = " + canvas.parentNode.clientWidth + " height = " + canvas.parentNode.clientHeight);
+            cellSize = _.floor(canvas.parentNode.clientWidth/numCols); // square cells
+            canvasWidth = numCols*cellSize;
+            canvasHeight = numRows*cellSize;
+            $log.debug("1st pass: Cell size = " + cellSize + ", canvas width = " + canvasWidth + " height = " + canvasHeight);
+
+            // also clears canvas
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
+            // 2nd pass: resize to visible height
+            $log.debug("2nd pass: Parent width = " + canvas.parentNode.clientWidth + " height = " + canvas.parentNode.clientHeight);
+
+            var visibleHeight = getVisibleHeight(canvas);
+
+            cellSize = _.floor(Math.min(canvas.clientWidth/numCols, visibleHeight/numRows));
+            canvasWidth = numCols*cellSize;
+            canvasHeight = numRows*cellSize;
+            $log.debug("2nd pass: Cell size = " + cellSize + ", canvas width = " + canvasWidth + " height = " + canvasHeight);
+
+            // also clears canvas
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+
+            $log.debug("2nd pass end: Parent width = " + canvas.parentNode.clientWidth + " height = " + canvas.parentNode.clientHeight);
+        }
+
+        function getVisibleHeight(element) {
+            var windowHeight = window.innerHeight;
+            var boundingRect = element.getBoundingClientRect();
+            var elHeight = boundingRect.height;
+            var topLoc = boundingRect.top;
+            var bottomLoc = boundingRect.bottom;
+            if (topLoc >= 0) { // top of the element is visible
+                return Math.min(elHeight, windowHeight - topLoc);
+            } else {
+                return Math.min(bottomLoc, windowHeight);
+            }
+        }
+
         function drawGameBoard() {
             ctx.strokeStyle = GRID_COLOR;
 
             // Draw horizontal lines
             for (var i = 0; i < numRows - 1; i++) {
                 ctx.beginPath();
-                ctx.moveTo(0, cellHeight*(i + 1));
-                ctx.lineTo(canvas.width, cellHeight*(i + 1));
+                ctx.moveTo(0, cellSize*(i + 1));
+                ctx.lineTo(canvas.width, cellSize*(i + 1));
                 ctx.stroke();
             }
 
             // Draw vertical lines
             for (var j = 0; j < numCols - 1; j++) {
                 ctx.beginPath();
-                ctx.moveTo(cellWidth*(j + 1), 0);
-                ctx.lineTo(cellWidth*(j + 1), canvas.height);
+                ctx.moveTo(cellSize*(j + 1), 0);
+                ctx.lineTo(cellSize*(j + 1), canvas.height);
                 ctx.stroke();
             }
 
         }
 
         function onGameStarted(event, game) {
-            canvas.width = 400; // resizing clears canvas
-
             numRows = game.board.length;
             numCols = game.board[0].length;
 
-            cellWidth = canvas.width/numCols;
-            cellHeight = canvas.height/numRows;
-
+            resizeCanvas();
             drawGameBoard();
         }
 
@@ -97,12 +147,12 @@ function board(GAME_EVENTS, PIECES, $log) {
             ctx.beginPath();
 
             // Upper left to lower right
-            ctx.moveTo(cell.column*cellWidth + 0.2*cellWidth, cell.row*cellHeight + 0.2*cellHeight);
-            ctx.lineTo((cell.column + 1)*cellWidth - 0.2*cellWidth, (cell.row + 1)*cellHeight - 0.2*cellHeight);
+            ctx.moveTo(cell.column*cellSize + 0.2*cellSize, cell.row*cellSize + 0.2*cellSize);
+            ctx.lineTo((cell.column + 1)*cellSize - 0.2*cellSize, (cell.row + 1)*cellSize - 0.2*cellSize);
 
             // Upper right to to lower left
-            ctx.moveTo((cell.column + 1)*cellWidth - 0.2*cellWidth, cell.row*cellHeight + 0.2*cellHeight);
-            ctx.lineTo(cell.column*cellWidth + 0.2*cellWidth, (cell.row + 1)*cellHeight - 0.2*cellHeight);
+            ctx.moveTo((cell.column + 1)*cellSize - 0.2*cellSize, cell.row*cellSize + 0.2*cellSize);
+            ctx.lineTo(cell.column*cellSize + 0.2*cellSize, (cell.row + 1)*cellSize - 0.2*cellSize);
 
             ctx.lineWidth = 3;
             ctx.stroke();
@@ -113,7 +163,7 @@ function board(GAME_EVENTS, PIECES, $log) {
             ctx.strokeStyle = PIECE_COLOR;
 
             ctx.beginPath();
-            ctx.arc((cell.column + 1/2)*cellWidth, (cell.row + 1/2)*cellWidth, (cellWidth - 3)/2 - 0.1*cellHeight, 0, 2*Math.PI);
+            ctx.arc((cell.column + 1/2)*cellSize, (cell.row + 1/2)*cellSize, (cellSize - 3)/2 - 0.1*cellSize, 0, 2*Math.PI);
             ctx.lineWidth = 3;
             ctx.stroke();
         }
@@ -123,10 +173,10 @@ function board(GAME_EVENTS, PIECES, $log) {
 
             var startX, startY, endX, endY;
 
-            startX = (start.column + 1/2)*cellWidth;
-            startY = (start.row + 1/2)*cellHeight;
-            endX = (end.column + 1/2)*cellWidth;
-            endY = (end.row + 1/2)*cellHeight;
+            startX = (start.column + 1/2)*cellSize;
+            startY = (start.row + 1/2)*cellSize;
+            endX = (end.column + 1/2)*cellSize;
+            endY = (end.row + 1/2)*cellSize;
 
             ctx.beginPath();
             ctx.moveTo(startX, startY);
@@ -155,8 +205,8 @@ function board(GAME_EVENTS, PIECES, $log) {
 
         function getCellCoordinates(canvasCoordinates) {
             return {
-                row: _.floor(canvasCoordinates.y/cellHeight),
-                column: _.floor(canvasCoordinates.x/cellWidth)
+                row: _.floor(canvasCoordinates.y/cellSize),
+                column: _.floor(canvasCoordinates.x/cellSize)
             };
         }
     }

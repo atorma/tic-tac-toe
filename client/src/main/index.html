@@ -14,7 +14,7 @@
 
 <body ng-app="ticTacToe" ng-controller="GameController as vm" ng-strict-di ng-cloak>
 
-<md-content flex layout-padding>
+<md-content layout-padding>
 
     <section>
         <form name="gameConfig" novalidate>
@@ -113,8 +113,8 @@
 
     <section>
 
-        <div layout="row" layout-align="center center">
-            <board size="18"></board>
+        <div layout="row" layout-padding layout-margin>
+            <board flex="100" num-rows="vm.gameConfig.board.rows" num-cols="vm.gameConfig.board.columns"></board>
         </div>
 
     </section>
