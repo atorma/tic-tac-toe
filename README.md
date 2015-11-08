@@ -4,12 +4,16 @@ The goal of this hobby project is to create a tic-tac-toe game server where AIs 
 
 Done
 * Game mechanics (state changes etc)
-* Naive AI that just tries to build a long sequence and obvious winning and blocking moves
-* Monte Carlo Tree Search AI
-
-Todo
-* Javascript client using AngularJS and HTML5 canvas
-  * Autoplay two AIs against each other
+* AIs
+  * Random "AI" 
+  * Naive AI that just tries to build a long sequence and obvious winning and blocking moves
+  * Monte Carlo Tree Search AI
+* REST API using Spring MVC and Spring Boot  
+* Web user interface
+  * AngularJS + Angular Material 
+  * HTML5 canvas
+* Play two AIs against each other
+  
+Todo 
   * Human vs AI
-* REST API using Spring MVC and Spring Boot
-* Two human players against each other using Websockets
+  * Two human players against each other using Websockets
