@@ -35,6 +35,7 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
         var canvasWidth, canvasHeight;
 
         var board;
+        var lastTurnResult;
 
 
         $scope.$watch("numRows", function(value) {
@@ -156,6 +157,9 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
                     }
                 }
             }
+            if (lastTurnResult && lastTurnResult.winningSequence) {
+                drawLine(lastTurnResult.winningSequence.start, lastTurnResult.winningSequence.end);
+            }
         }
 
         function onGameStarted(event, game) {
@@ -169,6 +173,8 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
 
 
         function onMoveCompleted(event, result) {
+            lastTurnResult = result;
+
             board[result.move.cell.row][result.move.cell.column] = result.move.piece;
 
             if (result.move.piece === PIECES.O) {
