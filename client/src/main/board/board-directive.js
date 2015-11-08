@@ -12,7 +12,7 @@ var GRID_COLOR = "#eee";
 var PIECE_COLOR = "#000";
 
 
-function board(GAME_EVENTS, PIECES, $log) {
+function board(GAME_EVENTS, PIECES, $window, $log) {
     return {
         restrict: "E",
         template: '<canvas style="margin: auto; display: block"></canvas>',
@@ -31,33 +31,47 @@ function board(GAME_EVENTS, PIECES, $log) {
         var numRows, numCols;
 
         var cellSize; // square cell width = height
+
         var canvasWidth, canvasHeight;
+
+        var board;
 
 
         $scope.$watch("numRows", function(value) {
             numRows = value;
-            if (numRows && numCols) {
-                resizeCanvas();
-                drawGameBoard();
-            }
+            resizeAndDrawCanvas();
         });
         $scope.$watch("numCols", function(value) {
             numCols = value;
-            if (numRows && numCols) {
-                resizeCanvas();
-                drawGameBoard();
-            }
+            resizeAndDrawCanvas();
         });
+
+        $window.addEventListener("resize", _.debounce(resizeAndDrawCanvas, 150));
 
         $scope.$on(GAME_EVENTS.GAME_STARTED, onGameStarted);
         $scope.$on(GAME_EVENTS.MOVE_COMPLETED, onMoveCompleted);
 
         canvas.onclick = onCanvasClick;
 
+
         //---------------------------------------------------//
+
+
+        function resizeAndDrawCanvas() {
+            if (numRows && numCols) {
+                resizeCanvas();
+                drawGameBoard();
+            }
+            if (board) {
+                drawPieces();
+            }
+        }
+
 
         function resizeCanvas() {
             // We assume that the parent container can adapt to content vertically but not horizontally
+
+            $log.debug("Resizing canvas...");
 
             // 1st pass: resize to available width
             $log.debug("1st pass: Parent width = " + canvas.parentNode.clientWidth + " height = " + canvas.parentNode.clientHeight);
@@ -85,7 +99,10 @@ function board(GAME_EVENTS, PIECES, $log) {
             canvas.height = canvasHeight;
 
             $log.debug("2nd pass end: Parent width = " + canvas.parentNode.clientWidth + " height = " + canvas.parentNode.clientHeight);
+
+            $log.debug("Resizing canvas done");
         }
+
 
         function getVisibleHeight(element) {
             var windowHeight = window.innerHeight;
@@ -99,6 +116,7 @@ function board(GAME_EVENTS, PIECES, $log) {
                 return Math.min(bottomLoc, windowHeight);
             }
         }
+
 
         function drawGameBoard() {
             ctx.strokeStyle = GRID_COLOR;
@@ -121,15 +139,33 @@ function board(GAME_EVENTS, PIECES, $log) {
 
         }
 
+
+        function drawPieces() {
+            for (var i = 0; i < numRows; i++) {
+                for (var j = 0; j < numCols; j++) {
+                    var cell = {row: i, column: j};
+                    if (board[i][j] === PIECES.X) {
+                        drawCross(cell);
+                    } else if (board[i][j] === PIECES.O) {
+                        drawCircle(cell);
+                    }
+                }
+            }
+        }
+
         function onGameStarted(event, game) {
             numRows = game.board.length;
             numCols = game.board[0].length;
+            board = _.cloneDeep(game.board);
 
             resizeCanvas();
             drawGameBoard();
         }
 
+
         function onMoveCompleted(event, result) {
+            board[result.move.cell.row][result.move.cell.column] = result.move.piece;
+
             if (result.move.piece === PIECES.O) {
                 drawCircle(result.move.cell);
             } else if (result.move.piece === PIECES.X) {
@@ -140,6 +176,7 @@ function board(GAME_EVENTS, PIECES, $log) {
                 drawLine(result.winningSequence.start, result.winningSequence.end);
             }
         }
+
 
         function drawCross(cell) {
             ctx.strokeStyle = PIECE_COLOR;
@@ -187,6 +224,7 @@ function board(GAME_EVENTS, PIECES, $log) {
             ctx.stroke();
         }
 
+
         function onCanvasClick(e) {
             var cc = getCanvasCoordinates(e);
             var cell = getCellCoordinates(cc);
@@ -196,12 +234,14 @@ function board(GAME_EVENTS, PIECES, $log) {
             //drawCross(cell);
         }
 
+
         function getCanvasCoordinates(clickEvent) {
             return {
                 x: clickEvent.pageX - canvas.offsetLeft,
                 y: clickEvent.pageY - canvas.offsetTop
             };
         }
+
 
         function getCellCoordinates(canvasCoordinates) {
             return {
