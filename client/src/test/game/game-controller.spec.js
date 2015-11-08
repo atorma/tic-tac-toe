@@ -2,6 +2,7 @@
 
 var angular = require("angular");
 require("angular-mocks/ngMock");
+var _ = require("lodash");
 
 
 describe("GameController", function() {
@@ -10,6 +11,7 @@ describe("GameController", function() {
     var GAME_EVENTS, PIECES;
 
     var gameService;
+    var deferredTurn;
     var players;
 
     var $scope;
@@ -36,6 +38,14 @@ describe("GameController", function() {
         ]);
         gameService.startNewGame.and.returnValue($q.when());
         gameService.endCurrentGame.and.returnValue($q.when());
+
+        gameService.currentGame = {
+            playTurn: function() {
+                deferredTurn = $q.defer();
+                return deferredTurn.promise;
+            },
+            board: [[null, null, null], [null, null, null], [null, null, null]]
+        };
 
         players = [
             {
@@ -71,11 +81,13 @@ describe("GameController", function() {
             expect(vm.playerList).toEqual(players);
 
             expect(vm.gameConfig.connectHowMany).toBe(5);
-            expect(vm.gameConfig.firstPlayer).toBe(PIECES.X);
+            expect(vm.gameConfig.firstPlayer).toBe("RANDOM");
             expect(vm.gameConfig.board.rows).toBe(18);
             expect(vm.gameConfig.board.columns).toBe(18);
             expect(vm.gameConfig.players[PIECES.X]).toBeDefined();
             expect(vm.gameConfig.players[PIECES.O]).toBeDefined();
+
+            expect(vm.gameConfig.rounds).toBe(1);
         });
 
         it("there is no game and pause is off", function() {
@@ -85,30 +97,28 @@ describe("GameController", function() {
     });
 
 
-    describe("on creating new game", function() {
+    describe("on starting new game", function() {
 
-        beforeEach(function() {
-            gameService.currentGame = {
-                playTurn: function() {
-                    return $q.when({
-                        gameEnded: true // to prevent infinite loop
-                    });
-                },
-                board: [[null, null, null], [null, null, null], [null, null, null]]
-            };
-        });
-
-        it("requests game service to start new game", function() {
-            var gameConfig = {
-                board: {rows: 3, columns: 3},
-                players: {}
-            };
-            vm.gameConfig = gameConfig;
+        it("requests game service to start new game using current game config", function() {
+            vm.gameConfig.firstPlayer = PIECES.X;
 
             vm.startGame();
             $scope.$digest();
 
-            expect(gameService.startNewGame).toHaveBeenCalledWith(gameConfig);
+            expect(gameService.startNewGame).toHaveBeenCalledWith(vm.gameConfig);
+        });
+
+        it("if first player is 'RANDOM' configuration passed to game service has random PIECE value", function() {
+            vm.gameConfig.firstPlayer = "RANDOM";
+
+            vm.startGame();
+            $scope.$digest();
+
+            expect(vm.gameConfig.firstPlayer).toBe("RANDOM"); // not changed here
+
+            expect(gameService.startNewGame).toHaveBeenCalled();
+            var serviceArgs = gameService.startNewGame.calls.argsFor(0)[0];
+            expect(_.values(PIECES)).toContain(serviceArgs.firstPlayer);
         });
 
         it("broadcasts event about starting new game", function() {
@@ -118,35 +128,21 @@ describe("GameController", function() {
             expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.GAME_STARTED, gameService.currentGame);
         });
 
-        it("flags that game exists and it is paused", function() {
+        it("flags that game exists and it is not paused", function() {
             vm.startGame();
             $scope.$digest();
 
             expect(vm.gameExists).toBe(true);
-            expect(vm.paused).toBe(true);
+            expect(vm.paused).toBe(false);
         });
 
     });
 
 
-
     describe("after game started", function() {
 
-        var deferredTurn;
-
         beforeEach(function() {
-            gameService.currentGame = {
-                playTurn: function() {
-                    deferredTurn = $q.defer();
-                    return deferredTurn.promise;
-                }
-            };
-        });
-
-        beforeEach(function() {
-            vm.startGame().then(function() {
-                vm.setPaused(false);
-            });
+            vm.startGame();
             $scope.$digest();
         });
 

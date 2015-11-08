@@ -28,12 +28,13 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
 
             gameConfig: {
                 connectHowMany: 5,
-                firstPlayer: PIECES.X,
+                firstPlayer: "RANDOM",
                 board: {
                     rows: 18,
                     columns: 18
                 },
-                players: {}
+                players: {},
+                rounds: 1
             }
 
         }).then(function(data) {
@@ -46,12 +47,17 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     }
 
     function startGame() {
-        return gameService.startNewGame(vm.gameConfig)
+        var gameConfig = _.cloneDeep(vm.gameConfig);
+        if (gameConfig.firstPlayer === 'RANDOM') {
+            gameConfig.firstPlayer = _.values(PIECES)[_.random(1)];
+        }
+        return gameService.startNewGame(gameConfig)
             .then(function() {
                 vm.gameExists = true;
-                vm.paused = true;
+                vm.paused = false;
                 $scope.$broadcast(GAME_EVENTS.GAME_STARTED, gameService.currentGame);
-            });
+            })
+            .then(play);
     }
 
     function play() {

@@ -23,7 +23,7 @@
 
                 <div layout="row">
 
-                    <h2 class="md-subhead" flex="25">Game</h2>
+                    <h2 class="md-subhead" flex="25">Board</h2>
 
                     <md-input-container flex>
                         <label>Rows</label>
@@ -73,11 +73,27 @@
 
                 </div>
 
-                <div layout="row" layout-align="end">
+                <div layout="row">
 
-                    <md-button class="md-primary md-raised"
+                    <h2 class="md-subhead" flex="25">Game</h2>
+
+                    <md-input-container flex>
+                        <label>Rounds</label>
+                        <input type="number" name="connectHowMany"
+                               required min="1"
                                ng-disabled="vm.gameExists"
-                               ng-click="vm.startGame()">Create</md-button>
+                               ng-model="vm.gameConfig.rounds"/>
+                    </md-input-container>
+
+                    <md-input-container flex>
+                        <label>First player</label>
+                        <md-select ng-disabled="vm.gameExists"
+                                   ng-model="vm.gameConfig.firstPlayer">
+                            <md-option ng-value="'RANDOM'">Random</md-option>
+                            <md-option ng-value="vm.PIECES.X">Crosses (X)</md-option>
+                            <md-option ng-value="vm.PIECES.O">Noughts (O)</md-option>
+                        </md-select>
+                    </md-input-container>
 
                 </div>
 
@@ -90,17 +106,27 @@
 
         <div layout="row" layout-align="center center">
 
-            <md-button ng-disabled="!(vm.paused && vm.gameExists)"
-                       class="md-primary md-raised"
+            <md-button class="md-primary md-raised"
+                       ng-if="!vm.gameExists"
+                       ng-disabled="!gameConfig.$valid"
+                       ng-click="vm.startGame()">
+                <md-icon md-svg-icon="play"></md-icon> Play
+            </md-button>
+
+            <md-button class="md-primary md-raised"
+                       ng-if="vm.gameExists"
+                       ng-disabled="!(vm.paused && vm.gameExists)"
                        ng-click="vm.setPaused(false)">
                 <md-icon md-svg-icon="play"></md-icon> Play
             </md-button>
 
-            <md-button ng-disabled="!(!vm.paused && vm.gameExists)"
-                       class="md-raised"
+            <md-button class="md-raised"
+                       ng-disabled="!(!vm.paused && vm.gameExists)"
                        ng-click="vm.setPaused(true)">
                 <md-icon md-svg-icon="pause"></md-icon> Pause
             </md-button>
+
+            <span flex></span>
 
             <md-button ng-disabled="!(vm.gameExists)"
                        class="md-warn md-raised"
