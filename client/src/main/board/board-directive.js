@@ -39,10 +39,12 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
 
         $scope.$watch("numRows", function(value) {
             numRows = value;
+            resetBoard();
             resizeAndDrawCanvas();
         });
         $scope.$watch("numCols", function(value) {
             numCols = value;
+            resetBoard();
             resizeAndDrawCanvas();
         });
 
@@ -55,6 +57,20 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
 
 
         //---------------------------------------------------//
+
+
+        function resetBoard() {
+            board = undefined;
+            if (numRows > 0 && numCols > 0) {
+                board = [];
+                for (var i = 0; i < numRows; i++) {
+                    board[i] = [];
+                    for (var j = 0; j < numCols; j++) {
+                        board[i][j] = null;
+                    }
+                }
+            }
+        }
 
 
         function resizeAndDrawCanvas() {
@@ -71,36 +87,25 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
         function resizeCanvas() {
             // We assume that the parent container can adapt to content vertically but not horizontally
 
-            $log.debug("Resizing canvas...");
-
             // 1st pass: resize to available width
-            $log.debug("1st pass: Parent width = " + canvas.parentNode.clientWidth + " height = " + canvas.parentNode.clientHeight);
             cellSize = _.floor(canvas.parentNode.clientWidth/numCols); // square cells
             canvasWidth = numCols*cellSize;
             canvasHeight = numRows*cellSize;
-            $log.debug("1st pass: Cell size = " + cellSize + ", canvas width = " + canvasWidth + " height = " + canvasHeight);
 
             // also clears canvas
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
 
             // 2nd pass: resize to visible height
-            $log.debug("2nd pass: Parent width = " + canvas.parentNode.clientWidth + " height = " + canvas.parentNode.clientHeight);
-
             var visibleHeight = getVisibleHeight(canvas);
 
             cellSize = _.floor(Math.min(canvas.clientWidth/numCols, visibleHeight/numRows));
             canvasWidth = numCols*cellSize;
             canvasHeight = numRows*cellSize;
-            $log.debug("2nd pass: Cell size = " + cellSize + ", canvas width = " + canvasWidth + " height = " + canvasHeight);
 
             // also clears canvas
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
-
-            $log.debug("2nd pass end: Parent width = " + canvas.parentNode.clientWidth + " height = " + canvas.parentNode.clientHeight);
-
-            $log.debug("Resizing canvas done");
         }
 
 
