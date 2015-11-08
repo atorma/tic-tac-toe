@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import org.atorma.tictactoe.application.GameFactory;
 import org.atorma.tictactoe.application.GameParams;
 import org.atorma.tictactoe.application.GameRepository;
+import org.atorma.tictactoe.exception.GameDeletedException;
 import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.Game;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping("/games")
@@ -41,7 +44,8 @@ public class GameController {
     @RequestMapping(value = "/{gameId}/turns", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
     public GameDTO playTurn(@PathVariable("gameId") String gameId,
-                            @RequestBody TurnRequestDTO turnRequestDTO) {
+                            @RequestBody TurnRequestDTO turnRequestDTO,
+                            HttpServletResponse response) {
         Game game = gameRepository.findById(gameId);
 
         if (turnRequestDTO.turnNumber != game.getTurnNumber()) {
@@ -49,7 +53,12 @@ public class GameController {
         }
 
         game.playTurn();
-        game = gameRepository.save(game);
+        try {
+            game = gameRepository.save(game);
+        } catch (GameDeletedException e) {
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            return null;
+        }
 
         return new GameDTO(game);
     }
