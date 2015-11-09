@@ -13,19 +13,24 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Thread-safe game handler object.
+ * Provides a thread-safe access for playing turns and accessing the game state.
+ * Thread-safety is NOT guaranteed if you use state-modifying operations of the
+ * returned objects.
  */
 public class Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
     private final String id = UUID.randomUUID().toString();
     private final Map<Piece, Player> players;
-    private GameState state;
-    private Move lastMove;
-    private volatile int turnNumber = 1;
-    private volatile boolean deleted = false;
+    private AtomicReference<GameState> state = new AtomicReference<>();
+    private AtomicReference<Move> lastMove = new AtomicReference<>();
+    private AtomicInteger turnNumber = new AtomicInteger(1);
+    private AtomicBoolean deleted = new AtomicBoolean(false);
 
     public Game(Player player1, Player player2, GameState initialState) {
         Assert.isTrue(player1 != player2);
@@ -38,7 +43,7 @@ public class Game {
         players.put(player2.getPiece(), player2);
         this.players = Collections.unmodifiableMap(players);
 
-        state = initialState.getCopy();
+        state.set(initialState.getCopy());
     }
 
     private void assignPieces(Player player1, Player player2) {
@@ -61,36 +66,39 @@ public class Game {
     }
 
     public Map<Piece, Player> getPlayers() {
-        return Collections.unmodifiableMap(players);
+        return players;
     }
 
     public GameState getState() {
-        return state;
+        return state.get();
     }
 
     public Move getLastMove() {
-        return lastMove;
+        return lastMove.get();
     }
 
     public int getTurnNumber() {
-        return turnNumber;
+        return turnNumber.get();
     }
 
     public synchronized void playTurn() {
+        GameState state = getState();
+        Move lastMove = getLastMove();
+
         Piece movePiece = state.getTurn();
         Cell moveCell = players.get(movePiece).move(state, lastMove != null ? lastMove.getCell() : null);
-        state = state.next(moveCell);
-        lastMove = new Move(movePiece, moveCell);
+        this.state.set(state.next(moveCell));
+        this.lastMove.set(new Move(movePiece, moveCell));
         LOGGER.debug("Turn {}: {} to {}", turnNumber, movePiece, moveCell);
-        turnNumber++;
+        turnNumber.incrementAndGet();
     }
 
     public boolean isDeleted() {
-        return deleted;
+        return deleted.get();
     }
 
     public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
+        this.deleted.set(deleted);
     }
 
 
