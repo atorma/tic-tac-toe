@@ -28,7 +28,7 @@
                     <md-input-container flex>
                         <label>Rows</label>
                         <input type="number" name="rows"
-                               required min="3" max="20"
+                               required min="3"
                                ng-disabled="vm.gameExists"
                                ng-model="vm.gameConfig.board.rows"/>
                     </md-input-container>
@@ -36,7 +36,7 @@
                     <md-input-container flex>
                         <label>Columns</label>
                         <input type="number" name="columns"
-                               required min="3" max="20"
+                               required min="3"
                                ng-disabled="vm.gameExists"
                                ng-model="vm.gameConfig.board.columns"/>
                     </md-input-container>
@@ -44,7 +44,7 @@
                     <md-input-container flex>
                         <label>Connect</label>
                         <input type="number" name="connectHowMany"
-                               required min="3" max="5"
+                               required min="3"
                                ng-disabled="vm.gameExists"
                                ng-model="vm.gameConfig.connectHowMany"/>
                     </md-input-container>
