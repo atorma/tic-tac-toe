@@ -4,7 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import org.atorma.tictactoe.ApplicationMvcTests;
 import org.atorma.tictactoe.application.PlayerRegistry;
 import org.atorma.tictactoe.exception.NotFoundException;
-import org.atorma.tictactoe.game.Game;
+import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.state.GameState;

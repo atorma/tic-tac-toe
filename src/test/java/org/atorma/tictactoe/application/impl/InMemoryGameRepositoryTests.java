@@ -1,8 +1,8 @@
 package org.atorma.tictactoe.application.impl;
 
 import org.atorma.tictactoe.UnitTests;
-import org.atorma.tictactoe.exception.NotFoundException;import org.atorma.tictactoe.exception.GameDeletedException;import org.atorma.tictactoe.exception.TicTacToeException;
-import org.atorma.tictactoe.game.Game;
+import org.atorma.tictactoe.exception.NotFoundException;import org.atorma.tictactoe.exception.GameDeletedException;
+import org.atorma.tictactoe.application.Game;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

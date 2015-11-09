@@ -1,4 +1,4 @@
-package org.atorma.tictactoe.game;
+package org.atorma.tictactoe.application;
 
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.Cell;
