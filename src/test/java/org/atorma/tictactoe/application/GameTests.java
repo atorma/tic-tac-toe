@@ -1,6 +1,7 @@
-package org.atorma.tictactoe.game;
+package org.atorma.tictactoe.application;
 
 import org.atorma.tictactoe.UnitTests;
+import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;

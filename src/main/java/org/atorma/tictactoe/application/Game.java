@@ -1,10 +1,9 @@
-package org.atorma.tictactoe.game;
+package org.atorma.tictactoe.application;
 
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.atorma.tictactoe.game.state.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -13,16 +12,25 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Provides a thread-safe access for playing turns and accessing the game state.
+ * Thread-safety is NOT guaranteed if you use state-modifying operations of the
+ * returned objects.
+ */
 public class Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
-    private String id = UUID.randomUUID().toString();
-    private Map<Piece, Player> players = new EnumMap<>(Piece.class);
-    private GameState state;
-    private Move lastMove;
-    private int turnNumber = 1;
-    private boolean deleted = false;
+    private final String id = UUID.randomUUID().toString();
+    private final Map<Piece, Player> players;
+    private AtomicReference<GameState> state = new AtomicReference<>();
+    private AtomicReference<Move> lastMove = new AtomicReference<>();
+    private AtomicInteger turnNumber = new AtomicInteger(1);
+    private AtomicBoolean deleted = new AtomicBoolean(false);
 
     public Game(Player player1, Player player2, GameState initialState) {
         Assert.isTrue(player1 != player2);
@@ -30,15 +38,17 @@ public class Game {
 
         assignPieces(player1, player2);
 
+        Map<Piece, Player> players = new EnumMap<>(Piece.class);
         players.put(player1.getPiece(), player1);
         players.put(player2.getPiece(), player2);
+        this.players = Collections.unmodifiableMap(players);
 
-        state = initialState.getCopy();
+        state.set(initialState.getCopy());
     }
 
     private void assignPieces(Player player1, Player player2) {
         if (player1.getPiece() == null && player2.getPiece() == null) {
-            Piece rndPiece = Piece.values()[Utils.random.nextInt(Piece.values().length)];
+            Piece rndPiece = Piece.values()[ThreadLocalRandom.current().nextInt(Piece.values().length)];
             player1.setPiece(rndPiece);
             player2.setPiece(rndPiece.other());
         } else if (player1.getPiece() == null && player2.getPiece() != null) {
@@ -56,36 +66,39 @@ public class Game {
     }
 
     public Map<Piece, Player> getPlayers() {
-        return Collections.unmodifiableMap(players);
+        return players;
     }
 
     public GameState getState() {
-        return state;
+        return state.get();
     }
 
     public Move getLastMove() {
-        return lastMove;
+        return lastMove.get();
     }
 
     public int getTurnNumber() {
-        return turnNumber;
+        return turnNumber.get();
     }
 
-    public void playTurn() {
+    public synchronized void playTurn() {
+        GameState state = getState();
+        Move lastMove = getLastMove();
+
         Piece movePiece = state.getTurn();
         Cell moveCell = players.get(movePiece).move(state, lastMove != null ? lastMove.getCell() : null);
-        state = state.next(moveCell);
-        lastMove = new Move(movePiece, moveCell);
+        this.state.set(state.next(moveCell));
+        this.lastMove.set(new Move(movePiece, moveCell));
         LOGGER.debug("Turn {}: {} to {}", turnNumber, movePiece, moveCell);
-        turnNumber++;
+        turnNumber.incrementAndGet();
     }
 
     public boolean isDeleted() {
-        return deleted;
+        return deleted.get();
     }
 
     public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
+        this.deleted.set(deleted);
     }
 
 

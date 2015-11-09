@@ -1,6 +1,5 @@
 package org.atorma.tictactoe.application;
 
-import org.atorma.tictactoe.game.Game;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;

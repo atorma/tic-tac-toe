@@ -3,7 +3,7 @@ package org.atorma.tictactoe.application.impl;
 import org.atorma.tictactoe.application.GameRepository;
 import org.atorma.tictactoe.exception.GameDeletedException;
 import org.atorma.tictactoe.exception.NotFoundException;
-import org.atorma.tictactoe.game.Game;
+import org.atorma.tictactoe.application.Game;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;

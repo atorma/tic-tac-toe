@@ -3,6 +3,7 @@ package org.atorma.tictactoe.game.player.mcts;
 import org.atorma.tictactoe.game.state.*;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Node in Monte Carlo Tree Search.
@@ -147,7 +148,7 @@ public class MoveNode {
         if (unexpandedMoves.isEmpty()) {
             return null;
         }
-        return expand(Utils.random.nextInt(unexpandedMoves.size()));
+        return expand(ThreadLocalRandom.current().nextInt(unexpandedMoves.size()));
     }
 
     /**
