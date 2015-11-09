@@ -4,11 +4,9 @@ package org.atorma.tictactoe.game.state;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
-
-    public static Random random = new Random();
 
     public static Double round(Double num, int decimals) {
         if (num == null) {
@@ -19,7 +17,7 @@ public class Utils {
     }
 
     public static <T> T pickRandom(List<T> elements) {
-        return elements.get(random.nextInt(elements.size()));
+        return elements.get(ThreadLocalRandom.current().nextInt(elements.size()));
     }
 
     /**

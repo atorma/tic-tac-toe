@@ -4,7 +4,6 @@ import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.atorma.tictactoe.game.state.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -13,16 +12,20 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Thread-safe game handler object.
+ */
 public class Game {
     private static final Logger LOGGER = LoggerFactory.getLogger(Game.class);
 
-    private String id = UUID.randomUUID().toString();
-    private Map<Piece, Player> players = new EnumMap<>(Piece.class);
+    private final String id = UUID.randomUUID().toString();
+    private final Map<Piece, Player> players;
     private GameState state;
     private Move lastMove;
-    private int turnNumber = 1;
-    private boolean deleted = false;
+    private volatile int turnNumber = 1;
+    private volatile boolean deleted = false;
 
     public Game(Player player1, Player player2, GameState initialState) {
         Assert.isTrue(player1 != player2);
@@ -30,15 +33,17 @@ public class Game {
 
         assignPieces(player1, player2);
 
+        Map<Piece, Player> players = new EnumMap<>(Piece.class);
         players.put(player1.getPiece(), player1);
         players.put(player2.getPiece(), player2);
+        this.players = Collections.unmodifiableMap(players);
 
         state = initialState.getCopy();
     }
 
     private void assignPieces(Player player1, Player player2) {
         if (player1.getPiece() == null && player2.getPiece() == null) {
-            Piece rndPiece = Piece.values()[Utils.random.nextInt(Piece.values().length)];
+            Piece rndPiece = Piece.values()[ThreadLocalRandom.current().nextInt(Piece.values().length)];
             player1.setPiece(rndPiece);
             player2.setPiece(rndPiece.other());
         } else if (player1.getPiece() == null && player2.getPiece() != null) {
@@ -71,7 +76,7 @@ public class Game {
         return turnNumber;
     }
 
-    public void playTurn() {
+    public synchronized void playTurn() {
         Piece movePiece = state.getTurn();
         Cell moveCell = players.get(movePiece).move(state, lastMove != null ? lastMove.getCell() : null);
         state = state.next(moveCell);
