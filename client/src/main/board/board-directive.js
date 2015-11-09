@@ -62,6 +62,7 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
 
         function resetBoard() {
             board = undefined;
+            lastTurnResult = undefined;
             if (numRows > 0 && numCols > 0) {
                 board = [];
                 for (var i = 0; i < numRows; i++) {
