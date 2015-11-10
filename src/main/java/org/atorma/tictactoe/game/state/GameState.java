@@ -13,7 +13,7 @@ public class GameState {
 
     private int connectHowMany;
     private Board board;
-    private Piece turn;
+    private Piece nextPlayer;
     private List<Cell> allowedMoves;
     private Map<Piece, Sequence> longestSequences;
     private Map<Piece, List<Sequence>> allSequences;
@@ -23,11 +23,11 @@ public class GameState {
      *  how many pieces need to be connected to win
      * @param board
      *  state of game board
-     * @param turn
+     * @param nextPlayer
      *  player whose turn is next
      */
-    public GameState(int connectHowMany, Piece[][] board, Piece turn) {
-        this(connectHowMany, new DenseArrayBoard(board), turn, false);
+    public GameState(int connectHowMany, Piece[][] board, Piece nextPlayer) {
+        this(connectHowMany, new DenseArrayBoard(board), nextPlayer, false);
     }
 
     /**
@@ -35,35 +35,35 @@ public class GameState {
      *  how many pieces need to be connected to win
      * @param board
      *  state of game board
-     * @param turn
+     * @param nextPlayer
      *  player whose turn is next
      */
-    public GameState(int connectHowMany, Board board, Piece turn) {
-        this(connectHowMany, board, turn, true);
+    public GameState(int connectHowMany, Board board, Piece nextPlayer) {
+        this(connectHowMany, board, nextPlayer, true);
     }
 
     /**
      * @param template
      *  state of game board
-     * @param turn
+     * @param nextPlayer
      *  player whose turn is next (overrides template state turn)
      */
-    public GameState(GameState template, Piece turn) {
+    public GameState(GameState template, Piece nextPlayer) {
         GameState copy = template.getCopy();
         this.board = copy.board;
         this.allowedMoves = copy.allowedMoves;
         this.longestSequences = copy.longestSequences;
         this.connectHowMany = copy.connectHowMany;
-        this.turn = turn;
+        this.nextPlayer = nextPlayer;
     }
 
-    private GameState(int connectHowMany, Board board, Piece turn, boolean copy) {
+    private GameState(int connectHowMany, Board board, Piece nextPlayer, boolean copy) {
         if (copy) {
             this.board = board.copy();
         } else {
             this.board = board;
         }
-        this.turn = turn;
+        this.nextPlayer = nextPlayer;
         this.connectHowMany = connectHowMany;
 
         findSequencesFromScratch();
@@ -83,16 +83,13 @@ public class GameState {
         return board.getNumCols();
     }
 
-
     public int getConnectHowMany() {
         return connectHowMany;
     }
 
-
     public Piece getNextPlayer() {
-        return turn;
+        return nextPlayer;
     }
-
 
     public Piece getPiece(int row, int col) {
         return board.get(new Cell(row, col));
@@ -105,7 +102,6 @@ public class GameState {
     public int getNumPieces() {
         return getBoardRows()*getBoardCols() - getAllowedMoves().size();
     }
-
 
     /** Returns allowed moves sorted first by row, then by column. */
     public List<Cell> getAllowedMoves() {
@@ -144,7 +140,7 @@ public class GameState {
     public GameState getCopy() {
         GameState nextState = new GameState();
         nextState.connectHowMany = this.connectHowMany;
-        nextState.turn = this.turn;
+        nextState.nextPlayer = this.nextPlayer;
         nextState.board = this.board.copy();
         nextState.allowedMoves = new ArrayList<>(this.allowedMoves);
         nextState.longestSequences = new EnumMap<>(this.longestSequences);
@@ -176,9 +172,9 @@ public class GameState {
             throw new IllegalArgumentException("Illegal move: " + position + " already occupied by " + existingPiece);
         }
 
-        board.set(position, this.turn);
+        board.set(position, this.nextPlayer);
 
-        this.turn = this.turn.other();
+        this.nextPlayer = this.nextPlayer.other();
 
         int positionIndex = Collections.binarySearch(this.allowedMoves, position, new CellRowOrderComparator());
         this.allowedMoves.remove(positionIndex);

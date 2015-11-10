@@ -121,7 +121,7 @@ public class GameController {
             return game.getTurnNumber();
         }
 
-        public Piece getCurrentPlayer() {
+        public Piece getNextPlayer() {
             return game.getState().getNextPlayer();
         }
 
