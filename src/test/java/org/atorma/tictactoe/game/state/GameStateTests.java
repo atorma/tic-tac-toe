@@ -57,7 +57,7 @@ public class GameStateTests {
         };
 
         GameState gameState1 = new GameState(3, board, Piece.X);
-        assertEquals(Piece.X, gameState1.getTurn());
+        assertEquals(Piece.X, gameState1.getNextPlayer());
         assertEquals(4, gameState1.getNumPieces());
         assertEquals(5, gameState1.getAllowedMoves().size());
 
@@ -72,7 +72,7 @@ public class GameStateTests {
         GameState gameState2 = gameState1.next(move);
         assertFalse(gameState2.isAllowed(move));
         assertEqualBoards(expectedBoard, getBoardAsArray(gameState2));
-        assertEquals(Piece.O, gameState2.getTurn());
+        assertEquals(Piece.O, gameState2.getNextPlayer());
         assertEquals(5, gameState2.getNumPieces());
         assertEquals(4, gameState2.getAllowedMoves().size());
     }
@@ -267,25 +267,25 @@ public class GameStateTests {
      public void check_longest_sequence_on_diagonal_top_left_bottom_right_and_on_column() {
         // Cross: diagonal left-right (5, 12) to (9, 16), Round: column (2, 2) to (5, 2)
         GameState state = new GameState(5, new Piece[18][18], Piece.X);
-        assertEquals(Piece.X, state.getTurn());
+        assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(5, 12));
-        assertEquals(Piece.O, state.getTurn());
+        assertEquals(Piece.O, state.getNextPlayer());
         state = state.next(new Cell(2, 2));
-        assertEquals(Piece.X, state.getTurn());
+        assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(6, 13));
-        assertEquals(Piece.O, state.getTurn());
+        assertEquals(Piece.O, state.getNextPlayer());
         state = state.next(new Cell(3, 2));
-        assertEquals(Piece.X, state.getTurn());
+        assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(7, 14));
-        assertEquals(Piece.O, state.getTurn());
+        assertEquals(Piece.O, state.getNextPlayer());
         state = state.next(new Cell(4, 2));
-        assertEquals(Piece.X, state.getTurn());
+        assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(8, 15));
-        assertEquals(Piece.O, state.getTurn());
+        assertEquals(Piece.O, state.getNextPlayer());
         state = state.next(new Cell(5, 2));
-        assertEquals(Piece.X, state.getTurn());
+        assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(9, 16));
-        assertEquals(Piece.O, state.getTurn());
+        assertEquals(Piece.O, state.getNextPlayer());
 
         printBoardAndLongestSequences(state);
 
@@ -306,25 +306,25 @@ public class GameStateTests {
     public void check_longest_sequence_on_diagonal_top_right_bottom_left_and_on_row() {
         // Cross: diagonal right-left (5, 12) to (9, 8), Round: row (2, 2) to (2, 5)
         GameState state = new GameState(5, new Piece[18][18], Piece.X);
-        assertEquals(Piece.X, state.getTurn());
+        assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(5, 12));
-        assertEquals(Piece.O, state.getTurn());
+        assertEquals(Piece.O, state.getNextPlayer());
         state = state.next(new Cell(2, 2));
-        assertEquals(Piece.X, state.getTurn());
+        assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(6, 11));
-        assertEquals(Piece.O, state.getTurn());
+        assertEquals(Piece.O, state.getNextPlayer());
         state = state.next(new Cell(2, 3));
-        assertEquals(Piece.X, state.getTurn());
+        assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(7, 10));
-        assertEquals(Piece.O, state.getTurn());
+        assertEquals(Piece.O, state.getNextPlayer());
         state = state.next(new Cell(2, 4));
-        assertEquals(Piece.X, state.getTurn());
+        assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(8, 9));
-        assertEquals(Piece.O, state.getTurn());
+        assertEquals(Piece.O, state.getNextPlayer());
         state = state.next(new Cell(2, 5));
-        assertEquals(Piece.X, state.getTurn());
+        assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(9, 8));
-        assertEquals(Piece.O, state.getTurn());
+        assertEquals(Piece.O, state.getNextPlayer());
 
         printBoardAndLongestSequences(state);
 

@@ -272,7 +272,7 @@ public class MoveNode {
             throw new IllegalStateException("Node has no children");
         }
 
-        return Utils.max(children, element -> element.getExpectedReward(state.getTurn()));
+        return Utils.max(children, element -> element.getExpectedReward(state.getNextPlayer()));
     }
 
     /**
@@ -293,7 +293,7 @@ public class MoveNode {
             throw new IllegalStateException("Node has no children");
         }
 
-        return Utils.max(children, element -> element.getExplorationScore(state.getTurn()));
+        return Utils.max(children, element -> element.getExplorationScore(state.getNextPlayer()));
     }
 
     public double getExplorationScore(Piece player) {

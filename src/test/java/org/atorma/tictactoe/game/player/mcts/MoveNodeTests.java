@@ -35,7 +35,7 @@ public class MoveNodeTests {
             }
         }
         assertEquals(expected.getAllowedMoves().size(), actual.getAllowedMoves().size());
-        assertEquals(expected.getTurn(), actual.getTurn());
+        assertEquals(expected.getNextPlayer(), actual.getNextPlayer());
         assertEquals(expected.getWinner(), actual.getWinner());
     }
 

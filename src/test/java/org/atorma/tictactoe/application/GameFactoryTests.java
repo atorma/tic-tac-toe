@@ -40,7 +40,7 @@ public class GameFactoryTests extends ApplicationTests {
 
         assertThat(game, notNullValue());
         assertThat(game.getTurnNumber(), is(1));
-        assertThat(game.getState().getTurn(), is(params.firstPlayer));
+        assertThat(game.getState().getNextPlayer(), is(params.firstPlayer));
         assertThat(game.getState().getBoardRows(), is(params.board.rows));
         assertThat(game.getState().getBoardCols(), is(params.board.columns));
         assertThat(game.getPlayers().get(Piece.X), instanceOf(RandomPlayer.class));

@@ -85,7 +85,7 @@ public class Game {
         GameState state = getState();
         Move lastMove = getLastMove();
 
-        Piece movePiece = state.getTurn();
+        Piece movePiece = state.getNextPlayer();
         Cell moveCell = players.get(movePiece).move(state, lastMove != null ? lastMove.getCell() : null);
         this.state.set(state.next(moveCell));
         this.lastMove.set(new Move(movePiece, moveCell));

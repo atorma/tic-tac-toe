@@ -1,7 +1,6 @@
 package org.atorma.tictactoe.application;
 
 import org.atorma.tictactoe.UnitTests;
-import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
@@ -43,14 +42,14 @@ public class GameTests extends UnitTests {
     @Test
     public void play_turns() {
         GameState initialState = state;
-        when(initialState.getTurn()).thenReturn(Piece.X);
+        when(initialState.getNextPlayer()).thenReturn(Piece.X);
         Game game = new Game(xPlayer, oPlayer, initialState);
 
         Cell xPlayerMove = new Cell(5, 5);
         when(xPlayer.move(initialState, null)).thenReturn(xPlayerMove);
         GameState afterXPlayerMove = mock(GameState.class);
         when(initialState.next(xPlayerMove)).thenReturn(afterXPlayerMove);
-        when(afterXPlayerMove.getTurn()).thenReturn(Piece.O);
+        when(afterXPlayerMove.getNextPlayer()).thenReturn(Piece.O);
 
         game.playTurn();
 
@@ -62,7 +61,7 @@ public class GameTests extends UnitTests {
         when(oPlayer.move(afterXPlayerMove, xPlayerMove)).thenReturn(oPlayerMove);
         GameState afterOPlayerMove = mock(GameState.class);
         when(afterXPlayerMove.next(oPlayerMove)).thenReturn(afterOPlayerMove);
-        when(afterOPlayerMove.getTurn()).thenReturn(Piece.X);
+        when(afterOPlayerMove.getNextPlayer()).thenReturn(Piece.X);
 
         game.playTurn();
 

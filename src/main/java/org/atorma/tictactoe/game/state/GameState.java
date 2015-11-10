@@ -89,7 +89,7 @@ public class GameState {
     }
 
 
-    public Piece getTurn() {
+    public Piece getNextPlayer() {
         return turn;
     }
 

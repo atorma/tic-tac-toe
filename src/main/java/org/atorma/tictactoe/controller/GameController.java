@@ -122,7 +122,7 @@ public class GameController {
         }
 
         public Piece getCurrentPlayer() {
-            return game.getState().getTurn();
+            return game.getState().getNextPlayer();
         }
 
         public boolean isGameEnded() {
