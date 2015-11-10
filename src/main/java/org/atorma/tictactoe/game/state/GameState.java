@@ -98,6 +98,10 @@ public class GameState {
         return board.get(new Cell(row, col));
     }
 
+    public Piece getPiece(Cell position) {
+        return board.get(position);
+    }
+
     public int getNumPieces() {
         return getBoardRows()*getBoardCols() - getAllowedMoves().size();
     }
@@ -167,9 +171,9 @@ public class GameState {
      */
     public void update(Cell position) {
 
-        Piece existingPiece = getPiece(position.getRow(), position.getColumn());
+        Piece existingPiece = getPiece(position);
         if (existingPiece != null) {
-            throw new IllegalArgumentException("Illegal move (" + position.getRow() + ", " + position.getColumn() + "), already occupied by " + existingPiece);
+            throw new IllegalArgumentException("Illegal move: " + position + " already occupied by " + existingPiece);
         }
 
         board.set(position, this.turn);
