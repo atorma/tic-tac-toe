@@ -1,12 +1,15 @@
 package org.atorma.tictactoe.game.state;
 
+import org.atorma.tictactoe.FastTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
+@Category(FastTests.class)
 public class FindBestByScoreTests {
 
 

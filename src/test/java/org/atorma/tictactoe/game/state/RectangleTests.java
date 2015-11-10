@@ -1,10 +1,13 @@
 package org.atorma.tictactoe.game.state;
 
+import org.atorma.tictactoe.FastTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+@Category(FastTests.class)
 public class RectangleTests {
 
     @Test

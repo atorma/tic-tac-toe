@@ -1,13 +1,16 @@
 package org.atorma.tictactoe.game.player.mcts;
 
 
+import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
 
+@Category(FastTests.class)
 public class UCTBonusTests {
 
     private GameState someState;

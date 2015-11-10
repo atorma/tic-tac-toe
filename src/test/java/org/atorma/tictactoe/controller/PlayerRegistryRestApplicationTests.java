@@ -1,9 +1,11 @@
 package org.atorma.tictactoe.controller;
 
 import org.atorma.tictactoe.ApplicationMvcTests;
+import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.application.PlayerInfo;
 import org.atorma.tictactoe.application.PlayerRegistry;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
@@ -12,6 +14,7 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@Category(FastTests.class)
 public class PlayerRegistryRestApplicationTests extends ApplicationMvcTests {
 
     @Autowired PlayerRegistry playerRegistry;

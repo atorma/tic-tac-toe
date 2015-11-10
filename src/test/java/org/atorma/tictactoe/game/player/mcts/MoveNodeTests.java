@@ -1,12 +1,15 @@
 package org.atorma.tictactoe.game.player.mcts;
 
+import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.game.state.*;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
+@Category(FastTests.class)
 public class MoveNodeTests {
 
     @Test

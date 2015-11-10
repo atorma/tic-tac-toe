@@ -2,6 +2,7 @@ package org.atorma.tictactoe.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import org.atorma.tictactoe.ApplicationMvcTests;
+import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.application.PlayerRegistry;
 import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.application.Game;
@@ -13,6 +14,7 @@ import org.atorma.tictactoe.application.GameRepository;
 import org.jglue.fluentjson.JsonBuilderFactory;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
@@ -26,6 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@Category(FastTests.class)
 public class GameRestApplicationTests extends ApplicationMvcTests {
 
     @Autowired GameRepository gameRepository;

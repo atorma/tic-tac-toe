@@ -1,6 +1,7 @@
 package org.atorma.tictactoe.game.player.mcts;
 
 
+import org.atorma.tictactoe.SlowTests;
 import org.atorma.tictactoe.game.*;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
@@ -9,11 +10,13 @@ import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+@Category(SlowTests.class)
 public class MCTSPlayerTests {
 
     @Test

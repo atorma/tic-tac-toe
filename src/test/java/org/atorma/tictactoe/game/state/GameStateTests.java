@@ -1,12 +1,15 @@
 package org.atorma.tictactoe.game.state;
 
+import org.atorma.tictactoe.FastTests;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
 
+@Category(FastTests.class)
 public class GameStateTests {
 
     @Test

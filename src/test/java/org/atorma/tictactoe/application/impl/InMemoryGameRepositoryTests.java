@@ -1,10 +1,12 @@
 package org.atorma.tictactoe.application.impl;
 
+import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.UnitTests;
 import org.atorma.tictactoe.exception.NotFoundException;import org.atorma.tictactoe.exception.GameDeletedException;
 import org.atorma.tictactoe.application.Game;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 
 import java.util.UUID;
@@ -15,6 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@Category(FastTests.class)
 public class InMemoryGameRepositoryTests extends UnitTests {
 
     InMemoryGameRepository repository;
