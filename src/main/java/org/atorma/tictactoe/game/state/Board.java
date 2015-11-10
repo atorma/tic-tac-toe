@@ -5,8 +5,8 @@ public interface Board {
     int getNumRows();
     int getNumCols();
 
-    Piece get(int row, int col);
-    void set(int row, int col, Piece piece);
+    Piece get(Cell cell);
+    void set(Cell cell, Piece piece);
 
     Board copy();
 }

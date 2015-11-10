@@ -20,7 +20,8 @@ public class HashMapBoard implements Board {
         this(data.length, data[0].length);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
-                set(i, j, data[i][j]);
+                Cell cell = new Cell(i, j);
+                set(cell, data[i][j]);
             }
         }
     }
@@ -40,12 +41,12 @@ public class HashMapBoard implements Board {
         return numCols;
     }
 
-    public Piece get(int row, int col) {
-        return map.get(getIndex(row, col));
+    public Piece get(Cell cell) {
+        return map.get(getIndex(cell.row, cell.column));
     }
 
-    public void set(int row, int col, Piece piece) {
-        map.put(getIndex(row, col), piece);
+    public void set(Cell cell, Piece piece) {
+        map.put(getIndex(cell.row, cell.column), piece);
     }
 
     private int getIndex(int row, int col) {

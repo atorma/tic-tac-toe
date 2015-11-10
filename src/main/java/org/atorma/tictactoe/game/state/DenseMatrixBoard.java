@@ -15,12 +15,12 @@ public class DenseMatrixBoard implements Board {
         return board[0].length;
     }
 
-    public Piece get(int row, int col) {
-        return board[row][col];
+    public Piece get(Cell cell) {
+        return board[cell.row][cell.column];
     }
 
-    public void set(int row, int col, Piece piece) {
-        board[row][col] = piece;
+    public void set(Cell cell, Piece piece) {
+        board[cell.row][cell.column] = piece;
     }
 
     public Board copy() {

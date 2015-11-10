@@ -15,7 +15,8 @@ public class DenseArrayBoard implements Board {
         this(board.length, board[0].length);
         for (int i = 0; i < numRows; i++) {
             for (int j = 0; j < numCols; j++) {
-                set(i, j, board[i][j]);
+                Cell cell = new Cell(i, j);
+                set(cell, board[i][j]);
             }
         }
     }
@@ -34,12 +35,12 @@ public class DenseArrayBoard implements Board {
         return numCols;
     }
 
-    public Piece get(int row, int col) {
-        return board[getIndex(row, col)];
+    public Piece get(Cell cell) {
+        return board[getIndex(cell.row, cell.column)];
     }
 
-    public void set(int row, int col, Piece piece) {
-        board[getIndex(row, col)] = piece;
+    public void set(Cell cell, Piece piece) {
+        board[getIndex(cell.row, cell.column)] = piece;
     }
 
     private int getIndex(int row, int col) {

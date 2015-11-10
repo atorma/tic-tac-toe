@@ -95,7 +95,7 @@ public class GameState {
 
 
     public Piece getPiece(int row, int col) {
-        return board.get(row, col);
+        return board.get(new Cell(row, col));
     }
 
     public int getNumPieces() {
@@ -130,7 +130,7 @@ public class GameState {
 
         for (int i = 0; i < board.getNumRows(); i++) {
             for (int j = 0; j < board.getNumCols(); j++) {
-                if (board.get(i, j) == null) {
+                if (board.get(new Cell(i, j)) == null) {
                     allowedMoves.add(new Cell(i, j));
                 }
             }
@@ -172,7 +172,7 @@ public class GameState {
             throw new IllegalArgumentException("Illegal move (" + position.getRow() + ", " + position.getColumn() + "), already occupied by " + existingPiece);
         }
 
-        board.set(position.getRow(), position.getColumn(), this.turn);
+        board.set(position, this.turn);
 
         this.turn = this.turn.other();
 
@@ -284,14 +284,14 @@ public class GameState {
         Cell start = lineIterator.next();
         Cell prev;
         Cell end = start;
-        Piece current = board.get(start.getRow(), start.getColumn());
+        Piece current = board.get(start);
         int length = 1;
         int checked = 1;
 
         while (lineIterator.hasNext()) {
             prev = end;
             end = lineIterator.next();
-            Piece piece = board.get(end.getRow(), end.getColumn());
+            Piece piece = board.get(end);
             if (piece == current) {
                 length++;
             } else {
@@ -360,14 +360,14 @@ public class GameState {
                 throw new IllegalArgumentException("Invalid direction");
         }
 
-        Piece piece = board.get(lastMove.getRow(), lastMove.getColumn());
+        Piece piece = board.get(lastMove);
         Cell first = lastMove;
         Cell last = lastMove;
         int length = 1;
 
         while (iter1.hasNext()) {
             Cell next = iter1.next();
-            if (board.get(next.getRow(), next.getColumn()) != piece) {
+            if (board.get(next) != piece) {
                 break;
             }
             length++;
@@ -375,7 +375,7 @@ public class GameState {
         }
         while (iter2.hasPrevious()) {
             Cell prev = iter2.previous();
-            if (board.get(prev.getRow(), prev.getColumn()) != piece) {
+            if (board.get(prev) != piece) {
                 break;
             }
             length++;
@@ -390,7 +390,7 @@ public class GameState {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < board.getNumRows(); i++) {
             for (int j = 0; j < board.getNumCols(); j++) {
-                Piece piece = board.get(i, j);
+                Piece piece = board.get(new Cell(i, j));
                 String marker;
                 if (piece == Piece.X) {
                     marker = " X ";
