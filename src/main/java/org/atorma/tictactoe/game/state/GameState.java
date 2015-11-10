@@ -7,11 +7,16 @@ import java.util.*;
  */
 public class GameState {
 
+    private enum Direction {
+        HORIZONTAL, VERTICAL, LEFT_RIGHT_DIAGONAL, RIGHT_LEFT_DIAGONAL
+    }
+
     private int connectHowMany;
     private Board board;
     private Piece turn;
     private List<Cell> allowedMoves;
     private Map<Piece, Sequence> longestSequences;
+    private Map<Piece, List<Sequence>> allSequences;
 
     /**
      * @param connectHowMany
@@ -61,12 +66,12 @@ public class GameState {
         this.turn = turn;
         this.connectHowMany = connectHowMany;
 
-        checkLongestSequencesFromScratch(null);
+        findSequencesFromScratch();
         checkAllowedMoves();
     }
 
     private GameState() {
-        // For creating move() method
+        // For move() method
     }
 
 
@@ -106,6 +111,15 @@ public class GameState {
     public boolean isAllowed(Cell move) {
         return Collections.binarySearch(this.allowedMoves, move, new CellRowOrderComparator()) >= 0;
     }
+
+    public boolean isTie() {
+        return getWinner() == null && getAllowedMoves().isEmpty();
+    }
+
+    public boolean isAtEnd() {
+        return getWinner() != null || isTie();
+    }
+
 
     private void checkAllowedMoves() {
         allowedMoves = new ArrayList<>(getBoardRows() * getBoardCols());
@@ -165,7 +179,7 @@ public class GameState {
         int positionIndex = Collections.binarySearch(this.allowedMoves, position, new CellRowOrderComparator());
         this.allowedMoves.remove(positionIndex);
 
-        updateLongestSequences(position);
+        findSequencesThatCrossCell(position);
     }
 
 
@@ -196,51 +210,64 @@ public class GameState {
         }
     }
 
+    /**
+     * @return
+     *  all sequences on the game board
+     */
     public Map<Piece, List<Sequence>> getAllSequences() {
-        Map<Piece, List<Sequence>> sequences = new HashMap<>();
+        allSequences = new HashMap<>();
         for (Piece piece : Piece.values()) {
-            sequences.put(piece, new ArrayList<>());
+            allSequences.put(piece, new ArrayList<>());
         }
-        checkLongestSequencesFromScratch(sequences);
-        return sequences;
+        findSequencesFromScratch();
+        Map<Piece, List<Sequence>> retVal = allSequences;
+        allSequences = null; // to prevent high memory consumption in case GameStates are stored
+        return retVal;
     }
 
-    private void checkLongestSequencesFromScratch(Map<Piece, List<Sequence>> allSequences) {
-        initLongestSequences();
-        int checked = 0;
 
+    /**
+     * Finds longest sequences ({@link #longestSequences}) by going through the entire game board (4 times).
+     * If {@link #allSequences} is not null, finds also all sequences.
+     *
+     * @see #findSequencesThatCrossCell(Cell)
+     */
+    private void findSequencesFromScratch() {
+        initLongestSequences();
+
+        int checked = 0;
         for (int i = 0; i < getBoardRows(); i++) {
             HorizontalIterator iter = new HorizontalIterator(i, -1);
-            checked += findAllSequencesInLine(iter, allSequences);
+            checked += findSequencesInLine(iter);
         }
         assert checked == getBoardRows()*getBoardCols();
 
         checked = 0;
         for (int j = 0; j < getBoardCols(); j++) {
             VerticalIterator iter = new VerticalIterator(-1, j);
-            checked += findAllSequencesInLine(iter, allSequences);
+            checked += findSequencesInLine(iter);
         }
         assert checked == getBoardRows()*getBoardCols();
 
         checked = 0;
         for (int j = 0; j < getBoardCols(); j++) { // Upper half
             LeftRightDiagonalIterator iter = new LeftRightDiagonalIterator(-1, j-1);
-            checked += findAllSequencesInLine(iter, allSequences);
+            checked += findSequencesInLine(iter);
         }
         for (int i = 1; i < getBoardRows(); i++) { // Lower half
             LeftRightDiagonalIterator iter = new LeftRightDiagonalIterator(i-1, -1);
-            checked += findAllSequencesInLine(iter, allSequences);
+            checked += findSequencesInLine(iter);
         }
         assert checked == getBoardRows()*getBoardCols();
 
         checked = 0;
         for (int j = getBoardCols() - 1; j >= 0; j--) { // Upper half
             RightLeftDiagonalIterator iter = new RightLeftDiagonalIterator(-1, j+1);
-            checked += findAllSequencesInLine(iter, allSequences);
+            checked += findSequencesInLine(iter);
         }
         for (int i = 1; i < getBoardRows(); i++) { // Lower half
             RightLeftDiagonalIterator iter = new RightLeftDiagonalIterator(i-1, getBoardCols());
-            checked += findAllSequencesInLine(iter, allSequences);
+            checked += findSequencesInLine(iter);
         }
         assert checked == getBoardRows()*getBoardCols();
 
@@ -253,7 +280,7 @@ public class GameState {
         }
     }
 
-    private int findAllSequencesInLine(Iterator<Cell> lineIterator, Map<Piece, List<Sequence>> allSequences) {
+    private int findSequencesInLine(Iterator<Cell> lineIterator) {
         Cell start = lineIterator.next();
         Cell prev;
         Cell end = start;
@@ -268,19 +295,19 @@ public class GameState {
             if (piece == current) {
                 length++;
             } else {
-                updateSequences(current, length, start, prev, allSequences);
+                recordSequence(current, length, start, prev);
                 start = end;
                 length = 1;
                 current = piece;
             }
             checked++;
         }
-        updateSequences(current, length, start, end, allSequences);
+        recordSequence(current, length, start, end);
 
         return checked;
     }
 
-    private void updateSequences(Piece piece, int length, Cell start, Cell end, Map<Piece, List<Sequence>> allSequences) {
+    private void recordSequence(Piece piece, int length, Cell start, Cell end) {
         if (piece == null) return;
 
         Sequence sequence = new Sequence(length, start, end);
@@ -296,31 +323,46 @@ public class GameState {
 
 
     /**
-     * After a move, we only need look in all the directions starting from the updated position until
+     * After a move (assuming sequences are up-to-date) we can update sequences by
+     * just looking in all the directions starting from the updated cell until
      * we hit a different piece.
+     *
+     * @param lastMove
+     *  an updated cell (all found sequences cross this cell)
      */
-    private void updateLongestSequences(Cell lastMove) {
-        findSequenceCrossingPosition(lastMove,
-                new HorizontalIterator(lastMove.getRow(), lastMove.getColumn()),
-                new HorizontalIterator(lastMove.getRow(), lastMove.getColumn()));
-
-        findSequenceCrossingPosition(lastMove,
-                new VerticalIterator(lastMove.getRow(), lastMove.getColumn()),
-                new VerticalIterator(lastMove.getRow(), lastMove.getColumn()));
-
-        findSequenceCrossingPosition(lastMove,
-                new LeftRightDiagonalIterator(lastMove.getRow(), lastMove.getColumn()),
-                new LeftRightDiagonalIterator(lastMove.getRow(), lastMove.getColumn()));
-
-        findSequenceCrossingPosition(lastMove,
-                new RightLeftDiagonalIterator(lastMove.getRow(), lastMove.getColumn()),
-                new RightLeftDiagonalIterator(lastMove.getRow(), lastMove.getColumn()));
+    private void findSequencesThatCrossCell(Cell lastMove) {
+        findSequencesThatCrossCell(lastMove, Direction.HORIZONTAL);
+        findSequencesThatCrossCell(lastMove, Direction.VERTICAL);
+        findSequencesThatCrossCell(lastMove, Direction.LEFT_RIGHT_DIAGONAL);
+        findSequencesThatCrossCell(lastMove, Direction.RIGHT_LEFT_DIAGONAL);
     }
 
-    private void findSequenceCrossingPosition(Cell position, ListIterator<Cell> iter1, ListIterator<Cell> iter2) {
-        Piece piece = board.get(position.getRow(), position.getColumn());
-        Cell first = position;
-        Cell last = position;
+    private void findSequencesThatCrossCell(Cell lastMove, Direction direction) {
+        ListIterator<Cell> iter1, iter2;
+        switch (direction) {
+            case HORIZONTAL:
+                iter1 = new HorizontalIterator(lastMove);
+                iter2 = new HorizontalIterator(lastMove);
+                break;
+            case VERTICAL:
+                iter1 = new VerticalIterator(lastMove);
+                iter2 = new VerticalIterator(lastMove);
+                break;
+            case LEFT_RIGHT_DIAGONAL:
+                iter1 = new LeftRightDiagonalIterator(lastMove);
+                iter2 = new LeftRightDiagonalIterator(lastMove);
+                break;
+            case RIGHT_LEFT_DIAGONAL:
+                iter1 = new RightLeftDiagonalIterator(lastMove);
+                iter2 = new RightLeftDiagonalIterator(lastMove);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid direction");
+        }
+
+        Piece piece = board.get(lastMove.getRow(), lastMove.getColumn());
+        Cell first = lastMove;
+        Cell last = lastMove;
         int length = 1;
 
         while (iter1.hasNext()) {
@@ -340,16 +382,7 @@ public class GameState {
             first = prev;
         }
 
-        updateSequences(piece, length, first, last, null);
-    }
-
-    public boolean isTie() {
-        return getWinner() == null && getAllowedMoves().isEmpty();
-    }
-
-
-    public boolean isAtEnd() {
-        return getWinner() != null || isTie();
+        recordSequence(piece, length, first, last);
     }
 
 
@@ -455,6 +488,10 @@ public class GameState {
     /** Iterates horizontally starting from the given position. */
     private class HorizontalIterator extends IteratorBase {
 
+        private HorizontalIterator(Cell cell) {
+            this(cell.row, cell.column);
+        }
+
         private HorizontalIterator(int row, int col) {
             this.row = row;
             this.col = col;
@@ -489,6 +526,10 @@ public class GameState {
     /** Iterates vertically starting from the given position. */
     private class VerticalIterator extends IteratorBase {
 
+        private VerticalIterator(Cell cell) {
+            this(cell.row, cell.column);
+        }
+
         private VerticalIterator(int row, int col) {
             this.row = row;
             this.col = col;
@@ -522,9 +563,12 @@ public class GameState {
 
     /** Iterates diagonally in upper left - lower right manner starting from the given position. */
     private class LeftRightDiagonalIterator extends IteratorBase {
-
         private int k;
         private final int diagLength;
+
+        private LeftRightDiagonalIterator(Cell cell) {
+            this(cell.row, cell.column);
+        }
 
         private LeftRightDiagonalIterator(int row, int col) {
             this.row = row;
@@ -567,9 +611,12 @@ public class GameState {
 
     /** Iterates diagonally in upper right - lower left manner starting from the given position. */
     private class RightLeftDiagonalIterator extends IteratorBase {
-
         private int k;
         private final int diagLength;
+
+        private RightLeftDiagonalIterator(Cell cell) {
+            this(cell.row, cell.column);
+        }
 
         private RightLeftDiagonalIterator(int row, int col) {
             this.row = row;
