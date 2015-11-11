@@ -361,10 +361,9 @@ public class GameState {
         }
 
         Piece piece = board.get(lastMove);
-        Cell first = lastMove;
-        Cell last = lastMove;
         int length = 1;
 
+        Cell last = lastMove;
         while (iter1.hasNext()) {
             Cell next = iter1.next();
             if (board.get(next) != piece) {
@@ -373,6 +372,8 @@ public class GameState {
             length++;
             last = next;
         }
+
+        Cell first = lastMove;
         while (iter2.hasPrevious()) {
             Cell prev = iter2.previous();
             if (board.get(prev) != piece) {
@@ -442,7 +443,6 @@ public class GameState {
 
 
     private abstract class IteratorBase implements ListIterator<Cell> {
-
         protected int row;
         protected int col;
 
