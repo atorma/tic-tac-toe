@@ -19,32 +19,29 @@ public class GameState {
     private Map<Piece, List<Sequence>> allSequences;
 
     /**
+     * Creates a game state.
+     *
      * @param connectHowMany
      *  how many pieces need to be connected to win
      * @param board
-     *  state of game board
+     *  state of the game board
      * @param nextPlayer
      *  player whose turn is next
      */
     public GameState(int connectHowMany, Piece[][] board, Piece nextPlayer) {
-        this(connectHowMany, new DenseArrayBoard(board), nextPlayer, false);
+        this.nextPlayer = nextPlayer;
+        this.board = new DenseArrayBoard(board);
+        this.connectHowMany = connectHowMany;
+
+        findSequencesFromScratch();
+        checkAllowedMoves();
     }
 
     /**
-     * @param connectHowMany
-     *  how many pieces need to be connected to win
-     * @param board
-     *  state of game board
-     * @param nextPlayer
-     *  player whose turn is next
-     */
-    public GameState(int connectHowMany, Board board, Piece nextPlayer) {
-        this(connectHowMany, board, nextPlayer, true);
-    }
-
-    /**
+     * Creates a game state based on a copy of a template state.
+     *
      * @param template
-     *  state of game board
+     *  template state
      * @param nextPlayer
      *  player whose turn is next (overrides template state turn)
      */
@@ -55,19 +52,6 @@ public class GameState {
         this.longestSequences = copy.longestSequences;
         this.connectHowMany = copy.connectHowMany;
         this.nextPlayer = nextPlayer;
-    }
-
-    private GameState(int connectHowMany, Board board, Piece nextPlayer, boolean copy) {
-        if (copy) {
-            this.board = board.copy();
-        } else {
-            this.board = board;
-        }
-        this.nextPlayer = nextPlayer;
-        this.connectHowMany = connectHowMany;
-
-        findSequencesFromScratch();
-        checkAllowedMoves();
     }
 
     private GameState() {
