@@ -18,7 +18,7 @@ public class PlayerRegistryController {
 
     @RequestMapping(method = RequestMethod.GET)
     public List<PlayerInfo> getPlayerList() {
-        return playerRegistry.getPlayerInformation();
+        return playerRegistry.getPlayerInfoList();
     }
 
 

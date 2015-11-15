@@ -8,7 +8,7 @@ var _ = require("lodash");
 describe("GameController", function() {
 
     var vm;
-    var GAME_EVENTS, PIECES;
+    var GAME_EVENTS, PIECES, PLAYER_TYPES;
 
     var gameService;
     var deferredTurn;
@@ -20,9 +20,10 @@ describe("GameController", function() {
     beforeEach(angular.mock.module("ticTacToe", function($provide) {
     }));
 
-    beforeEach(angular.mock.inject(function(_GAME_EVENTS_, _PIECES_, $rootScope, _$q_) {
+    beforeEach(angular.mock.inject(function(_GAME_EVENTS_, _PIECES_, _PLAYER_TYPES_, $rootScope, _$q_) {
         GAME_EVENTS = _GAME_EVENTS_;
         PIECES = _PIECES_;
+        PLAYER_TYPES = _PLAYER_TYPES_;
 
         $scope = $rootScope.$new();
         spyOn($scope, "$broadcast").and.callThrough();
@@ -36,29 +37,43 @@ describe("GameController", function() {
             "endCurrentGame",
             "getPlayers"
         ]);
-        gameService.startNewGame.and.returnValue($q.when());
-        gameService.endCurrentGame.and.returnValue($q.when());
 
-        gameService.currentGame = {
-            playTurn: function() {
+        gameService.startNewGame.and.callFake(function() {
+            // Set up fake game
+            var currentGame = jasmine.createSpyObj("gameService.currentGame", ["playTurn"]);
+            currentGame.nextPlayer = PIECES.X;
+            currentGame.board = [[null, null, null], [null, null, null], [null, null, null]];
+            currentGame.playTurn.and.callFake(function() {
+                if (currentGame.nextPlayer === PIECES.X) {
+                    currentGame.nextPlayer = PIECES.O;
+                } else {
+                    currentGame.nextPlayer = PIECES.X;
+                }
                 deferredTurn = $q.defer();
                 return deferredTurn.promise;
-            },
-            board: [[null, null, null], [null, null, null], [null, null, null]]
-        };
+            });
+
+            gameService.currentGame = currentGame;
+            return $q.when();
+        });
+
+        gameService.endCurrentGame.and.returnValue($q.when());
 
         players = [
             {
                 id: "123",
-                name: "Monte Carlo Tree Search"
+                name: "Monte Carlo Tree Search",
+                type: PLAYER_TYPES.AI
             },
             {
                 id: "456",
-                name: "Naive"
+                name: "Naive",
+                type: PLAYER_TYPES.AI
             },
             {
                 id: "789",
-                name: "Random"
+                name: "Random",
+                type: PLAYER_TYPES.AI
             }
         ];
         gameService.getPlayers.and.returnValue($q.when(players));
@@ -150,7 +165,7 @@ describe("GameController", function() {
     });
 
 
-    describe("after game started", function() {
+    describe("after ai-vs-ai game started", function() {
 
         beforeEach(function() {
             vm.startGame();
@@ -422,6 +437,73 @@ describe("GameController", function() {
             expect(vm.gameStats.ties).toBe(1);
         });
 
+    });
+
+    describe("after human vs ai game started", function() {
+
+        beforeEach(function() {
+            // AI starts: X predefined to start in fake currentGame
+            vm.gameConfig.players[PIECES.X] =  {
+                id: "123",
+                name: "Monte Carlo Tree Search",
+                type: PLAYER_TYPES.AI
+            };
+            vm.gameConfig.players[PIECES.O] = {
+                id: "111",
+                name: "Me",
+                type: PLAYER_TYPES.HUMAN
+            };
+        });
+
+        beforeEach(function() {
+            vm.startGame();
+            $scope.$digest();
+        });
+
+        it("waits for human player's move after AI move", function() {
+            var aiTurnResult = {
+                turnNumber: 2,
+                move: {
+                    piece: PIECES.O,
+                    cell: {row: 1, column: 1}
+                },
+                gameEnded: false,
+                winner: null,
+                winningSequence: null,
+                nextPlayer: PIECES.X
+            };
+
+            deferredTurn.resolve(aiTurnResult);
+            $scope.$digest();
+
+            expect(gameService.currentGame.playTurn.calls.count()).toBe(1);
+        });
+
+        it("on 'move selected' event it plays turn with the selected cell", function() {
+            var aiTurnResult = {
+                turnNumber: 2,
+                move: {
+                    piece: PIECES.O,
+                    cell: {row: 1, column: 1}
+                },
+                gameEnded: false,
+                winner: null,
+                winningSequence: null
+            };
+            deferredTurn.resolve(aiTurnResult);
+            $scope.$digest();
+
+
+            var selectedCell = {row: 1, column: 2};
+            $scope.$emit(GAME_EVENTS.MOVE_SELECTED, selectedCell);
+            $scope.$digest();
+
+            expect(gameService.currentGame.playTurn).toHaveBeenCalledWith(selectedCell);
+        });
+
+        xit("ignores 'move selected' if it is not the human player's turn", function() {
+
+        });
     });
 
 });

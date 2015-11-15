@@ -28,12 +28,12 @@ public class GameFactoryTests extends ApplicationTests {
         params.firstPlayer = Piece.O;
         params.board.rows = 3;
         params.board.columns = 4;
-        params.players.put(Piece.X, playerRegistry.getPlayerInformation().stream()
+        params.players.put(Piece.X, playerRegistry.getPlayerInfoList().stream()
                 .filter(x -> x.getName().equals("Random"))
                 .findFirst()
                 .get()
         );
-        params.players.put(Piece.O, playerRegistry.getPlayerInformation().stream()
+        params.players.put(Piece.O, playerRegistry.getPlayerInfoList().stream()
                 .filter(x -> x.getName().equals("Naive"))
                 .findFirst()
                 .get()

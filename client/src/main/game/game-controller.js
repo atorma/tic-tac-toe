@@ -6,13 +6,16 @@ var _ = require("lodash");
 angular.module("ticTacToe")
     .controller("GameController", GameController);
 
-function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
+function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, $q) {
     var vm = this;
+    var deferredMove;
 
     vm.init = init;
     vm.startGame = startGame;
     vm.setPaused = setPaused;
     vm.endGame = endGame;
+
+    $scope.$on(GAME_EVENTS.MOVE_SELECTED, selectHumanPlayerMove);
 
     init();
 
@@ -59,6 +62,8 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
             gameConfig.firstPlayer = _.values(PIECES)[_.random(1)];
         }
 
+        deferredMove = $q.defer();
+
         return gameService.startNewGame(gameConfig)
             .then(function() {
                 vm.gameExists = true;
@@ -68,7 +73,26 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
     }
 
     function play() {
-        playOneTurn()
+        var promiseMove;
+        var nextPlayer = vm.gameConfig.players[gameService.currentGame.nextPlayer];
+        if (nextPlayer.type === PLAYER_TYPES.AI) {
+            promiseMove = $q.when();
+        } else if (nextPlayer.type === PLAYER_TYPES.HUMAN) {
+            promiseMove = deferredMove.promise;
+        }
+
+        promiseMove
+            .then(function(selectedCell) {
+                return gameService.currentGame.playTurn(selectedCell);
+            })
+            .then(function(result) {
+                if (vm.gameExists && !vm.paused) {
+                    $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, result);
+                } else if (vm.gameExists && vm.paused) {
+                    vm.pausedResult = result;
+                }
+                return result;
+            })
             .then(function(result) {
                 if (!vm.gameExists) {
                     return;
@@ -87,17 +111,6 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
             });
     }
 
-    function playOneTurn() {
-        return gameService.currentGame.playTurn()
-            .then(function(result) {
-                if (vm.gameExists && !vm.paused) {
-                    $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, result);
-                } else if (vm.gameExists && vm.paused) {
-                    vm.pausedResult = result;
-                }
-                return result;
-            });
-    }
 
     function resetStats() {
         vm.gameStats = {
@@ -136,4 +149,10 @@ function GameController(GAME_EVENTS, PIECES, gameService, $scope, $q) {
         vm.gameExists = false;
         vm.paused = false;
     }
+
+    function selectHumanPlayerMove(event, selectedCell) {
+        deferredMove.resolve(selectedCell);
+        deferredMove = $q.defer();
+    }
+
 }

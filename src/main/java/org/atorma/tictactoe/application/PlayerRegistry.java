@@ -6,7 +6,9 @@ import java.util.List;
 
 public interface PlayerRegistry {
 
-    List<PlayerInfo> getPlayerInformation();
+    List<PlayerInfo> getPlayerInfoList();
+
+    PlayerInfo getPlayerInfoById(String id);
 
     Player createPlayer(PlayerInfo playerInfo);
 

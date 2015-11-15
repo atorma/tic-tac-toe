@@ -21,7 +21,7 @@ public class PlayerRegistryRestApplicationTests extends ApplicationMvcTests {
 
     @Test
     public void get_player_list() throws Exception {
-        List<PlayerInfo> playerList = playerRegistry.getPlayerInformation();
+        List<PlayerInfo> playerList = playerRegistry.getPlayerInfoList();
 
         mockMvc.perform(get("/players"))
                 .andExpect(status().isOk())

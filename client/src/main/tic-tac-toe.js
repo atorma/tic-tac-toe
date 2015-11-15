@@ -14,10 +14,16 @@ var GAME_EVENTS = {
     MOVE_SELECTED: "move selected"
 };
 
+var PLAYER_TYPES = {
+    AI: "AI",
+    HUMAN: "HUMAN"
+};
+
 angular
     .module("ticTacToe", ["ngMaterial"])
     .constant("GAME_EVENTS", GAME_EVENTS)
     .constant("PIECES", PIECES)
+    .constant("PLAYER_TYPES", PLAYER_TYPES)
     .config(configureIcons);
 
 require("./board");

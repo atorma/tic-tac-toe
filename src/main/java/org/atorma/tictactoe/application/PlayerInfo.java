@@ -1,20 +1,27 @@
 package org.atorma.tictactoe.application;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.atorma.tictactoe.application.jackson.PlayerInfoBuilder;
 import org.springframework.util.Assert;
 
+@JsonDeserialize(builder = PlayerInfoBuilder.class)
 public class PlayerInfo {
 
-    private String id;
-    private String name;
+    public enum Type {
+        AI, HUMAN
+    }
 
-    @JsonCreator
-    public PlayerInfo(@JsonProperty("id") String id, @JsonProperty("name") String name) {
+    private final String id;
+    private final String name;
+    private final Type type;
+
+    public PlayerInfo(String id, String name, Type type) {
         Assert.hasText(id);
         Assert.hasText(name);
+        Assert.notNull(type);
         this.id = id;
         this.name = name;
+        this.type = type;
     }
 
     public String getId() {
@@ -25,11 +32,16 @@ public class PlayerInfo {
         return name;
     }
 
+    public Type getType() {
+        return type;
+    }
+
     @Override
     public String toString() {
         return "PlayerInfo{" +
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
+                ", type=" + type +
                 '}';
     }
 }

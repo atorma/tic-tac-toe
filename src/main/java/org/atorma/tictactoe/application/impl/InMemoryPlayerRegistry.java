@@ -23,21 +23,33 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
 
 
     public InMemoryPlayerRegistry() {
-        createPlayer("Monte Carlo Tree Search", MCTSPlayer.class);
-        createPlayer("Naive", NaivePlayer.class);
-        createPlayer("Random", RandomPlayer.class);
+        createPlayer("Monte Carlo Tree Search", PlayerInfo.Type.AI, MCTSPlayer.class);
+        createPlayer("Naive", PlayerInfo.Type.AI, NaivePlayer.class);
+        createPlayer("Random", PlayerInfo.Type.AI, RandomPlayer.class);
     }
 
-    private void createPlayer(String name, Class<? extends Player> playerClass) {
-        PlayerInfo playerInfo = new PlayerInfo(UUID.randomUUID().toString(), name);
+    private void createPlayer(String name, PlayerInfo.Type type, Class<? extends Player> playerClass) {
+        PlayerInfo playerInfo = new PlayerInfo(UUID.randomUUID().toString(), name, type);
         playerInfoList.add(playerInfo);
         playerClasses.put(playerInfo.getId(), playerClass);
     }
 
 
     @Override
-    public List<PlayerInfo> getPlayerInformation() {
+    public List<PlayerInfo> getPlayerInfoList() {
         return new ArrayList<>(playerInfoList);
+    }
+
+    @Override
+    public PlayerInfo getPlayerInfoById(String id) {
+        PlayerInfo playerInfo = playerInfoList.stream()
+                .filter(x -> x.getId().equals(id))
+                .findFirst().get();
+        if (playerInfo != null) {
+            return playerInfo;
+        } else {
+            throw new NotFoundException("Could not find player info with id = " + id);
+        }
     }
 
     @Override

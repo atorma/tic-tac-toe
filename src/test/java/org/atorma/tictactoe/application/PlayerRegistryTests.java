@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Random;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -21,14 +22,21 @@ public class PlayerRegistryTests extends ApplicationTests {
     Random random = new Random();
 
     @Test
-    public void get_player_information() {
-        List<PlayerInfo> playerInfoList = playerRegistry.getPlayerInformation();
+    public void get_player_information_list() {
+        List<PlayerInfo> playerInfoList = playerRegistry.getPlayerInfoList();
         assertThat(playerInfoList.size(), greaterThan(0));
     }
 
     @Test
+    public void get_player_information_by_id() {
+        List<PlayerInfo> playerInfoList = playerRegistry.getPlayerInfoList();
+        PlayerInfo playerInfo = playerInfoList.get(0);
+        assertThat(playerInfo, equalTo(playerRegistry.getPlayerInfoById(playerInfo.getId())));
+    }
+
+    @Test
     public void create_player() {
-        List<PlayerInfo> playerInfoList = playerRegistry.getPlayerInformation();
+        List<PlayerInfo> playerInfoList = playerRegistry.getPlayerInfoList();
         PlayerInfo playerInfo = playerInfoList.get(random.nextInt(playerInfoList.size()));
 
         Player player = playerRegistry.createPlayer(playerInfo);
