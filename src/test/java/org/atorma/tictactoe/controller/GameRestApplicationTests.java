@@ -7,7 +7,9 @@ import org.atorma.tictactoe.application.PlayerRegistry;
 import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.game.player.Player;
+import org.atorma.tictactoe.game.player.human.HumanPlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
+import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.atorma.tictactoe.application.GameRepository;
@@ -34,17 +36,32 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
     @Autowired GameRepository gameRepository;
     @Autowired PlayerRegistry playerRegistry;
 
-    Game existingGame;
+    Game aiVsAiGame;
+    Game humanVsAiGame;
 
     @Before
     public void setUp() {
+        setUpAiVsAiGame();
+        setUpHumanVsAiGame();
+    }
+
+    private void setUpAiVsAiGame() {
         Player player1 = new NaivePlayer();
         Player player2 = new NaivePlayer();
         GameState initialState = new GameState(3, new Piece[3][3], Piece.O);
         Game game = new Game(player1, player2, initialState);
-        existingGame = gameRepository.save(game);
+        aiVsAiGame = gameRepository.save(game);
     }
 
+    private void setUpHumanVsAiGame() {
+        Player player1 = new HumanPlayer();
+        player1.setPiece(Piece.X);
+        Player player2 = new NaivePlayer();
+        player2.setPiece(Piece.O);
+        GameState initialState = new GameState(3, new Piece[3][3], Piece.X); // HumanPlayer starts
+        Game game = new Game(player1, player2, initialState);
+        humanVsAiGame = gameRepository.save(game);
+    }
 
     @Test
     public void create_game() throws Exception {
@@ -188,48 +205,72 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
     @Test
     public void get_game_state() throws Exception {
 
-        existingGame.playTurn();
-        Game.Move lastMove = existingGame.getLastMove();
-        Piece winner = existingGame.getState().getWinner();
+        aiVsAiGame.playTurn(new TurnParams(aiVsAiGame.getTurnNumber(), null));
+        Game.Move lastMove = aiVsAiGame.getLastMove();
+        Piece winner = aiVsAiGame.getState().getWinner();
 
-        mockMvc.perform(get("/games/{id}", existingGame.getId()))
+        mockMvc.perform(get("/games/{id}", aiVsAiGame.getId()))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.move.piece").value(lastMove.getPiece().toString()))
                 .andExpect(jsonPath("$.move.cell.row").value(lastMove.getCell().getRow()))
                 .andExpect(jsonPath("$.move.cell.column").value(lastMove.getCell().getColumn()))
-                .andExpect(jsonPath("$.turnNumber").value(existingGame.getTurnNumber()))
-                .andExpect(jsonPath("$.nextPlayer").value(existingGame.getState().getNextPlayer().toString()))
-                .andExpect(jsonPath("$.gameEnded").value(existingGame.getState().isAtEnd()))
+                .andExpect(jsonPath("$.turnNumber").value(aiVsAiGame.getTurnNumber()))
+                .andExpect(jsonPath("$.nextPlayer").value(aiVsAiGame.getState().getNextPlayer().toString()))
+                .andExpect(jsonPath("$.gameEnded").value(aiVsAiGame.getState().isAtEnd()))
                 .andExpect(jsonPath("$.winner").value(winner != null ? winner.toString() : null))
                 .andExpect(jsonPath("$.winningSequence").value(winner != null ? notNullValue() : nullValue()))
-                .andExpect(jsonPath("$.connectHowMany").value(existingGame.getState().getConnectHowMany()))
+                .andExpect(jsonPath("$.connectHowMany").value(aiVsAiGame.getState().getConnectHowMany()))
                 .andExpect(jsonPath("$.board[" + lastMove.getCell().getRow() + "][" + lastMove.getCell().getColumn() + "]").value(lastMove.getPiece().toString()))
         ;
     }
 
     @Test
-    public void play_turn() throws Exception {
+    public void play_ai_turn() throws Exception {
         String turnJson = JsonBuilderFactory.buildObject()
-                    .add("turnNumber", existingGame.getTurnNumber())
+                    .add("turnNumber", aiVsAiGame.getTurnNumber())
                 .end()
                 .toString();
 
-        Piece winner = existingGame.getState().getWinner();
-        mockMvc.perform(post("/games/{id}/turns", existingGame.getId())
+        mockMvc.perform(post("/games/{id}/turns", aiVsAiGame.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(turnJson))
                 .andDo(print())
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.move.piece").value(existingGame.getLastMove().getPiece().toString()))
-                .andExpect(jsonPath("$.move.cell.row").value(existingGame.getLastMove().getCell().getRow()))
-                .andExpect(jsonPath("$.move.cell.column").value(existingGame.getLastMove().getCell().getColumn()))
-                .andExpect(jsonPath("$.turnNumber").value(existingGame.getTurnNumber()))
-                .andExpect(jsonPath("$.nextPlayer").value(existingGame.getState().getNextPlayer().toString()))
-                .andExpect(jsonPath("$.gameEnded").value(existingGame.getState().isAtEnd()))
-                .andExpect(jsonPath("$.winner").value(winner != null ? winner.toString() : null))
-                .andExpect(jsonPath("$.winningSequence").value(winner != null ? notNullValue() : nullValue()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.move.piece").value(aiVsAiGame.getLastMove().getPiece().toString()))
+                .andExpect(jsonPath("$.move.cell.row").value(aiVsAiGame.getLastMove().getCell().getRow()))
+                .andExpect(jsonPath("$.move.cell.column").value(aiVsAiGame.getLastMove().getCell().getColumn()))
+                .andExpect(jsonPath("$.turnNumber").value(aiVsAiGame.getTurnNumber()))
+                .andExpect(jsonPath("$.nextPlayer").value(aiVsAiGame.getState().getNextPlayer().toString()))
+                .andExpect(jsonPath("$.gameEnded").value(aiVsAiGame.getState().isAtEnd()))
+                .andExpect(jsonPath("$.winner").value(aiVsAiGame.getState().getWinner() != null ? aiVsAiGame.getState().getWinner().toString() : null))
                 ;
+    }
+
+    @Test
+    public void play_human_turn() throws Exception {
+        Cell humanPlayerMove = new Cell(1, 1);
+
+        String turnJson = JsonBuilderFactory.buildObject()
+                    .add("turnNumber", humanVsAiGame.getTurnNumber())
+                    .addObject("move")
+                        .add("row", humanPlayerMove.getRow())
+                        .add("column", humanPlayerMove.getColumn())
+                .end()
+                .toString();
+
+        mockMvc.perform(post("/games/{id}/turns", humanVsAiGame.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(turnJson))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.move.piece").value(humanVsAiGame.getLastMove().getPiece().toString()))
+                .andExpect(jsonPath("$.move.cell.row").value(humanPlayerMove.getRow()))
+                .andExpect(jsonPath("$.move.cell.column").value(humanPlayerMove.getColumn()))
+                .andExpect(jsonPath("$.turnNumber").value(humanVsAiGame.getTurnNumber()))
+                .andExpect(jsonPath("$.nextPlayer").value(humanVsAiGame.getState().getNextPlayer().toString()))
+                .andExpect(jsonPath("$.gameEnded").value(humanVsAiGame.getState().isAtEnd()))
+        ;
     }
 
 
@@ -253,7 +294,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .end()
                 .toString();
 
-        mockMvc.perform(post("/games/{id}/turns", existingGame.getId())
+        mockMvc.perform(post("/games/{id}/turns", aiVsAiGame.getId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(turnJson))
                 .andExpect(status().isBadRequest());
@@ -261,9 +302,9 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
 
     @Test(expected = NotFoundException.class)
     public void delete_game() throws Exception {
-        mockMvc.perform(delete("/games/{id}", existingGame.getId()))
+        mockMvc.perform(delete("/games/{id}", aiVsAiGame.getId()))
                 .andExpect(status().isNoContent());
 
-        gameRepository.findById(existingGame.getId());
+        gameRepository.findById(aiVsAiGame.getId());
     }
 }

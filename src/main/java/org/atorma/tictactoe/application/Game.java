@@ -1,6 +1,9 @@
 package org.atorma.tictactoe.application;
 
+import org.atorma.tictactoe.controller.TurnParams;
+import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.player.Player;
+import org.atorma.tictactoe.game.player.human.HumanPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
@@ -81,15 +84,24 @@ public class Game {
         return turnNumber.get();
     }
 
-    public synchronized void playTurn() {
+    public synchronized void playTurn(TurnParams turnParams) {
+        if (turnParams.turnNumber != getTurnNumber()) {
+            throw new TicTacToeException("Trying to play wrong turn");
+        }
+
         GameState state = getState();
         Move lastMove = getLastMove();
+        Piece nextPlayerPiece = state.getNextPlayer();
+        Player nextPlayer = players.get(nextPlayerPiece);
 
-        Piece movePiece = state.getNextPlayer();
-        Cell moveCell = players.get(movePiece).move(state, lastMove != null ? lastMove.getCell() : null);
+        if (nextPlayer instanceof HumanPlayer) {
+            ((HumanPlayer) nextPlayer).setNextMove(turnParams.getMove());
+        }
+
+        Cell moveCell = players.get(nextPlayerPiece).move(state, lastMove != null ? lastMove.getCell() : null);
         this.state.set(state.next(moveCell));
-        this.lastMove.set(new Move(movePiece, moveCell));
-        LOGGER.debug("Turn {}: {} to {}", turnNumber, movePiece, moveCell);
+        this.lastMove.set(new Move(nextPlayerPiece, moveCell));
+        LOGGER.debug("Turn {}: {} to {}", turnNumber, nextPlayerPiece, moveCell);
         turnNumber.incrementAndGet();
     }
 

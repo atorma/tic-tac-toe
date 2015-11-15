@@ -2,7 +2,10 @@ package org.atorma.tictactoe.application;
 
 import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.UnitTests;
+import org.atorma.tictactoe.controller.TurnParams;
+import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.player.Player;
+import org.atorma.tictactoe.game.player.human.HumanPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
@@ -54,7 +57,7 @@ public class GameTests extends UnitTests {
         when(initialState.next(xPlayerMove)).thenReturn(afterXPlayerMove);
         when(afterXPlayerMove.getNextPlayer()).thenReturn(Piece.O);
 
-        game.playTurn();
+        game.playTurn(new TurnParams(1, new Cell(1, 1)));
 
         assertEquals(afterXPlayerMove, game.getState());
         assertEquals(xPlayerMove, game.getLastMove().getCell());
@@ -66,10 +69,40 @@ public class GameTests extends UnitTests {
         when(afterXPlayerMove.next(oPlayerMove)).thenReturn(afterOPlayerMove);
         when(afterOPlayerMove.getNextPlayer()).thenReturn(Piece.X);
 
-        game.playTurn();
+        game.playTurn(new TurnParams(2, new Cell(0, 0)));
 
         assertEquals(afterOPlayerMove, game.getState());
         assertEquals(oPlayerMove, game.getLastMove().getCell());
         assertEquals(3, game.getTurnNumber());
     }
+
+    @Test
+    public void when_next_player_is_human_then_sets_next_move_from_turn_params() {
+        HumanPlayer humanPlayer = mock(HumanPlayer.class);
+        when(humanPlayer.getPiece()).thenReturn(Piece.X);
+
+        GameState initialState = state;
+        when(initialState.getNextPlayer()).thenReturn(Piece.X);
+        Game game = new Game(humanPlayer, oPlayer, initialState);
+
+        Cell humanPlayerMove = new Cell(5, 5);
+        when(humanPlayer.move(initialState, null)).thenReturn(humanPlayerMove);
+        GameState nextState = mock(GameState.class);
+        when(initialState.next(humanPlayerMove)).thenReturn(nextState);
+        when(nextState.getNextPlayer()).thenReturn(Piece.O);
+
+        game.playTurn(new TurnParams(1, humanPlayerMove));
+
+        verify(humanPlayer).setNextMove(humanPlayerMove);
+    }
+
+    @Test(expected = TicTacToeException.class)
+    public void when_trying_to_play_turn_with_wrong_turn_number_then_exception() {
+        GameState initialState = state;
+        when(initialState.getNextPlayer()).thenReturn(Piece.X);
+        Game game = new Game(xPlayer, oPlayer, initialState);
+
+        game.playTurn(new TurnParams(10, null));
+    }
+
 }

@@ -14,13 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 
 @RestController
-@RequestMapping("/games")
+@RequestMapping(value = "/games")
 public class GameController {
     private static final Logger LOGGER = LoggerFactory.getLogger(GameController.class);
 
@@ -41,18 +42,13 @@ public class GameController {
         return new GameDetailDTO(gameRepository.findById(gameId));
     }
 
-    @RequestMapping(value = "/{gameId}/turns", method = RequestMethod.POST)
-    @ResponseStatus(HttpStatus.CREATED)
+    @RequestMapping(value = "/{gameId}/turns", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public GameDTO playTurn(@PathVariable("gameId") String gameId,
-                            @RequestBody TurnRequestDTO turnRequestDTO,
+                            @RequestBody TurnParams turnParams,
                             HttpServletResponse response) {
         Game game = gameRepository.findById(gameId);
+        game.playTurn(turnParams);
 
-        if (turnRequestDTO.turnNumber != game.getTurnNumber()) {
-            throw new TicTacToeException("Trying to play wrong turn");
-        }
-
-        game.playTurn();
         try {
             game = gameRepository.save(game);
         } catch (GameDeletedException e) {
@@ -163,11 +159,6 @@ public class GameController {
             return board;
         }
     }
-
-    public static class TurnRequestDTO {
-        public int turnNumber;
-    }
-
 
 
 }

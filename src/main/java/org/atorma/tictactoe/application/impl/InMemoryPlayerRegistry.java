@@ -5,6 +5,7 @@ import org.atorma.tictactoe.application.PlayerRegistry;
 import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.player.Player;
+import org.atorma.tictactoe.game.player.human.HumanPlayer;
 import org.atorma.tictactoe.game.player.mcts.MCTSPlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.player.random.RandomPlayer;
@@ -23,6 +24,7 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
 
 
     public InMemoryPlayerRegistry() {
+        createPlayer("Human", PlayerInfo.Type.HUMAN, HumanPlayer.class);
         createPlayer("Monte Carlo Tree Search", PlayerInfo.Type.AI, MCTSPlayer.class);
         createPlayer("Naive", PlayerInfo.Type.AI, NaivePlayer.class);
         createPlayer("Random", PlayerInfo.Type.AI, RandomPlayer.class);

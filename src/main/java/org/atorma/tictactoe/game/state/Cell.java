@@ -1,5 +1,8 @@
 package org.atorma.tictactoe.game.state;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Describes one cell location on the board.
  * Position row = 0, column = 0 is the upper left
@@ -10,7 +13,8 @@ public class Cell {
     public final int row;
     public final int column;
 
-    public Cell(int row, int column) {
+    @JsonCreator
+    public Cell(@JsonProperty("row") int row, @JsonProperty("column") int column) {
         this.row = row;
         this.column = column;
     }
