@@ -241,9 +241,7 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
             var cc = getCanvasCoordinates(e);
             var cell = getCellCoordinates(cc);
 
-            // TODO handle human player move selection
-            $log.debug("Clicked cell " + angular.toJson(cell));
-            //drawCross(cell);
+            $scope.$emit(GAME_EVENTS.MOVE_SELECTED, cell);
         }
 
 

@@ -50,9 +50,10 @@ function gameService($http, $q) {
 
         this.playTurn = playTurn;
 
-        function playTurn() {
+        function playTurn(selectedMove) {
             return $http.post("games/"+self.id+"/turns", {
-                turnNumber: self.turnNumber
+                turnNumber: self.turnNumber,
+                move: selectedMove
             }).then(function(response) {
                 _.extend(self, response.data);
                 return response.data;

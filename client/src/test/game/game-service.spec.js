@@ -143,11 +143,14 @@ describe("gameService", function() {
         });
 
         it("it sends correct turn request to backend", function() {
+            var selectedCell = {row: 5, column: 12};
+
             $httpBackend.expectPOST("games/"+initialGameData.id+"/turns", {
-                turnNumber: initialGameData.turnNumber
+                turnNumber: initialGameData.turnNumber,
+                move: selectedCell
             }).respond(201, turnResponse);
 
-            gameService.currentGame.playTurn();
+            gameService.currentGame.playTurn(selectedCell);
             $httpBackend.flush();
         });
 
