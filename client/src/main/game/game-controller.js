@@ -45,7 +45,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
             _.extend(vm, data);
 
             vm.gameConfig.players[PIECES.X] = vm.playerList[0];
-            vm.gameConfig.players[PIECES.O] = vm.playerList[0];
+            vm.gameConfig.players[PIECES.O] = vm.playerList[1];
         });
 
     }
