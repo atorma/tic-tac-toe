@@ -62,8 +62,6 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
             gameConfig.firstPlayer = _.values(PIECES)[_.random(1)];
         }
 
-        deferredMove = $q.defer();
-
         return gameService.startNewGame(gameConfig)
             .then(function() {
                 vm.gameExists = true;
@@ -78,6 +76,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
         if (nextPlayer.type === PLAYER_TYPES.AI) {
             promiseMove = $q.when();
         } else if (nextPlayer.type === PLAYER_TYPES.HUMAN) {
+            deferredMove = $q.defer();
             promiseMove = deferredMove.promise;
         }
 
@@ -152,7 +151,6 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
 
     function selectHumanPlayerMove(event, selectedCell) {
         deferredMove.resolve(selectedCell);
-        deferredMove = $q.defer();
     }
 
 }
