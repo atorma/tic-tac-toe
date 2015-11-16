@@ -389,6 +389,7 @@ describe("GameController", function() {
             expect(gameService.endCurrentGame).toHaveBeenCalled();
             expect(vm.gameExists).toBe(false);
             expect(vm.paused).toBe(false);
+            expect(vm.currentGame).toBeUndefined();
         });
     });
 

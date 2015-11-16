@@ -72,12 +72,19 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     }
 
     function play() {
+        if (isAiVsAiGame() && vm.currentGame.turnNumber === 1 && vm.gameStats.roundsPlayed === 0) {
+            $mdToast.show({
+                template: '<md-toast><spinner></spinner>&nbsp;Playing...</md-toast>',
+                position: "top left",
+                hideDelay: 0
+            });
+        }
+
         var promiseMove;
-        var toast;
         var nextPlayer = vm.gameConfig.players[gameService.currentGame.nextPlayer];
         if (nextPlayer.type === PLAYER_TYPES.AI) {
             if (isHumanVsAiGame()) {
-                toast = $mdToast.show({
+                $mdToast.show({
                     template: '<md-toast><spinner></spinner>&nbsp;Thinking...</md-toast>',
                     position: "top left",
                     hideDelay: 0
@@ -86,7 +93,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
             promiseMove = $q.when();
         } else if (nextPlayer.type === PLAYER_TYPES.HUMAN) {
             if (isHumanVsAiGame()) {
-                toast = $mdToast.show({
+                $mdToast.show({
                     template: '<md-toast>Your turn, human!</md-toast>',
                     position: "top left"
                 });
@@ -108,6 +115,10 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                 return result;
             })
             .then(function(result) {
+                if (isHumanVsAiGame()) {
+                    $mdToast.hide();
+                }
+
                 if (!vm.gameExists) {
                     return;
                 } else if (!result.gameEnded && !vm.paused) {
@@ -120,19 +131,28 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                     } else {
                         vm.gameExists = false;
                         vm.paused = false;
+                        $mdToast.hide();
                     }
                 }
             })
-            .finally(function() {
-                if (toast) {
-                    toast.hide();
-                }
+            .catch(function() {
+                $mdToast.hide();
             });
     }
 
     function isHumanVsAiGame() {
         var types = _.pluck(vm.gameConfig.players, "type");
         return _.includes(types, PLAYER_TYPES.AI) && _.includes(types, PLAYER_TYPES.HUMAN);
+    }
+
+    function isAiVsAiGame() {
+        var types = _.pluck(vm.gameConfig.players, "type");
+        return _.includes(types, PLAYER_TYPES.AI) && !_.includes(types, PLAYER_TYPES.HUMAN);
+    }
+
+    function isHumanVsHumanGame() {
+        var types = _.pluck(vm.gameConfig.players, "type");
+        return !_.includes(types, PLAYER_TYPES.AI) && _.includes(types, PLAYER_TYPES.HUMAN);
     }
 
     function resetStats() {
@@ -171,6 +191,8 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
         gameService.endCurrentGame(); // async, but we don't care whether it succeeds or fails
         vm.gameExists = false;
         vm.paused = false;
+        vm.currentGame = undefined;
+        $mdToast.hide();
     }
 
     function selectHumanPlayerMove(event, selectedCell) {
