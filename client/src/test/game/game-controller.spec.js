@@ -143,10 +143,11 @@ describe("GameController", function() {
             expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.GAME_STARTED, gameService.currentGame);
         });
 
-        it("flags that game exists and it is not paused", function() {
+        it("exposes current game to UI, flags that game exists and it is not paused", function() {
             vm.startGame();
             $scope.$digest();
 
+            expect(vm.currentGame).toBe(gameService.currentGame);
             expect(vm.gameExists).toBe(true);
             expect(vm.paused).toBe(false);
         });

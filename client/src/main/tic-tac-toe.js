@@ -28,7 +28,7 @@ angular
 
 require("./board");
 require("./game");
-
+require("./utils");
 
 
 function configureIcons($mdIconProvider) {
