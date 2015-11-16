@@ -115,10 +115,6 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                 return result;
             })
             .then(function(result) {
-                if (isHumanVsAiGame()) {
-                    $mdToast.hide();
-                }
-
                 if (!vm.gameExists) {
                     return;
                 } else if (!result.gameEnded && !vm.paused) {
