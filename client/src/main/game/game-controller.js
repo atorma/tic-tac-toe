@@ -129,9 +129,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                     if (vm.gameStats.roundsPlayed < vm.gameConfig.rounds) {
                         initRound().then(play);
                     } else {
-                        vm.gameExists = false;
-                        vm.paused = false;
-                        $mdToast.hide();
+                        endGame();
                     }
                 }
             })
@@ -188,7 +186,9 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     }
 
     function endGame() {
-        gameService.endCurrentGame(); // async, but we don't care whether it succeeds or fails
+        if (gameService.currentGame) {
+            gameService.endCurrentGame(); // async, but we don't care whether it succeeds or fails
+        }
         vm.gameExists = false;
         vm.paused = false;
         vm.currentGame = undefined;
