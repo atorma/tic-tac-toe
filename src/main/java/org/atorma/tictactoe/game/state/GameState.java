@@ -59,80 +59,8 @@ public class GameState {
     }
 
 
-    public int getBoardRows() {
-        return board.getNumRows();
-    }
-
-    public int getBoardCols() {
-        return board.getNumCols();
-    }
-
-    public int getConnectHowMany() {
-        return connectHowMany;
-    }
-
-    public Piece getNextPlayer() {
-        return nextPlayer;
-    }
-
-    public Piece getPiece(int row, int col) {
-        return board.get(new Cell(row, col));
-    }
-
-    public Piece getPiece(Cell position) {
-        return board.get(position);
-    }
-
-    public int getNumPieces() {
-        return getBoardRows()*getBoardCols() - getAllowedMoves().size();
-    }
-
-    /** Returns allowed moves sorted first by row, then by column. */
-    public List<Cell> getAllowedMoves() {
-        return Collections.unmodifiableList(allowedMoves);
-    }
-
-    public boolean isAllowed(Cell move) {
-        return Collections.binarySearch(this.allowedMoves, move, new CellRowOrderComparator()) >= 0;
-    }
-
-    public boolean isTie() {
-        return getWinner() == null && getAllowedMoves().isEmpty();
-    }
-
-    public boolean isAtEnd() {
-        return getWinner() != null || isTie();
-    }
-
-
-    private void checkAllowedMoves() {
-        allowedMoves = new ArrayList<>(getBoardRows() * getBoardCols());
-
-        if (getWinner() != null) {
-            return;
-        }
-
-        for (int i = 0; i < board.getNumRows(); i++) {
-            for (int j = 0; j < board.getNumCols(); j++) {
-                if (board.get(new Cell(i, j)) == null) {
-                    allowedMoves.add(new Cell(i, j));
-                }
-            }
-        }
-    }
-
-    public GameState getCopy() {
-        GameState nextState = new GameState();
-        nextState.connectHowMany = this.connectHowMany;
-        nextState.nextPlayer = this.nextPlayer;
-        nextState.board = this.board.copy();
-        nextState.allowedMoves = new ArrayList<>(this.allowedMoves);
-        nextState.longestSequences = new EnumMap<>(this.longestSequences);
-        return nextState;
-    }
-
     /**
-     * Returns a new GameState resulting from a move to given position.
+     * Returns a new state object resulting from a move to given position.
      *
      * @see
      * #update(Cell)
@@ -166,13 +94,81 @@ public class GameState {
         findSequencesThatCrossCell(position);
     }
 
-
-    public Map<Piece, Sequence> getLongestSequences() {
-        return Collections.unmodifiableMap(longestSequences);
+    public GameState getCopy() {
+        GameState nextState = new GameState();
+        nextState.connectHowMany = this.connectHowMany;
+        nextState.nextPlayer = this.nextPlayer;
+        nextState.board = this.board.copy();
+        nextState.allowedMoves = new ArrayList<>(this.allowedMoves);
+        nextState.longestSequences = new EnumMap<>(this.longestSequences);
+        return nextState;
     }
 
-    public Sequence getLongestSequence(Piece player) {
-        return longestSequences.get(player);
+
+
+    public int getBoardRows() {
+        return board.getNumRows();
+    }
+
+    public int getBoardCols() {
+        return board.getNumCols();
+    }
+
+    public int getConnectHowMany() {
+        return connectHowMany;
+    }
+
+
+    public Piece getNextPlayer() {
+        return nextPlayer;
+    }
+
+
+
+    public Piece getPiece(int row, int col) {
+        return board.get(new Cell(row, col));
+    }
+
+    public Piece getPiece(Cell position) {
+        return board.get(position);
+    }
+
+    public int getNumPieces() {
+        return getBoardRows()*getBoardCols() - getAllowedMoves().size();
+    }
+
+    /** Returns allowed moves sorted first by row, then by column. */
+    public List<Cell> getAllowedMoves() {
+        return Collections.unmodifiableList(allowedMoves);
+    }
+
+    public boolean isAllowed(Cell move) {
+        return Collections.binarySearch(this.allowedMoves, move, new CellRowOrderComparator()) >= 0;
+    }
+
+    private void checkAllowedMoves() {
+        allowedMoves = new ArrayList<>(getBoardRows() * getBoardCols());
+
+        if (getWinner() != null) {
+            return;
+        }
+
+        for (int i = 0; i < board.getNumRows(); i++) {
+            for (int j = 0; j < board.getNumCols(); j++) {
+                if (board.get(new Cell(i, j)) == null) {
+                    allowedMoves.add(new Cell(i, j));
+                }
+            }
+        }
+    }
+
+
+    public boolean isTie() {
+        return getWinner() == null && getAllowedMoves().isEmpty();
+    }
+
+    public boolean isAtEnd() {
+        return getWinner() != null || isTie();
     }
 
     /**
@@ -194,10 +190,15 @@ public class GameState {
         }
     }
 
-    /**
-     * @return
-     *  all sequences on the game board
-     */
+
+    public Map<Piece, Sequence> getLongestSequences() {
+        return Collections.unmodifiableMap(longestSequences);
+    }
+
+    public Sequence getLongestSequence(Piece player) {
+        return longestSequences.get(player);
+    }
+
     public Map<Piece, List<Sequence>> getAllSequences() {
         allSequences = new HashMap<>();
         for (Piece piece : Piece.values()) {
@@ -208,7 +209,6 @@ public class GameState {
         allSequences = null; // to prevent high memory consumption in case GameStates are stored
         return retVal;
     }
-
 
     /**
      * Finds longest sequences ({@link #longestSequences}) by going through the entire game board (4 times).
