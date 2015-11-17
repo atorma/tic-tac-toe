@@ -14,7 +14,7 @@ public class MoveNodeTests {
 
     @Test
     public void computes_game_state_at_child_nodes_when_expanded() {
-        GameState startingState = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
+        GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
         assertEqual(startingState, root.getGameState());
 
@@ -44,7 +44,7 @@ public class MoveNodeTests {
 
     @Test
     public void find_move_returns_correct_move_even_if_node_not_expanded_yet() {
-        GameState startingState = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
+        GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
         assertTrue(root.getChildren().isEmpty());
 
@@ -57,7 +57,7 @@ public class MoveNodeTests {
     public void expand_random_in_rectangle_returns_allowed_move_in_rectangle_and_adds_it_as_child_node() {
         Rectangle rectangle = new Rectangle(5, 5, 6, 6); // 2 x 2 rectangle
 
-        GameState state = new GameState.Builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
+        GameState state = GameState.builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(state, null, new WinLossDrawScheme());
         assertTrue(root.getChildren().isEmpty());
         assertFalse(root.isFullyExpandedIn(rectangle));
@@ -90,7 +90,7 @@ public class MoveNodeTests {
         Rectangle rectangle1 = new Rectangle(5, 5, 5, 5); // 1 x 1 rectangle
         Rectangle rectangle2 = new Rectangle(6, 6, 6, 6); // 1 x 1 rectangle
 
-        GameState state = new GameState.Builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
+        GameState state = GameState.builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(state, null, new WinLossDrawScheme());
         assertTrue(root.getChildren().isEmpty());
         assertFalse(root.isFullyExpandedIn(rectangle1, rectangle2));
@@ -112,7 +112,7 @@ public class MoveNodeTests {
     public void expand_random_when_area_is_entire_board() {
         Rectangle rectangle = new Rectangle(0, 0, 2, 2);
 
-        GameState state = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
+        GameState state = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(state, null, new WinLossDrawScheme());
 
         MoveNode expanded;
@@ -130,7 +130,7 @@ public class MoveNodeTests {
 
     @Test
     public void propagate_results_using_win_loss_draw_scheme() {
-        GameState startingState = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
+        GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
         root.expandAll();
 
@@ -140,7 +140,7 @@ public class MoveNodeTests {
         child1.expandAll();
         MoveNode grandChild1 = child1.getChildren().get(0);
 
-        GameState crossWins = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[][]{
+        GameState crossWins = GameState.builder().setConnectHowMany(3).setBoard(new Piece[][]{
                 {Piece.X, Piece.O, Piece.O},
                 {Piece.O, Piece.X, Piece.O},
                 {null, Piece.X, Piece.X}
@@ -200,7 +200,7 @@ public class MoveNodeTests {
         assertEquals(-1, grandChild1.getExpectedReward(Piece.O), 0);
 
 
-        GameState roundWins = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[][]{
+        GameState roundWins = GameState.builder().setConnectHowMany(3).setBoard(new Piece[][]{
                 {Piece.X, Piece.X, Piece.O},
                 {Piece.O, Piece.O, Piece.O},
                 {null, Piece.X, Piece.X}
@@ -233,7 +233,7 @@ public class MoveNodeTests {
         assertEquals(-1, grandChild1.getExpectedReward(Piece.O), 0);
 
 
-        GameState tie = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[][]{
+        GameState tie = GameState.builder().setConnectHowMany(3).setBoard(new Piece[][]{
                 {Piece.X, Piece.X, Piece.O},
                 {Piece.O, Piece.O, Piece.X},
                 {Piece.X, Piece.O, Piece.X}
@@ -261,7 +261,7 @@ public class MoveNodeTests {
 
     @Test
     public void getBestMove_and_getExploratoryMove_return_some_move_when_no_visits_to_next_moves() {
-        GameState emptyBoardCrossStarts = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
+        GameState emptyBoardCrossStarts = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(emptyBoardCrossStarts, null, new WinLossDrawScheme());
         root.expandAll();
 
@@ -276,7 +276,7 @@ public class MoveNodeTests {
 
     @Test
     public void getBestMove_returns_move_with_highest_expected_value() {
-        GameState emptyBoardCrossStarts = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
+        GameState emptyBoardCrossStarts = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(emptyBoardCrossStarts, null, new WinLossDrawScheme());
 
         root.expandAll();
@@ -285,12 +285,12 @@ public class MoveNodeTests {
 
         // Assume these are results of two simulations
 
-        GameState crossWinsState = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[][]{
+        GameState crossWinsState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[][]{
                 {Piece.X, Piece.O, Piece.O},
                 {Piece.O, Piece.X, Piece.O},
                 {null, Piece.X, Piece.X}
         }).setNextPlayer(Piece.O).build();
-        GameState roundWinsState = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[][]{
+        GameState roundWinsState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[][]{
                 {Piece.X, Piece.X, Piece.O},
                 {Piece.O, Piece.O, Piece.O},
                 {null, Piece.X, Piece.X}
@@ -305,7 +305,7 @@ public class MoveNodeTests {
 
     @Test
     public void prune_other_branches_on_path_to_root() {
-        GameState startingState = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
+        GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
         root.expandAll();
         for (MoveNode child : root.getChildren()) {

@@ -58,7 +58,7 @@ public class MCTSPlayer implements Player {
 
 
     public Cell move(Piece[][] board, Cell opponentsMove) {
-        GameState updatedState = new GameState.Builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(this.getPiece()).build();
+        GameState updatedState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(this.getPiece()).build();
         return move(updatedState, opponentsMove);
     }
 
@@ -137,7 +137,7 @@ public class MCTSPlayer implements Player {
         }
 
         // If opponent would get a decisive move, steal the move
-        GameState fakeState = new GameState.Builder().setTemplate(lastMove.getGameState()).setNextPlayer(mySide.other()).build();
+        GameState fakeState = GameState.builder().setTemplate(lastMove.getGameState()).setNextPlayer(mySide.other()).build();
         NaivePlayer opponent = new NaivePlayer();
         opponent.setPiece(mySide.other());
         naiveMove = opponent.move(fakeState, null);

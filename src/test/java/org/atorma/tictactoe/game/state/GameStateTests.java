@@ -20,7 +20,7 @@ public class GameStateTests {
                 {null, Piece.O, null}
         };
 
-        GameState gameState = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        GameState gameState = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         List<Cell> allowedMoves = gameState.getAllowedMoves();
 
         assertEquals(5, allowedMoves.size());
@@ -45,7 +45,7 @@ public class GameStateTests {
                 {null,        Piece.X, null}
         };
 
-        GameState gameState = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.O).build();
+        GameState gameState = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.O).build();
         List<Cell> allowedMoves = gameState.getAllowedMoves();
 
         assertEquals(0, allowedMoves.size());
@@ -59,7 +59,7 @@ public class GameStateTests {
                 {null, Piece.O, null}
         };
 
-        GameState gameState1 = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        GameState gameState1 = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         assertEquals(Piece.X, gameState1.getNextPlayer());
         assertEquals(4, gameState1.getNumPieces());
         assertEquals(5, gameState1.getAllowedMoves().size());
@@ -106,7 +106,7 @@ public class GameStateTests {
                 {null, Piece.X, null},
                 {null, Piece.O, null}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(noWinnerNoTie).setNextPlayer(Piece.X).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(noWinnerNoTie).setNextPlayer(Piece.X).build();
         assertEquals(null, state.getWinner());
         assertEquals(false, state.isTie());
         assertEquals(2, state.getLongestSequence(Piece.X).length);
@@ -117,7 +117,7 @@ public class GameStateTests {
                 {Piece.O, Piece.O, Piece.O},
                 {null,        Piece.X, Piece.X}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(roundHorizontal).setNextPlayer(Piece.O).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(roundHorizontal).setNextPlayer(Piece.O).build();
         assertEquals(Piece.O, state.getWinner());
         assertEquals(false, state.isTie());
 
@@ -126,7 +126,7 @@ public class GameStateTests {
                 {null,        Piece.X, Piece.X},
                 {Piece.O, Piece.O, Piece.X}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(crossVertical).setNextPlayer(Piece.O).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(crossVertical).setNextPlayer(Piece.O).build();
         assertEquals(Piece.X, state.getWinner());
         assertEquals(false, state.isTie());
 
@@ -135,7 +135,7 @@ public class GameStateTests {
                 {Piece.X, Piece.O, Piece.X},
                 {null,        Piece.X, Piece.O}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(roundDiagTopLeft).setNextPlayer(Piece.O).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(roundDiagTopLeft).setNextPlayer(Piece.O).build();
         assertEquals(Piece.O, state.getWinner());
         assertEquals(false, state.isTie());
 
@@ -144,7 +144,7 @@ public class GameStateTests {
                 {Piece.O, Piece.X, Piece.X},
                 {Piece.X, Piece.O, Piece.O}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(crossDiagTopRight).setNextPlayer(Piece.O).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(crossDiagTopRight).setNextPlayer(Piece.O).build();
         assertEquals(Piece.X, state.getWinner());
         assertEquals(false, state.isTie());
 
@@ -153,7 +153,7 @@ public class GameStateTests {
                 {Piece.O, Piece.O, Piece.X},
                 {Piece.X, Piece.X, Piece.O}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(tie).setNextPlayer(Piece.O).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(tie).setNextPlayer(Piece.O).build();
         assertEquals(null, state.getWinner());
         assertEquals(true, state.isTie());
         assertEquals(2, state.getLongestSequence(Piece.X).length);
@@ -163,7 +163,7 @@ public class GameStateTests {
 
     @Test // correctness of the assertions best verified by pen and paper...
     public void get_longest_sequence_after_consecutive_moves() {
-        GameState state = new GameState.Builder().setConnectHowMany(5).setBoard(new Piece[10][10]).setNextPlayer(Piece.X).build();
+        GameState state = GameState.builder().setConnectHowMany(5).setBoard(new Piece[10][10]).setNextPlayer(Piece.X).build();
         printBoardAndLongestSequences(state);
         assertEquals(0, state.getLongestSequence(Piece.X).length);
         assertEquals(0, state.getLongestSequence(Piece.O).length);
@@ -269,7 +269,7 @@ public class GameStateTests {
     @Test
      public void check_longest_sequence_on_diagonal_top_left_bottom_right_and_on_column() {
         // Cross: diagonal left-right (5, 12) to (9, 16), Round: column (2, 2) to (5, 2)
-        GameState state = new GameState.Builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
+        GameState state = GameState.builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
         assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(5, 12));
         assertEquals(Piece.O, state.getNextPlayer());
@@ -308,7 +308,7 @@ public class GameStateTests {
     @Test
     public void check_longest_sequence_on_diagonal_top_right_bottom_left_and_on_row() {
         // Cross: diagonal right-left (5, 12) to (9, 8), Round: row (2, 2) to (2, 5)
-        GameState state = new GameState.Builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
+        GameState state = GameState.builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
         assertEquals(Piece.X, state.getNextPlayer());
         state = state.next(new Cell(5, 12));
         assertEquals(Piece.O, state.getNextPlayer());
@@ -354,7 +354,7 @@ public class GameStateTests {
                 {null,          null,           null},
                 {null,          null,           null}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         assertEquals(2, state.getLongestSequence(Piece.X).length);
         assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
         assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
@@ -366,7 +366,7 @@ public class GameStateTests {
                 {null,          null,           null},
                 {null,          null,           null}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         assertEquals(2, state.getLongestSequence(Piece.X).length);
         assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
         assertEquals(1, state.getLongestSequence(Piece.X).start.getColumn());
@@ -378,7 +378,7 @@ public class GameStateTests {
                 {null,          null,           null},
                 {null,          null,           null}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         assertEquals(1, state.getLongestSequence(Piece.X).length);
         assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
         assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
@@ -390,7 +390,7 @@ public class GameStateTests {
                 {null,          null,           null},
                 {Piece.X,   null,           null}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         assertEquals(1, state.getLongestSequence(Piece.X).length);
         assertEquals(2, state.getLongestSequence(Piece.X).start.getRow());
         assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
@@ -402,7 +402,7 @@ public class GameStateTests {
                 {null,          Piece.X,    null},
                 {null,          null,           null}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         assertEquals(2, state.getLongestSequence(Piece.X).length);
         assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
         assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
@@ -414,7 +414,7 @@ public class GameStateTests {
                 {null,          Piece.X,    null},
                 {null,          null,           Piece.X}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         assertEquals(3, state.getLongestSequence(Piece.X).length);
         assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
         assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
@@ -426,7 +426,7 @@ public class GameStateTests {
                 {null,          null,           null},
                 {null,          null,           null}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         assertEquals(1, state.getLongestSequence(Piece.X).length);
         assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
         assertEquals(2, state.getLongestSequence(Piece.X).start.getColumn());
@@ -438,7 +438,7 @@ public class GameStateTests {
                 {null,          Piece.X,    null},
                 {Piece.X,   null,           null}
         };
-        state = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         assertEquals(2, state.getLongestSequence(Piece.X).length);
         assertEquals(1, state.getLongestSequence(Piece.X).start.getRow());
         assertEquals(1, state.getLongestSequence(Piece.X).start.getColumn());
@@ -456,7 +456,7 @@ public class GameStateTests {
         board[0][4] = Piece.O;
         board[0][5] = Piece.O;
 
-        GameState gameState = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        GameState gameState = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
         Map<Piece, List<GameState.Sequence>> sequences = gameState.getAllSequences();
 
         System.out.println(sequences);

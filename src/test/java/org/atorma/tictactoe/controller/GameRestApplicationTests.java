@@ -48,7 +48,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
     private void setUpAiVsAiGame() {
         Player player1 = new NaivePlayer();
         Player player2 = new NaivePlayer();
-        GameState initialState = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.O).build();
+        GameState initialState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.O).build();
         Game game = new Game(player1, player2, initialState);
         aiVsAiGame = gameRepository.save(game);
     }
@@ -58,7 +58,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
         player1.setPiece(Piece.X);
         Player player2 = new NaivePlayer();
         player2.setPiece(Piece.O);
-        GameState initialState = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build(); // HumanPlayer starts
+        GameState initialState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build(); // HumanPlayer starts
         Game game = new Game(player1, player2, initialState);
         humanVsAiGame = gameRepository.save(game);
     }

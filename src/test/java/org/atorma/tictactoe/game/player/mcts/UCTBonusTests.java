@@ -19,7 +19,7 @@ public class UCTBonusTests {
     public void setUp() {
         Piece[][] board = new Piece[3][3];
         board[1][1] = Piece.X;
-        someState = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.O).build();
+        someState = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.O).build();
     }
 
     @Test

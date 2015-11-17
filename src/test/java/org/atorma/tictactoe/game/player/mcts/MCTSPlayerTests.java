@@ -40,7 +40,7 @@ public class MCTSPlayerTests {
         Player naivePlayer = new NaivePlayer();
         naivePlayer.setPiece(Piece.O);
 
-        GameState startState = new GameState.Builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState startState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(mctsPlayer.getPiece()).build();
         Simulator simulator = new Simulator(startState, mctsPlayer, naivePlayer);
 
         GameState endState = simulator.run();
@@ -73,7 +73,7 @@ public class MCTSPlayerTests {
         // Naive player has started from the optimal position in the middle
         Piece[][] board = new Piece[3][3];
         board[1][1] = naivePlayer.getPiece();
-        GameState startState = new GameState.Builder().setConnectHowMany(3).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState startState = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
 
         Simulator simulator = new Simulator(startState, mctsPlayer, naivePlayer);
         GameState endState = simulator.run();
@@ -104,7 +104,7 @@ public class MCTSPlayerTests {
         Player naivePlayer = new NaivePlayer();
         naivePlayer.setPiece(Piece.O);
 
-        GameState startState = new GameState.Builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState startState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(mctsPlayer.getPiece()).build();
         Simulator simulator = new Simulator(startState, mctsPlayer, naivePlayer);
 
         GameState endState = simulator.run();
@@ -134,7 +134,7 @@ public class MCTSPlayerTests {
         Player randomPlayer = new RandomPlayer();
         randomPlayer.setPiece(Piece.O);
 
-        GameState startState = new GameState.Builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(randomPlayer.getPiece()).build();
+        GameState startState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(randomPlayer.getPiece()).build();
         Simulator simulator = new Simulator(startState, mctsPlayer, randomPlayer);
 
         GameState endState = simulator.run();
@@ -172,7 +172,7 @@ public class MCTSPlayerTests {
         Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
 
-        GameState startState = new GameState.Builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState startState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
         startState.print();
 
         Cell mctsPlayerMove = mctsPlayer.move(startState, new Cell(3, 0));
@@ -212,7 +212,7 @@ public class MCTSPlayerTests {
         mctsPlayer.setPiece(Piece.X);
 
 
-        GameState startState = new GameState.Builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState startState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
         startState.print();
 
         Cell mctsPlayerMove = mctsPlayer.move(startState, new Cell(3, 0));
@@ -254,7 +254,7 @@ public class MCTSPlayerTests {
         naivePlayer.setPiece(Piece.O);
 
 
-        GameState gameState = new GameState.Builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState gameState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
         gameState.print();
 
         Cell mctsPlayerMove = mctsPlayer.move(gameState, new Cell(8, 0));
@@ -299,7 +299,7 @@ public class MCTSPlayerTests {
 
         Piece[][] board = new Piece[18][18];
         board[2][2] = opponent.getPiece();
-        GameState state = new GameState.Builder().setConnectHowMany(5).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState state = GameState.builder().setConnectHowMany(5).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
 
         Cell opponentsMove = new Cell(2, 2);
 
@@ -326,7 +326,7 @@ public class MCTSPlayerTests {
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
 
-        GameState gameState = new GameState.Builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState gameState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(mctsPlayer.getPiece()).build();
         gameState.print();
 
         // mctsPlayer starts from empty board, can expand anywhere
@@ -380,7 +380,7 @@ public class MCTSPlayerTests {
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
 
-        GameState gameState = new GameState.Builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(mctsPlayer.getPiece().other()).build();
+        GameState gameState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(mctsPlayer.getPiece().other()).build();
         gameState.print();
 
         Cell opponentsMove = new Cell(0, 0);

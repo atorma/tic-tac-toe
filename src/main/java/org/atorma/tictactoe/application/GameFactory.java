@@ -26,7 +26,7 @@ public class GameFactory {
 
         Piece[][] board = new Piece[gameParams.board.rows][gameParams.board.columns];
 
-        GameState initialState = new GameState.Builder().setConnectHowMany(gameParams.connectHowMany).setBoard(board).setNextPlayer(gameParams.firstPlayer).build();
+        GameState initialState = GameState.builder().setConnectHowMany(gameParams.connectHowMany).setBoard(board).setNextPlayer(gameParams.firstPlayer).build();
 
         List<Player> players = new ArrayList<>(2);
         for (Piece piece : Piece.values()) {
