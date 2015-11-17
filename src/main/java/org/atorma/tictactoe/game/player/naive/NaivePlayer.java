@@ -5,7 +5,7 @@ import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.atorma.tictactoe.game.state.Utils;
+import org.atorma.tictactoe.game.Utils;
 
 import java.util.ArrayList;
 import java.util.Collections;

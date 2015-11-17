@@ -1,6 +1,7 @@
 package org.atorma.tictactoe.game.state;
 
 import org.atorma.tictactoe.FastTests;
+import org.atorma.tictactoe.game.Utils;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

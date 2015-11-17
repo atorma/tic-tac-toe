@@ -2,7 +2,6 @@ package org.atorma.tictactoe.game.player.mcts;
 
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.atorma.tictactoe.game.state.Utils;
 
 public class WinLossDrawScheme implements RewardScheme {
 

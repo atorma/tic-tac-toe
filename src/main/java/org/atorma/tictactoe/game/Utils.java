@@ -1,4 +1,4 @@
-package org.atorma.tictactoe.game.state;
+package org.atorma.tictactoe.game;
 
 
 import java.util.ArrayList;
