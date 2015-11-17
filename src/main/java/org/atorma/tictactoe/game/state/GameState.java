@@ -18,31 +18,12 @@ public class GameState {
     private Map<Piece, Sequence> longestSequences;
     private Map<Piece, List<Sequence>> allSequences;
 
-    /**
-     * Creates a game state.
-     *
-     * @param connectHowMany
-     *  how many pieces need to be connected to win
-     * @param board
-     *  state of the game board
-     * @param nextPlayer
-     *  player whose turn is next
-     *
-     * @see
-     *  Builder
-     */
-    public GameState(int connectHowMany, Piece[][] board, Piece nextPlayer) {
-        this.nextPlayer = nextPlayer;
-        this.board = new DenseArrayBoard(board);
-        this.connectHowMany = connectHowMany;
 
-        findSequencesFromScratch();
-        checkAllowedMoves();
+    public static Builder builder() {
+        return new GameState.Builder();
     }
 
-    private GameState() {
-        // For move() method
-    }
+    private GameState() {}
 
 
     /**
