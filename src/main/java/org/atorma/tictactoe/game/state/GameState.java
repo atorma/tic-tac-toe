@@ -27,6 +27,9 @@ public class GameState {
      *  state of the game board
      * @param nextPlayer
      *  player whose turn is next
+     *
+     * @see
+     *  Builder
      */
     public GameState(int connectHowMany, Piece[][] board, Piece nextPlayer) {
         this.nextPlayer = nextPlayer;
@@ -35,23 +38,6 @@ public class GameState {
 
         findSequencesFromScratch();
         checkAllowedMoves();
-    }
-
-    /**
-     * Creates a game state based on a copy of a template state.
-     *
-     * @param template
-     *  template state
-     * @param nextPlayer
-     *  player whose turn is next (overrides template state turn)
-     */
-    public GameState(GameState template, Piece nextPlayer) {
-        GameState copy = template.getCopy();
-        this.board = copy.board;
-        this.allowedMoves = copy.allowedMoves;
-        this.longestSequences = copy.longestSequences;
-        this.connectHowMany = copy.connectHowMany;
-        this.nextPlayer = nextPlayer;
     }
 
     private GameState() {
@@ -78,7 +64,6 @@ public class GameState {
      * #next(Cell)
      */
     public void update(Cell position) {
-
         Piece existingPiece = getPiece(position);
         if (existingPiece != null) {
             throw new IllegalArgumentException("Illegal move: " + position + " already occupied by " + existingPiece);
@@ -639,5 +624,101 @@ public class GameState {
             col++;
         }
 
+    }
+
+    public static class Builder {
+
+        private Integer connectHowMany = null;
+        private Piece[][] board = null;
+        private Piece nextPlayer = null;
+        private GameState template = null;
+
+        /**
+         * @param connectHowMany
+         *  how many pieces need to be connected to win
+         * @return
+         *  this
+         */
+        public Builder setConnectHowMany(int connectHowMany) {
+            this.connectHowMany = connectHowMany;
+            return this;
+        }
+
+        /**
+         * @param board
+         *  state of the game board
+         * @return
+         *  this
+         */
+        public Builder setBoard(Piece[][] board) {
+            this.board = board;
+            return this;
+        }
+
+        /**
+         * @param nextPlayer
+         *  player whose turn is next
+         * @return
+         *  this
+         */
+        public Builder setNextPlayer(Piece nextPlayer) {
+            this.nextPlayer = nextPlayer;
+            return this;
+        }
+
+        /**
+         * @param template
+         *  template with which to initialize the new state
+         * @return
+         *  this
+         */
+        public Builder setTemplate(GameState template) {
+            this.template = template;
+            return this;
+        }
+
+        public GameState build() {
+            GameState state;
+            boolean fullInit;
+
+            if (template != null) {
+                state = template.getCopy();
+                fullInit = false;
+                if (board != null) {
+                    state.board = new DenseArrayBoard(board);
+                    fullInit = true;
+                }
+                if (connectHowMany != null) {
+                    state.connectHowMany = connectHowMany;
+                }
+                if (nextPlayer != null) {
+                    state.nextPlayer = nextPlayer;
+                }
+            } else {
+                if (board == null) {
+                    throw new IllegalArgumentException("Initial board is undefined");
+                }
+                if (connectHowMany == null) {
+                    throw new IllegalArgumentException("Number of pieces to connect to win is undefined");
+                }
+                if (nextPlayer == null) {
+                    throw new IllegalArgumentException("Next player is undefined");
+                }
+
+                state = new GameState();
+                fullInit = true;
+                state.nextPlayer = nextPlayer;
+                state.board = new DenseArrayBoard(board);
+                state.connectHowMany = connectHowMany;
+
+            }
+
+            if (fullInit) {
+                state.findSequencesFromScratch();
+                state.checkAllowedMoves();
+            }
+
+            return state;
+        }
     }
 }

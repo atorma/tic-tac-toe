@@ -27,7 +27,7 @@ public class NaivePlayerTests {
 
     @Test
     public void if_no_previous_sequence_then_pick_some_move() {
-        GameState state = new GameState(5, new Piece[18][18], player.getPiece());
+        GameState state = new GameState.Builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(player.getPiece()).build();
         assertNotNull(player.move(state, null));
     }
 
@@ -44,7 +44,7 @@ public class NaivePlayerTests {
         board[10][11] = Piece.X;
         board[10][12] = Piece.X;
 
-        GameState state = new GameState(5, board, player.getPiece());
+        GameState state = new GameState.Builder().setConnectHowMany(5).setBoard(board).setNextPlayer(player.getPiece()).build();
 
         Cell move = player.move(state, null);
         printMove(move);
@@ -63,7 +63,7 @@ public class NaivePlayerTests {
         board[11][10] = Piece.X;
         board[12][10] = Piece.X;
 
-        state = new GameState(5, board, player.getPiece());
+        state = new GameState.Builder().setConnectHowMany(5).setBoard(board).setNextPlayer(player.getPiece()).build();
 
         move = player.move(state, null);
         printMove(move);
@@ -81,7 +81,7 @@ public class NaivePlayerTests {
         board[11][11] = Piece.X;
         board[12][12] = Piece.X;
 
-        state = new GameState(5, board, player.getPiece());
+        state = new GameState.Builder().setConnectHowMany(5).setBoard(board).setNextPlayer(player.getPiece()).build();
 
         move = player.move(state, null);
         printMove(move);
@@ -99,7 +99,7 @@ public class NaivePlayerTests {
         board[11][9] = Piece.X;
         board[12][8] = Piece.X;
 
-        state = new GameState(5, board, player.getPiece());
+        state = new GameState.Builder().setConnectHowMany(5).setBoard(board).setNextPlayer(player.getPiece()).build();
 
         move = player.move(state, null);
         printMove(move);
@@ -123,7 +123,7 @@ public class NaivePlayerTests {
         board[4][3] = Piece.O;
         board[2][0] = Piece.O;
 
-        GameState startState = new GameState(5, board, Piece.X);
+        GameState startState = new GameState.Builder().setConnectHowMany(5).setBoard(board).setNextPlayer(Piece.X).build();
         startState.print();
 
         Cell move = player.move(startState, null);
@@ -147,7 +147,7 @@ public class NaivePlayerTests {
         board[2][0] = Piece.O;
         board[3][0] = Piece.O;
 
-        GameState startState = new GameState(5, board, Piece.X);
+        GameState startState = new GameState.Builder().setConnectHowMany(5).setBoard(board).setNextPlayer(Piece.X).build();
         startState.print();
 
         Player player  = new NaivePlayer();
@@ -177,7 +177,7 @@ public class NaivePlayerTests {
         board[2][0] = Piece.O;
         board[3][0] = Piece.O;
 
-        GameState startState = new GameState(5, board, Piece.O);
+        GameState startState = new GameState.Builder().setConnectHowMany(5).setBoard(board).setNextPlayer(Piece.O).build();
         startState.print();
 
         Player player  = new NaivePlayer();
@@ -214,7 +214,7 @@ public class NaivePlayerTests {
         board[16][1] = Piece.O;
         board[17][1] = Piece.O;
 
-        GameState startState = new GameState(5, board, Piece.O);
+        GameState startState = new GameState.Builder().setConnectHowMany(5).setBoard(board).setNextPlayer(Piece.O).build();
         startState.print();
 
         Player player  = new NaivePlayer();
