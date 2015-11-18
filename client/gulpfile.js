@@ -52,8 +52,9 @@ gulp.task('test-dev', function (cb) {
     context.env = DEV;
     karmaConf.singleRun = true;
     karmaConf.autoWatch = false;
+    karmaConf.colors = true;
     karmaConf.logLevel = "DEBUG";
-    runSequence('build-dev', 'js-tests', 'start-karma', cb);
+    runSequence('js-tests', 'start-karma', cb);
 });
 
 gulp.task('develop', function (cb) {
@@ -75,7 +76,8 @@ gulp.task('test-prod', function (cb) {
     context.env = PROD;
     karmaConf.singleRun = true;
     karmaConf.autoWatch = false;
-    runSequence('build-prod', 'js-tests', 'start-karma', cb);
+    karmaConf.colors = false;
+    runSequence('js-tests', 'start-karma', cb);
 });
 
 
