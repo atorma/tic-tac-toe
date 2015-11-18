@@ -46,4 +46,9 @@ public class HumanPlayer implements Player {
     public Piece getPiece() {
         return this.piece;
     }
+
+    @Override
+    public String toString() {
+        return "Human";
+    }
 }
