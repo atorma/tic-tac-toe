@@ -2,6 +2,7 @@
 
 var angular = require("angular");
 var _ = require("lodash");
+var visibleSize = require("../utils/visible-size");
 
 angular.module("ticTacToe")
     .directive("board", board);
@@ -99,7 +100,7 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
             canvas.height = canvasHeight;
 
             // 2nd pass: resize to visible height
-            var visibleHeight = getVisibleHeight(canvas);
+            var visibleHeight = visibleSize(canvas).height;
 
             cellSize = _.floor(Math.min(canvas.clientWidth/numCols, visibleHeight/numRows));
             canvasWidth = numCols*cellSize;
@@ -109,21 +110,6 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
             canvas.width = canvasWidth;
             canvas.height = canvasHeight;
         }
-
-
-        function getVisibleHeight(element) {
-            var windowHeight = window.innerHeight;
-            var boundingRect = element.getBoundingClientRect();
-            var elHeight = boundingRect.height;
-            var topLoc = boundingRect.top;
-            var bottomLoc = boundingRect.bottom;
-            if (topLoc >= 0) { // top of the element is visible
-                return Math.min(elHeight, windowHeight - topLoc);
-            } else {
-                return Math.min(bottomLoc, windowHeight);
-            }
-        }
-
 
         function drawGameBoard() {
             ctx.strokeStyle = GRID_COLOR;
