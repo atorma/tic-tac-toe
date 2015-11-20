@@ -192,7 +192,9 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     }
 
     function selectHumanPlayerMove(event, selectedCell) {
-        deferredMove.resolve(selectedCell);
+        if (deferredMove) {
+            deferredMove.resolve(selectedCell);
+        }
     }
 
 }

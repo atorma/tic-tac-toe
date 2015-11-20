@@ -464,17 +464,8 @@ describe("GameController", function() {
 
         it("waits for human player's move after AI move", function() {
             var aiTurnResult = {
-                turnNumber: 2,
-                move: {
-                    piece: PIECES.O,
-                    cell: {row: 1, column: 1}
-                },
-                gameEnded: false,
-                winner: null,
-                winningSequence: null,
-                nextPlayer: PIECES.X
+                gameEnded: false
             };
-
             deferredTurn.resolve(aiTurnResult);
             $scope.$digest();
 
@@ -482,19 +473,8 @@ describe("GameController", function() {
         });
 
         it("on 'move selected' event it plays turn with the selected cell", function() {
-            var aiTurnResult = {
-                turnNumber: 2,
-                move: {
-                    piece: PIECES.O,
-                    cell: {row: 1, column: 1}
-                },
-                gameEnded: false,
-                winner: null,
-                winningSequence: null
-            };
-            deferredTurn.resolve(aiTurnResult);
+            deferredTurn.resolve({gameEnded: false});
             $scope.$digest();
-
 
             var selectedCell = {row: 1, column: 2};
             $scope.$emit(GAME_EVENTS.MOVE_SELECTED, selectedCell);
@@ -503,8 +483,29 @@ describe("GameController", function() {
             expect(gameService.currentGame.playTurn).toHaveBeenCalledWith(selectedCell);
         });
 
-        xit("ignores 'move selected' if it is not the human player's turn", function() {
+        it("ignores 'move selected' if it is not the human player's turn", function() {
+            // No move yet, AI still thinking, but human selects cell
+            var justClicking = {row: 1, column: 2};
+            $scope.$emit(GAME_EVENTS.MOVE_SELECTED, justClicking);
+            $scope.$digest();
+            expect(gameService.currentGame.playTurn).not.toHaveBeenCalledWith(justClicking);
 
+            // AI makes its move...
+            deferredTurn.resolve({gameEnded: false});
+            gameService.currentGame.nextPlayer = PIECES.O;
+            $scope.$digest();
+
+            // Human player's actual move
+            var okMove = {row: 5, column: 5};
+            $scope.$emit(GAME_EVENTS.MOVE_SELECTED, okMove);
+            gameService.currentGame.nextPlayer = PIECES.X;
+            $scope.$digest();
+            expect(gameService.currentGame.playTurn).toHaveBeenCalledWith(okMove);
+
+            // AI thinking again
+            $scope.$emit(GAME_EVENTS.MOVE_SELECTED, justClicking);
+            $scope.$digest();
+            expect(gameService.currentGame.playTurn).not.toHaveBeenCalledWith(justClicking);
         });
     });
 
