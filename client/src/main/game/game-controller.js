@@ -80,7 +80,6 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
             });
         }
 
-        var promiseMove;
         var nextPlayer = vm.gameConfig.players[gameService.currentGame.nextPlayer];
         if (nextPlayer.type === PLAYER_TYPES.AI) {
             if (isHumanVsAiGame()) {
@@ -90,7 +89,8 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                     hideDelay: 0
                 });
             }
-            promiseMove = $q.when();
+            deferredMove = $q.defer();
+            deferredMove.resolve();
         } else if (nextPlayer.type === PLAYER_TYPES.HUMAN) {
             if (isHumanVsAiGame()) {
                 $mdToast.show({
@@ -99,10 +99,9 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                 });
             }
             deferredMove = $q.defer();
-            promiseMove = deferredMove.promise;
         }
 
-        promiseMove
+        deferredMove.promise
             .then(function(selectedCell) {
                 return gameService.currentGame.playTurn(selectedCell);
             })
