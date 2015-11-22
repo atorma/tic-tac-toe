@@ -232,9 +232,10 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
 
 
         function getCanvasCoordinates(clickEvent) {
+            var rect = canvas.getBoundingClientRect();
             return {
-                x: clickEvent.pageX - canvas.offsetLeft,
-                y: clickEvent.pageY - canvas.offsetTop
+                x: clickEvent.pageX - rect.left,
+                y: clickEvent.pageY - rect.top
             };
         }
 
