@@ -14,20 +14,24 @@ angular.module("ticTacToe")
  * The element must be *positioned*.
  *
  */
-function spinnerOverlay($document, $compile) {
+function spinnerOverlay($compile) {
 
     return create;
 
 
     function create(elementId) {
+
         var NO_OP = {
             show: function() {},
             hide: function() {}
         };
-        var document = $document[0];
         var container;
         var overlay;
         var $scope;
+
+        if (!document) {
+            return NO_OP;
+        }
 
         container = document.getElementById(""+elementId);
         if (!container) {
@@ -55,7 +59,8 @@ function spinnerOverlay($document, $compile) {
         }
 
         function createOverlay() {
-            var spinnerTpl = angular.element('<md-progress-circular md-mode="indeterminate">');
+            var spinnerTpl = angular.element('<spinner>');
+            spinnerTpl.attr("size", 48);
             var overlayTpl = angular.element('<div class="centered">');
             overlayTpl.append(spinnerTpl);
 

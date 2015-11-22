@@ -6,7 +6,7 @@ var _ = require("lodash");
 angular.module("ticTacToe")
     .controller("GameController", GameController);
 
-function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, $q, $mdToast, $document) {
+function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, $q, $mdToast, spinnerOverlay) {
     var vm = this;
     var deferredMove;
 
@@ -51,7 +51,13 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     }
 
     function startGame() {
+        var overlay = spinnerOverlay("board-container");
+        overlay.show();
+
         return initRound()
+            .then(function() {
+                overlay.hide();
+            })
             .then(resetStats)
             .then(play);
     }
