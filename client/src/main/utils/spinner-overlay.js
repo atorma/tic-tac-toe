@@ -6,6 +6,14 @@ angular.module("ticTacToe")
     .factory("spinnerOverlay", spinnerOverlay);
 
 
+/**
+ * Usage: spinnerOverlay(elementId)
+ *
+ * Creates an object with functions show() and hide().
+ * show() overlays a spinner centered in the given element.
+ * The element must be *positioned*.
+ *
+ */
 function spinnerOverlay($document, $compile) {
 
     return create;
