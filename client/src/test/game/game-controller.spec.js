@@ -20,7 +20,7 @@ describe("GameController", function() {
     beforeEach(angular.mock.module("ticTacToe", function($provide) {
     }));
 
-    beforeEach(angular.mock.inject(function(_GAME_EVENTS_, _PIECES_, _PLAYER_TYPES_, $rootScope, _$q_) {
+    beforeEach(angular.mock.inject(function(_GAME_EVENTS_, _PIECES_, _PLAYER_TYPES_, $rootScope, _$q_, $httpBackend) {
         GAME_EVENTS = _GAME_EVENTS_;
         PIECES = _PIECES_;
         PLAYER_TYPES = _PLAYER_TYPES_;
@@ -29,6 +29,8 @@ describe("GameController", function() {
         spyOn($scope, "$broadcast").and.callThrough();
 
         $q = _$q_;
+
+        $httpBackend.whenGET(/resources.*/).respond(200);
     }));
 
     beforeEach(function() {

@@ -4,7 +4,8 @@ var angular = require("angular");
 var _ = require("lodash");
 
 angular.module("ticTacToe")
-    .controller("GameController", GameController);
+    .controller("GameController", GameController)
+    .controller("GameController.ToastController", ToastController);
 
 function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, $q, $mdToast, spinnerOverlay) {
     var vm = this;
@@ -79,30 +80,19 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
 
     function play() {
         if (isAiVsAiGame() && vm.currentGame.turnNumber === 1 && vm.gameStats.roundsPlayed === 0) {
-            $mdToast.show({
-                template: '<md-toast><spinner></spinner>&nbsp;Playing...</md-toast>',
-                position: "top left",
-                hideDelay: 0
-            });
+            showProgressToast("Playing...");
         }
 
         var nextPlayer = vm.gameConfig.players[gameService.currentGame.nextPlayer];
         if (nextPlayer.type === PLAYER_TYPES.AI) {
             if (isHumanVsAiGame()) {
-                $mdToast.show({
-                    template: '<md-toast><spinner></spinner>&nbsp;Thinking...</md-toast>',
-                    position: "top left",
-                    hideDelay: 0
-                });
+                showProgressToast("Thinking...");
             }
             deferredMove = $q.defer();
             deferredMove.resolve();
         } else if (nextPlayer.type === PLAYER_TYPES.HUMAN) {
             if (isHumanVsAiGame()) {
-                $mdToast.show({
-                    template: '<md-toast>Your turn, human!</md-toast>',
-                    position: "top left"
-                });
+                showToast("Your turn, human!");
             }
             deferredMove = $q.defer();
         }
@@ -134,8 +124,15 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                     }
                 }
             })
-            .catch(function() {
-                $mdToast.hide();
+            .catch(function(response) {
+                var message;
+                if (response.status === 404) {
+                    message = "Game no is longer active. Games are automatically deleted after 15 minutes of inactivity.";
+                } else {
+                    message = "Oops. An error occurred (status " + response.status + ")";
+                }
+
+                showErrorToast(message).then(endGame);
             });
     }
 
@@ -153,6 +150,37 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
         var types = _.pluck(vm.gameConfig.players, "type");
         return !_.includes(types, PLAYER_TYPES.AI) && _.includes(types, PLAYER_TYPES.HUMAN);
     }
+
+
+    function showToast(message, additionalOptions) {
+        var options = _.extend({
+            template: '<md-toast>{{vm.message}}</md-toast>',
+            position: "top left",
+            locals: {
+                message: message
+            },
+            bindToController: true,
+            controller: "GameController.ToastController",
+            controllerAs: "vm"
+        }, additionalOptions);
+        return $mdToast.show(options);
+    }
+
+    function showProgressToast(message, additionalOptions) {
+        return showToast(message, _.extend({
+            template: '<md-toast><spinner></spinner>&nbsp;{{vm.message}}</md-toast>',
+            hideDelay: 0
+        }, additionalOptions));
+    }
+
+    function showErrorToast(message, additionalOptions) {
+        return showToast(message, _.extend({
+            template: '<md-toast md-theme="error">{{vm.message}} <md-button ng-click="vm.hide()" class="md-action md-icon-button" aria-label="close"><md-icon md-svg-icon="close"></md-icon></md-button></md-toast>',
+            hideDelay: 0
+        }, additionalOptions));
+    }
+
+
 
     function resetStats() {
         vm.gameStats = {
@@ -202,4 +230,14 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
         }
     }
 
+}
+
+function ToastController($mdToast) {
+    var vm = this;
+
+    vm.hide = hide;
+
+    function hide() {
+        $mdToast.hide();
+    };
 }
