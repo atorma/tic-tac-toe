@@ -239,5 +239,5 @@ function ToastController($mdToast) {
 
     function hide() {
         $mdToast.hide();
-    };
+    }
 }
