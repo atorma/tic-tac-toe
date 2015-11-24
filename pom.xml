@@ -64,6 +64,7 @@
     </dependencies>
 
     <build>
+        <finalName>tic-tac-toe</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
