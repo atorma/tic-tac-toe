@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
@@ -34,6 +35,7 @@ public class Game {
     private AtomicReference<Move> lastMove = new AtomicReference<>();
     private AtomicInteger turnNumber = new AtomicInteger(1);
     private AtomicBoolean deleted = new AtomicBoolean(false);
+    private AtomicReference<ZonedDateTime> timeLastPlayed = new AtomicReference<>();
 
     public Game(Player player1, Player player2, GameState initialState) {
         Assert.isTrue(player1 != player2);
@@ -47,6 +49,8 @@ public class Game {
         this.players = Collections.unmodifiableMap(players);
 
         state.set(initialState.getCopy());
+
+        timeLastPlayed.set(ZonedDateTime.now());
     }
 
     private void assignPieces(Player player1, Player player2) {
@@ -103,6 +107,8 @@ public class Game {
         this.lastMove.set(new Move(nextPlayerPiece, moveCell));
         LOGGER.debug("Turn {}: {} to {}", turnNumber, nextPlayerPiece, moveCell);
         turnNumber.incrementAndGet();
+
+        timeLastPlayed.set(ZonedDateTime.now());
     }
 
     public boolean isDeleted() {
@@ -111,6 +117,10 @@ public class Game {
 
     public void setDeleted(boolean deleted) {
         this.deleted.set(deleted);
+    }
+
+    public ZonedDateTime getTimeLastPlayed() {
+        return timeLastPlayed.get();
     }
 
 
