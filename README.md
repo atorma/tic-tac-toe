@@ -25,4 +25,3 @@ Todo
   * Two human players against each other remotely using Websockets
   * Improve MCTS performance using multithreading
   * Optimize UI for mobile clients
-  * Automatically kill "stale" games
