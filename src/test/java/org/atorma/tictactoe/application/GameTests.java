@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mock;
 
+import java.time.ZonedDateTime;
+
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
@@ -105,4 +107,18 @@ public class GameTests extends UnitTests {
         game.playTurn(new TurnParams(10, null));
     }
 
+    @Test
+    public void when_turn_played_then_last_played_timestamp_updated() {
+        Game game = new Game(xPlayer, oPlayer, state);
+        when(state.getNextPlayer()).thenReturn(Piece.X);
+        when(xPlayer.move(any(GameState.class), any(Cell.class))).thenReturn(new Cell(2, 2));
+
+        ZonedDateTime beforePlay = game.getTimeLastPlayed();
+
+        game.playTurn(new TurnParams(1, new Cell(1, 1)));
+
+        ZonedDateTime afterPlay = game.getTimeLastPlayed();
+
+        assertTrue(afterPlay.isAfter(beforePlay));
+    }
 }
