@@ -54,8 +54,10 @@ function spinnerOverlay($compile) {
         }
 
         function hide() {
-            overlay.remove();
-            overlay = undefined;
+            if (overlay) {
+                overlay.remove();
+                overlay = undefined;
+            }
         }
 
         function createOverlay() {
