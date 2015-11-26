@@ -10,6 +10,7 @@ angular.module("ticTacToe")
 function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, $q, $mdToast, spinnerOverlay) {
     var vm = this;
     var deferredMove;
+    var boardSpinner;
 
     vm.init = init;
     vm.startGame = startGame;
@@ -24,6 +25,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     function init() {
         vm.gameExists = false;
         vm.paused = false;
+        boardSpinner = spinnerOverlay("board-container");
         resetStats();
 
         return $q.all({
@@ -52,18 +54,20 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     }
 
     function startGame() {
-        var overlay = spinnerOverlay("board-container");
-        overlay.show();
-
         return initRound()
-            .then(function() {
-                overlay.hide();
-            })
             .then(resetStats)
-            .then(play);
+            .then(function() {
+                if (isAiVsAiGame()) {
+                    showProgressToast("Playing AI vs AI...");
+                }
+            })
+            .then(play)
+            .catch(handleError);
     }
 
     function initRound() {
+        boardSpinner.show();
+
         var gameConfig = _.cloneDeep(vm.gameConfig);
         if (gameConfig.firstPlayer === 'RANDOM') {
             gameConfig.firstPlayer = _.values(PIECES)[_.random(1)];
@@ -71,6 +75,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
 
         return gameService.startNewGame(gameConfig)
             .then(function() {
+                boardSpinner.hide();
                 vm.currentGame = gameService.currentGame;
                 vm.gameExists = true;
                 vm.paused = false;
@@ -79,15 +84,8 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     }
 
     function play() {
-        if (isAiVsAiGame() && vm.currentGame.turnNumber === 1 && vm.gameStats.roundsPlayed === 0) {
-            showProgressToast("Playing...");
-        }
-
         var nextPlayer = vm.gameConfig.players[gameService.currentGame.nextPlayer];
         if (nextPlayer.type === PLAYER_TYPES.AI) {
-            if (isHumanVsAiGame()) {
-                showProgressToast("Thinking...");
-            }
             deferredMove = $q.defer();
             deferredMove.resolve();
         } else if (nextPlayer.type === PLAYER_TYPES.HUMAN) {
@@ -99,9 +97,13 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
 
         deferredMove.promise
             .then(function(selectedCell) {
+                if (!isAiVsAiGame()) {
+                    boardSpinner.show();
+                }
                 return gameService.currentGame.playTurn(selectedCell);
             })
             .then(function(result) {
+                boardSpinner.hide();
                 if (vm.gameExists && !vm.paused) {
                     $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, result);
                 } else if (vm.gameExists && vm.paused) {
@@ -124,16 +126,15 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                     }
                 }
             })
-            .catch(function(response) {
-                var message;
-                if (response.status === 404) {
-                    message = "Game no is longer active. Games are automatically deleted after 15 minutes of inactivity.";
-                } else {
-                    message = "Oops. An error occurred (status " + response.status + ")";
-                }
+            .catch(handleError);
+    }
 
-                showErrorToast(message).then(endGame);
-            });
+    function displayProgress() {
+        if (isAiVsAiGame() && vm.currentGame.turnNumber === 1 && vm.gameStats.roundsPlayed === 0) {
+            showProgressToast("Playing...");
+        } else {
+            boardSpinner.show();
+        }
     }
 
     function isHumanVsAiGame() {
@@ -221,6 +222,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
         vm.gameExists = false;
         vm.paused = false;
         vm.currentGame = undefined;
+        deferredMove = undefined;
         $mdToast.hide();
     }
 
@@ -228,6 +230,20 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
         if (deferredMove) {
             deferredMove.resolve(selectedCell);
         }
+    }
+
+
+    function handleError(response) {
+        boardSpinner.hide();
+
+        var message;
+        if (response.status === 404) {
+            message = "Game no is longer active. Games are automatically deleted after 15 minutes of inactivity.";
+        } else {
+            message = "Oops. An error occurred (status " + response.status + ")";
+        }
+
+        showErrorToast(message).then(endGame);
     }
 
 }
