@@ -321,7 +321,7 @@ public class MCTSPlayerTests {
         params.searchRadius = 1;
         params.pastMovesSearchNumber = 2; // opponent's and own last moves
         params.rewardScheme = new WinLossDrawScheme();
-        params.pruneTreeAfterEachMove = false;
+        params.pruneSiblings = false;
 
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
@@ -375,7 +375,8 @@ public class MCTSPlayerTests {
         params.maxThinkTimeIncludesSimulation = true;
         params.searchRadius = 1;
         params.rewardScheme = new WinLossDrawScheme();
-        params.pruneTreeAfterEachMove = false;
+        params.pruneSiblings = false;
+        params.pruneParent = false;
 
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);

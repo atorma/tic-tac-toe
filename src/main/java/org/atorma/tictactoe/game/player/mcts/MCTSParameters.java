@@ -1,5 +1,11 @@
 package org.atorma.tictactoe.game.player.mcts;
 
+/**
+ * Parameters of the MCTS algorithm.
+ * <p/>
+ * Note that disabling all forms of pruning allows utilizing earlier simulations in repeated
+ * games, but will very easily cause memory to run out.
+ */
 public class MCTSParameters {
 
     enum SimulationStrategy {UNIFORM_RANDOM, NAIVE}
@@ -55,12 +61,24 @@ public class MCTSParameters {
     public RewardScheme rewardScheme = new WinLossDrawScheme();
 
     /**
-     * true: Prune the MoveNode game tree after each move, keeping only the path representing
-     * the played moves from the starting state to the current state.
+     * true: Prune the siblings of the chosen move in the game tree after each move. This
+     * keeps a trail of played moves from the starting state to the current state, up
+     * until the end of the game. This is the weakest form of pruning available.
      *
-     * false: Keep the entire game tree. This allows utilizing earlier simulations in repeated
-     * games, but will very easily cause memory to run out. Use for testing only.
+     * false: No sibling node pruning.
+     *
+     * @see #pruneParent
      */
-    public boolean pruneTreeAfterEachMove = true;
+    public boolean pruneSiblings = true;
+
+    /**
+     * true: Prune the parent of the chosen move node in the game tree after each move.
+     * No previous moves are kept, but simulation results of potential next moves are.
+     *
+     * false: No parent pruning.
+     *
+     * @see #pruneSiblings
+     */
+    public boolean pruneParent = true;
 }
 

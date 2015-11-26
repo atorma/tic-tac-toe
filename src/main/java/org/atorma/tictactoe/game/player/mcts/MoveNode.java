@@ -2,6 +2,8 @@ package org.atorma.tictactoe.game.player.mcts;
 
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.state.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.ref.WeakReference;
 import java.util.*;
@@ -17,6 +19,8 @@ import java.util.concurrent.ThreadLocalRandom;
  * </ul>
  */
 public class MoveNode {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MoveNode.class);
 
     private WeakReference<GameState> stateRef;
     private List<Cell> unexpandedMoves;
@@ -102,10 +106,8 @@ public class MoveNode {
     private GameState reconstructState() {
         List<MoveNode> path = getPathToRoot();
         Collections.reverse(path);
-        GameState state = getRoot().getGameState().getCopy();
-        for (int i = 1; i < path.size(); i++) {
-            state.update(path.get(i).getMove());
-        }
+        GameState state = path.get(0).getGameState().getCopy();
+        path.stream().skip(1).forEachOrdered(n -> state.update(n.getMove()));
         return state;
     }
 

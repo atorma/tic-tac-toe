@@ -73,8 +73,11 @@ public class MCTSPlayer implements Player {
 
         lastMove = planMove();
 
-        if (params.pruneTreeAfterEachMove) {
+        if (params.pruneSiblings) {
             lastMove.pruneOtherBranchesOnPathToRoot(); // Prune moves that were never taken to mitigate memory issues
+        }
+        if (params.pruneParent) {
+            lastMove.makeRoot();
         }
 
         return lastMove.getMove();
