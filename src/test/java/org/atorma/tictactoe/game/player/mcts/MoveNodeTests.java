@@ -328,4 +328,18 @@ public class MoveNodeTests {
         assertEquals(Arrays.asList(someGrandGrandChild), someGrandChild.getChildren());
         assertTrue(someGrandGrandChild.getChildren().size() > 1);
     }
+
+    @Test
+    public void make_node_the_root_node() {
+        GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
+        MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
+        root.expandAll();
+        MoveNode someChild = Utils.pickRandom(root.getChildren());
+
+        someChild.makeRoot();
+        assertNull(someChild.getParent());
+
+        someChild.expandAll();
+        assertTrue(someChild.getChildren().size() > 1);
+    }
 }

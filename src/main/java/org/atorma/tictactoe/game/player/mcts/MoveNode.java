@@ -1,8 +1,11 @@
 package org.atorma.tictactoe.game.player.mcts;
 
+import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.state.*;
 
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -12,13 +15,12 @@ import java.util.concurrent.ThreadLocalRandom;
  * Stores
  * <ul>
  * <li>a move and the game state it lead to</li>
- * <li>expected total reward each player will receive
- * if this move is chosen (based on simulations done by other components)</li>
+ * <li>expected total reward each player will receive if this move is chosen (based on simulations done by other components)</li>
  * </ul>
  */
 public class MoveNode {
 
-    private GameState state;
+    private WeakReference<GameState> stateRef;
     private List<Cell> unexpandedMoves;
     private Cell cell;
     private MoveNode parent;
@@ -28,7 +30,9 @@ public class MoveNode {
     private int numPlays = 0;
 
     private MoveNode root;
-    private RewardScheme rewardScheme; // Non-null for root only, we only need one instance
+    /* Stored in root only */
+    private RewardScheme rewardScheme;
+    private GameState rootState;
 
     /**
      * Creates the root node of a game tree.
@@ -42,11 +46,14 @@ public class MoveNode {
      */
     public MoveNode(GameState gameState, Cell cell, RewardScheme rewardScheme) {
         this();
+
         this.root = this;
-        this.state = gameState.getCopy();
-        this.cell = cell;
-        this.unexpandedMoves = new ArrayList<>(state.getAllowedMoves()); // sorted by rows then columns
         this.rewardScheme = rewardScheme;
+        this.rootState = gameState.getCopy();
+
+        this.cell = cell;
+        this.unexpandedMoves = new ArrayList<>(gameState.getAllowedMoves()); // sorted by rows then columns
+
     }
 
     private MoveNode() {
@@ -58,11 +65,12 @@ public class MoveNode {
 
     private MoveNode(MoveNode parent, Cell cell) {
         this();
+        GameState myState = parent.getGameState().next(cell);
         this.parent = parent;
         this.root = parent.root;
         this.cell = cell;
-        this.state = parent.state.next(cell);
-        this.unexpandedMoves = new ArrayList<>(state.getAllowedMoves()); // sorted by rows then columns
+        this.stateRef = new WeakReference<>(myState);
+        this.unexpandedMoves = new ArrayList<>(myState.getAllowedMoves()); // sorted by rows then columns
     }
 
     /**
@@ -81,7 +89,26 @@ public class MoveNode {
      * @see #getMove()
      */
     public GameState getGameState() {
-        return this.state;
+        if (rootState != null) {
+            return rootState;
+        }
+
+        GameState state = this.stateRef.get();
+        if (state == null) {
+            state = reconstructState();
+            this.stateRef = new WeakReference<>(state);
+        }
+        return state;
+    }
+
+    private GameState reconstructState() {
+        List<MoveNode> path = getPathToRoot();
+        Collections.reverse(path);
+        GameState state = getRoot().getGameState().getCopy();
+        for (int i = 1; i < path.size(); i++) {
+            state.update(path.get(i).getMove());
+        }
+        return state;
     }
 
     public MoveNode getRoot() {
@@ -273,7 +300,7 @@ public class MoveNode {
             throw new IllegalStateException("Node has no children");
         }
 
-        return Utils.max(children, element -> element.getExpectedReward(state.getNextPlayer()));
+        return Utils.max(children, element -> element.getExpectedReward(getGameState().getNextPlayer()));
     }
 
     /**
@@ -294,7 +321,7 @@ public class MoveNode {
             throw new IllegalStateException("Node has no children");
         }
 
-        return Utils.max(children, element -> element.getExplorationScore(state.getNextPlayer()));
+        return Utils.max(children, element -> element.getExplorationScore(getGameState().getNextPlayer()));
     }
 
     public double getExplorationScore(Piece player) {
@@ -363,6 +390,7 @@ public class MoveNode {
      */
     public void makeRoot() {
         this.rewardScheme = root.rewardScheme;
+        this.rootState = getGameState();
         this.root = this;
         this.parent = null;
     }
