@@ -1,10 +1,8 @@
 package org.atorma.tictactoe.game.player.mcts;
 
-import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.state.*;
 
-import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
