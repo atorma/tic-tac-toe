@@ -7,6 +7,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -309,12 +310,10 @@ public class MoveNodeTests {
         GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
         root.expandAll();
-        for (MoveNode child : root.getChildren()) {
-            child.expandAll();
-            for (MoveNode grandChild : child.getChildren()) {
-                grandChild.expandAll();
-            }
-        }
+        root.getChildren().forEach(c -> {
+            c.expandAll();
+            c.getChildren().forEach(gc -> gc.expandAll());
+        });
 
         MoveNode someChild = Utils.pickRandom(root.getChildren());
         MoveNode someGrandChild = Utils.pickRandom(someChild.getChildren());
@@ -341,5 +340,44 @@ public class MoveNodeTests {
 
         someChild.expandAll();
         assertTrue(someChild.getChildren().size() > 1);
+    }
+
+    @Test
+    public void prune_descendant_levels() {
+        GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
+        MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
+        root.expandAll();
+        root.getChildren().forEach(child -> {
+            child.expandAll();
+            child.getChildren().forEach(grandChild -> grandChild.expandAll());
+        });
+        int rootNumChildren = root.getChildren().size();
+
+        assertTrue(root.isFullyExpanded());
+        MoveNode someChild = Utils.pickRandom(root.getChildren());
+        assertTrue(someChild.isFullyExpanded());
+
+        // This should do nothing because we have only two levels expanded
+        root.pruneDescendantLevelsGreaterThan(100);
+        assertTrue(root.isFullyExpanded());
+        someChild = Utils.pickRandom(root.getChildren());
+        assertTrue(someChild.isFullyExpanded());
+
+        // This should leave only the child nodes but prune grandchildren
+        root.pruneDescendantLevelsGreaterThan(1);
+        assertTrue(root.isFullyExpanded());
+        someChild = Utils.pickRandom(root.getChildren());
+        assertFalse(someChild.isFullyExpanded());
+        assertTrue(someChild.getChildren().isEmpty());
+
+        // This should prune all descendants
+        root.pruneDescendantLevelsGreaterThan(0);
+        assertFalse(root.isFullyExpanded());
+        assertTrue(root.getChildren().isEmpty());
+
+        // Expand again
+        root.expandAll();
+        assertEquals(rootNumChildren, root.getChildren().size());
+        assertTrue(root.isFullyExpanded());
     }
 }

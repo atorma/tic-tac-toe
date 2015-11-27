@@ -162,8 +162,8 @@ public class MoveNode {
      * This can be a huge memory hog.
      */
     public void expandAll() {
-        for (int i = 0; i < unexpandedMoves.size(); i++) {
-            expand(i);
+        while (!isFullyExpanded()) {
+            expand(0);
         }
     }
 
@@ -413,6 +413,30 @@ public class MoveNode {
         }
     }
 
+    /**
+     * Prunes this node's descendants that are over given number of levels deep (counting from this node).
+     * E.g. pruneDescendantLevelsGreaterThan(1) would leave only the children of this node.
+     *
+     * @param targetLevel
+     *  prune levels >= targetLevel (leave levels <= targetLevel)
+     */
+    public void pruneDescendantLevelsGreaterThan(int targetLevel) {
+        if (targetLevel < 0) throw new IllegalArgumentException("Level must be >= 0");
+        pruneDescendantsIfLevelEqualsTarget(0, targetLevel);
+    }
+
+    private void pruneDescendantsIfLevelEqualsTarget(int currentLevel, int targetLevel) {
+        if (currentLevel == targetLevel) {
+            this.children.clear();
+            this.unexpandedMoves.clear();
+            this.unexpandedMoves.addAll(getGameState().getAllowedMoves());
+        } else {
+            for (MoveNode child : this.children) {
+                child.pruneDescendantsIfLevelEqualsTarget(currentLevel + 1, targetLevel);
+            }
+        }
+    }
+
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -451,6 +475,7 @@ public class MoveNode {
         sb.append("}");
         return sb.toString();
     }
+
 
 
 }
