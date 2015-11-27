@@ -61,8 +61,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                     showProgressToast("Playing AI vs AI...");
                 }
             })
-            .then(play)
-            .catch(handleError);
+            .then(play);
     }
 
     function initRound() {
@@ -80,7 +79,8 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                 vm.gameExists = true;
                 vm.paused = false;
                 $scope.$broadcast(GAME_EVENTS.GAME_STARTED, gameService.currentGame);
-            });
+            })
+            .catch(handleError);
     }
 
     function play() {
@@ -126,16 +126,15 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                     }
                 }
             })
-            .catch(handleError);
+            .catch(function(response) {
+                if (vm.gameExists) {
+                    return handleError(response);
+                } else {
+                    return $q.reject(response);
+                }
+            });
     }
 
-    function displayProgress() {
-        if (isAiVsAiGame() && vm.currentGame.turnNumber === 1 && vm.gameStats.roundsPlayed === 0) {
-            showProgressToast("Playing...");
-        } else {
-            boardSpinner.show();
-        }
-    }
 
     function isHumanVsAiGame() {
         var types = _.pluck(vm.gameConfig.players, "type");
@@ -240,10 +239,12 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
         if (response.status === 404) {
             message = "Game no is longer active. Games are automatically deleted after 15 minutes of inactivity.";
         } else {
-            message = "Oops. An error occurred (status " + response.status + ")";
+            message = "Oops. The game ended to an error. Sorry.";
         }
 
-        showErrorToast(message).then(endGame);
+        endGame();
+        showErrorToast(message);
+        return $q.reject(response);
     }
 
 }
