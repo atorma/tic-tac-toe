@@ -71,13 +71,19 @@ public class MCTSPlayer implements Player {
             lastMove = lastMove.findMoveTo(opponentsLastMove);
         }
 
+        // Don't prune here. Seems it can cause so much GC activity that it steals CPU resources for simulation.
+
+        /* Main work */
         lastMove = planMove();
 
         if (params.pruneSiblings) {
-            lastMove.pruneOtherBranchesOnPathToRoot(); // Prune moves that were never taken to mitigate memory issues
+            lastMove.pruneOtherBranchesOnPathToRoot();
         }
         if (params.pruneParent) {
             lastMove.makeRoot();
+        }
+        if (params.pruneDescendantLevelsGreaterThan < Integer.MAX_VALUE) {
+            lastMove.pruneDescendantLevelsGreaterThan(params.pruneDescendantLevelsGreaterThan);
         }
 
         return lastMove.getMove();
