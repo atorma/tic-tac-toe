@@ -5,7 +5,8 @@ import org.atorma.tictactoe.game.state.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -22,7 +23,7 @@ public class MoveNode {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MoveNode.class);
 
-    private WeakReference<GameState> stateRef;
+    private Reference<GameState> stateRef;
     private List<Cell> unexpandedMoves;
     private Cell cell;
     private MoveNode parent;
@@ -71,7 +72,7 @@ public class MoveNode {
         this.parent = parent;
         this.root = parent.root;
         this.cell = cell;
-        this.stateRef = new WeakReference<>(myState);
+        this.stateRef = new SoftReference<>(myState);
         this.unexpandedMoves = new ArrayList<>(myState.getAllowedMoves()); // sorted by rows then columns
     }
 
@@ -98,7 +99,7 @@ public class MoveNode {
         GameState state = this.stateRef.get();
         if (state == null) {
             state = reconstructState();
-            this.stateRef = new WeakReference<>(state);
+            this.stateRef = new SoftReference<>(state);
         }
         return state;
     }
