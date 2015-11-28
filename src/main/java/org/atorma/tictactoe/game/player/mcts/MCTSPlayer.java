@@ -25,6 +25,7 @@ public class MCTSPlayer implements Player {
 
     private MCTSParameters params;
     private Piece mySide;
+    private int boardRowsNum, boardColsNum;
     private MoveNode lastMove; // Last move overall, may be my move or opponent's move, depending on algorithm progress
     private long planningStartTime;
 
@@ -57,16 +58,14 @@ public class MCTSPlayer implements Player {
     }
 
 
-    public Cell move(Piece[][] board, Cell opponentsMove) {
-        GameState updatedState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(this.getPiece()).build();
-        return move(updatedState, opponentsMove);
-    }
-
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
         if (lastMove == null || updatedState.getNumPieces() < lastMove.getGameState().getNumPieces()) {
             // Reset the learning following an earlier game,
             // otherwise we'll easily run out of memory in repeated games (tried that).
-            startNewGame(updatedState, opponentsLastMove);
+            boardRowsNum = updatedState.getBoardRows();
+            boardColsNum = updatedState.getBoardCols();
+            lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
+            LOGGER.debug("New game started!");
         } else {
             lastMove = lastMove.findMoveTo(opponentsLastMove);
         }
@@ -88,16 +87,6 @@ public class MCTSPlayer implements Player {
 
         return lastMove.getMove();
     }
-
-    private void startNewGame(GameState startingState, Cell opponentsMove) {
-        params.boardRowsNum = startingState.getBoardRows();
-        params.boardColsNum = startingState.getBoardCols();
-
-        lastMove = new MoveNode(startingState, opponentsMove, params.rewardScheme);
-
-        LOGGER.debug("New game started!");
-    }
-
 
     private MoveNode planMove() {
         planningStartTime = System.currentTimeMillis();
@@ -146,7 +135,10 @@ public class MCTSPlayer implements Player {
         }
 
         // If opponent would get a decisive move, steal the move
-        GameState fakeState = GameState.builder().setTemplate(lastMove.getGameState()).setNextPlayer(mySide.other()).build();
+        GameState fakeState = GameState.builder()
+                .setTemplate(lastMove.getGameState())
+                .setNextPlayer(mySide.other())
+                .build();
         NaivePlayer opponent = new NaivePlayer();
         opponent.setPiece(mySide.other());
         naiveMove = opponent.move(fakeState, null);
@@ -307,7 +299,7 @@ public class MCTSPlayer implements Player {
         if (opponentsLastMove.getParent() != null && opponentsLastMove.getParent().getMove() != null) {
             target = opponentsLastMove.getParent().getMove();
         } else {
-            target = new Cell(params.boardRowsNum/2, params.boardColsNum/2);
+            target = new Cell(boardRowsNum/2, boardColsNum/2);
         }
         candidates = Utils.max(candidates, element -> Cell.getDistance(element.getMove(), target));
         return Utils.pickRandom(candidates);

@@ -10,16 +10,6 @@ public class MCTSParameters {
 
     enum SimulationStrategy {UNIFORM_RANDOM, NAIVE}
 
-    /** Size of board: rows */
-    public int boardRowsNum = 18;
-
-    /** Size of board: columns */
-    public int boardColsNum = 18;
-
-    /** How many pieces must be connected to win */
-    public int connectHowMany = 5;
-
-
 
     /** How to simulate games */
     public SimulationStrategy simulationStrategy = SimulationStrategy.UNIFORM_RANDOM;
