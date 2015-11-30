@@ -88,6 +88,6 @@ public class MCTSParameters {
      * @see #pruneParent
      * @see #pruneSiblings
      */
-    public int pruneDescendantLevelsGreaterThan = Integer.MAX_VALUE;
+    public int pruneDescendantLevelsGreaterThan = 2;
 }
 
