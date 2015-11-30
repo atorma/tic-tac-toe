@@ -41,7 +41,10 @@ public class NaivePlayer implements Player {
             }
 
             // Would my opponent win if she were me?
-            GameState fakeState = GameState.builder().setTemplate(currentState).setNextPlayer(mySide.other()).build();
+            GameState fakeState = GameState.builder()
+                    .setTemplate(currentState)
+                    .setNextPlayer(mySide.other())
+                    .build();
             fakeState.update(move);
             if (fakeState.getWinner() == mySide.other()) {
                 opponentWinningMove =  move;

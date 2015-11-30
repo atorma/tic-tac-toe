@@ -10,16 +10,6 @@ public class MCTSParameters {
 
     enum SimulationStrategy {UNIFORM_RANDOM, NAIVE}
 
-    /** Size of board: rows */
-    public int boardRowsNum = 18;
-
-    /** Size of board: columns */
-    public int boardColsNum = 18;
-
-    /** How many pieces must be connected to win */
-    public int connectHowMany = 5;
-
-
 
     /** How to simulate games */
     public SimulationStrategy simulationStrategy = SimulationStrategy.UNIFORM_RANDOM;
@@ -80,5 +70,24 @@ public class MCTSParameters {
      * @see #pruneSiblings
      */
     public boolean pruneParent = true;
+
+    /**
+     * After each move, prune descendants of the current node in the game tree greater
+     * than this level counting from the current node. This allows controlling how much
+     * of simulated games at the potential next states to keep for the next turn.
+     * Value 2 keeps the next two turns, so that after the opponent's next move,
+     * MCTS still has better data to choose which moves to concentrate simulations on.
+     * Value 0 discards simulations of future states.
+     *
+     * Keeping simulations of next possible states increases memory consumption.
+     * However pruning past and illegal moves by using e.g. {@link #pruneParent}
+     * mitigates the issue.
+     *
+     * This value must be non-negative. Use Integer.MAX_VALUE for no pruning.
+     *
+     * @see #pruneParent
+     * @see #pruneSiblings
+     */
+    public int pruneDescendantLevelsGreaterThan = 2;
 }
 

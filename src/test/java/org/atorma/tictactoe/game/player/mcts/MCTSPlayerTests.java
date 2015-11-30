@@ -22,9 +22,6 @@ public class MCTSPlayerTests {
     @Test
     public void ties_or_wins_naive_player_in_3x3_tic_tac_toe_if_gets_to_start() {
         MCTSParameters params = new MCTSParameters();
-        params.boardRowsNum = 3;
-        params.boardColsNum = 3;
-        params.connectHowMany = 3;
         params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxThinkTimeMillis = 1000;
         params.maxThinkTimeIncludesSimulation = true;
@@ -40,7 +37,12 @@ public class MCTSPlayerTests {
         Player naivePlayer = new NaivePlayer();
         naivePlayer.setPiece(Piece.O);
 
-        GameState startState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState startState = GameState.builder()
+                .setConnectHowMany(3)
+                .setBoard(new Piece[3][3])
+                .setNextPlayer(mctsPlayer.getPiece())
+                .build();
+
         Simulator simulator = new Simulator(startState, mctsPlayer, naivePlayer);
 
         GameState endState = simulator.run();
@@ -52,9 +54,6 @@ public class MCTSPlayerTests {
     @Test
     public void ties_or_wins_naive_player_in_3x3_tic_tac_toe_if_does_not_get_to_start() {
         MCTSParameters params = new MCTSParameters();
-        params.boardRowsNum = 3;
-        params.boardColsNum = 3;
-        params.connectHowMany = 3;
         params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxThinkTimeMillis = 1000;
         params.maxThinkTimeIncludesSimulation = true;
@@ -73,7 +72,12 @@ public class MCTSPlayerTests {
         // Naive player has started from the optimal position in the middle
         Piece[][] board = new Piece[3][3];
         board[1][1] = naivePlayer.getPiece();
-        GameState startState = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
+
+        GameState startState = GameState.builder()
+                .setConnectHowMany(3)
+                .setBoard(board)
+                .setNextPlayer(mctsPlayer.getPiece())
+                .build();
 
         Simulator simulator = new Simulator(startState, mctsPlayer, naivePlayer);
         GameState endState = simulator.run();
@@ -86,9 +90,6 @@ public class MCTSPlayerTests {
     // Should pass _most_ of the time (due to randomness) - should be automated to assert win at frequency > threshold
     public void beats_naive_player_in_10x10_connect_5_tic_tac_toe_if_gets_to_start() {
         MCTSParameters params = new MCTSParameters();
-        params.boardRowsNum = 10;
-        params.boardColsNum = 10;
-        params.connectHowMany = 5;
         params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxRolloutsNum = Integer.MAX_VALUE;
         params.maxSimulatedGameTurns = Integer.MAX_VALUE;
@@ -104,7 +105,12 @@ public class MCTSPlayerTests {
         Player naivePlayer = new NaivePlayer();
         naivePlayer.setPiece(Piece.O);
 
-        GameState startState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState startState = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(new Piece[10][10])
+                .setNextPlayer(mctsPlayer.getPiece())
+                .build();
+
         Simulator simulator = new Simulator(startState, mctsPlayer, naivePlayer);
 
         GameState endState = simulator.run();
@@ -116,9 +122,6 @@ public class MCTSPlayerTests {
     @Test
     public void beats_random_player_in_18x18_connect_5_game() {
         MCTSParameters params = new MCTSParameters();
-        params.boardRowsNum = 18;
-        params.boardColsNum = 18;
-        params.connectHowMany = 5;
         params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxRolloutsNum = Integer.MAX_VALUE;
         params.maxSimulatedGameTurns = Integer.MAX_VALUE;
@@ -134,7 +137,12 @@ public class MCTSPlayerTests {
         Player randomPlayer = new RandomPlayer();
         randomPlayer.setPiece(Piece.O);
 
-        GameState startState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(randomPlayer.getPiece()).build();
+        GameState startState = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(new Piece[18][18])
+                .setNextPlayer(randomPlayer.getPiece())
+                .build();
+
         Simulator simulator = new Simulator(startState, mctsPlayer, randomPlayer);
 
         GameState endState = simulator.run();
@@ -146,9 +154,6 @@ public class MCTSPlayerTests {
     @Test
     public void mcts_player_chooses_decisive_move_in_one_rollout() {
         MCTSParameters params = new MCTSParameters();
-        params.boardRowsNum = 18;
-        params.boardColsNum = 18;
-        params.connectHowMany = 5;
         params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxRolloutsNum = 1;
         params.maxSimulatedGameTurns = Integer.MAX_VALUE;
@@ -172,7 +177,11 @@ public class MCTSPlayerTests {
         Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
 
-        GameState startState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState startState = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(board)
+                .setNextPlayer(mctsPlayer.getPiece())
+                .build();
         startState.print();
 
         Cell mctsPlayerMove = mctsPlayer.move(startState, new Cell(3, 0));
@@ -185,9 +194,6 @@ public class MCTSPlayerTests {
     @Test
     public void mcts_player_chooses_antidecisive_move_in_one_rollout() {
         MCTSParameters params = new MCTSParameters();
-        params.boardRowsNum = 18;
-        params.boardColsNum = 18;
-        params.connectHowMany = 5;
         params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxRolloutsNum = 1;
         params.maxSimulatedGameTurns = Integer.MAX_VALUE;
@@ -212,7 +218,11 @@ public class MCTSPlayerTests {
         mctsPlayer.setPiece(Piece.X);
 
 
-        GameState startState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState startState = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(board)
+                .setNextPlayer(mctsPlayer.getPiece())
+                .build();
         startState.print();
 
         Cell mctsPlayerMove = mctsPlayer.move(startState, new Cell(3, 0));
@@ -226,9 +236,6 @@ public class MCTSPlayerTests {
     @Test
     public void test_18x18_connect_5_mcts_player_blocks_3_in_row_with_free_ends_if_given_enough_time() {
         MCTSParameters params = new MCTSParameters();
-        params.boardRowsNum = 18;
-        params.boardColsNum = 18;
-        params.connectHowMany = 5;
         params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxRolloutsNum = Integer.MAX_VALUE;
         params.maxSimulatedGameTurns = Integer.MAX_VALUE;
@@ -254,7 +261,11 @@ public class MCTSPlayerTests {
         naivePlayer.setPiece(Piece.O);
 
 
-        GameState gameState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(board).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState gameState = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(board)
+                .setNextPlayer(mctsPlayer.getPiece())
+                .build();
         gameState.print();
 
         Cell mctsPlayerMove = mctsPlayer.move(gameState, new Cell(8, 0));
@@ -310,9 +321,6 @@ public class MCTSPlayerTests {
     @Test
     public void when_search_radius_given_then_search_expands_only_within_radius_around_specified_number_of_past_moves() {
         MCTSParameters params = new MCTSParameters();
-        params.boardRowsNum = 18;
-        params.boardColsNum = 18;
-        params.connectHowMany = 5;
         params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxRolloutsNum = 5;
         params.maxSimulatedGameTurns = Integer.MAX_VALUE;
@@ -326,7 +334,11 @@ public class MCTSPlayerTests {
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
 
-        GameState gameState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(mctsPlayer.getPiece()).build();
+        GameState gameState = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(new Piece[18][18])
+                .setNextPlayer(mctsPlayer.getPiece())
+                .build();
         gameState.print();
 
         // mctsPlayer starts from empty board, can expand anywhere
@@ -365,9 +377,6 @@ public class MCTSPlayerTests {
     @Test
     public void when_opponent_has_started_then_search_expands_around_opponents_move() {
         MCTSParameters params = new MCTSParameters();
-        params.boardRowsNum = 18;
-        params.boardColsNum = 18;
-        params.connectHowMany = 5;
         params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxRolloutsNum = 1;
         params.maxSimulatedGameTurns = Integer.MAX_VALUE;
@@ -381,7 +390,11 @@ public class MCTSPlayerTests {
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
 
-        GameState gameState = GameState.builder().setConnectHowMany(params.connectHowMany).setBoard(new Piece[params.boardRowsNum][params.boardColsNum]).setNextPlayer(mctsPlayer.getPiece().other()).build();
+        GameState gameState = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(new Piece[18][18])
+                .setNextPlayer(mctsPlayer.getPiece().other())
+                .build();
         gameState.print();
 
         Cell opponentsMove = new Cell(0, 0);

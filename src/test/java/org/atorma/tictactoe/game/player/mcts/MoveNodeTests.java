@@ -7,41 +7,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
 @Category(FastTests.class)
 public class MoveNodeTests {
-
-    @Test
-    public void computes_game_state_at_child_nodes_when_expanded() {
-        GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
-        MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
-        assertEqual(startingState, root.getGameState());
-
-        root.expandAll();
-        MoveNode child = root.getChildren().get(0);
-        GameState expectedState = startingState.next(child.getMove());
-        assertEqual(expectedState, child.getGameState());
-
-        child.expandAll();
-        MoveNode grandChild = child.getChildren().get(1);
-        expectedState = expectedState.next(grandChild.getMove());
-        assertEqual(expectedState, grandChild.getGameState());
-    }
-
-    private void assertEqual(GameState expected, GameState actual) {
-        assertEquals(expected.getBoardRows(), actual.getBoardRows());
-        assertEquals(expected.getBoardCols(), actual.getBoardCols());
-        for (int i = 0; i < expected.getBoardRows(); i++) {
-            for (int j = 0; j < expected.getBoardCols(); j++) {
-                assertEquals(expected.getPiece(i, j), actual.getPiece(i, j));
-            }
-        }
-        assertEquals(expected.getAllowedMoves().size(), actual.getAllowedMoves().size());
-        assertEquals(expected.getNextPlayer(), actual.getNextPlayer());
-        assertEquals(expected.getWinner(), actual.getWinner());
-    }
 
     @Test
     public void find_move_returns_correct_move_even_if_node_not_expanded_yet() {
@@ -309,12 +280,10 @@ public class MoveNodeTests {
         GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
         root.expandAll();
-        for (MoveNode child : root.getChildren()) {
-            child.expandAll();
-            for (MoveNode grandChild : child.getChildren()) {
-                grandChild.expandAll();
-            }
-        }
+        root.getChildren().forEach(c -> {
+            c.expandAll();
+            c.getChildren().forEach(gc -> gc.expandAll());
+        });
 
         MoveNode someChild = Utils.pickRandom(root.getChildren());
         MoveNode someGrandChild = Utils.pickRandom(someChild.getChildren());
@@ -341,5 +310,44 @@ public class MoveNodeTests {
 
         someChild.expandAll();
         assertTrue(someChild.getChildren().size() > 1);
+    }
+
+    @Test
+    public void prune_descendant_levels() {
+        GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
+        MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
+        root.expandAll();
+        root.getChildren().forEach(child -> {
+            child.expandAll();
+            child.getChildren().forEach(grandChild -> grandChild.expandAll());
+        });
+        int rootNumChildren = root.getChildren().size();
+
+        assertTrue(root.isFullyExpanded());
+        MoveNode someChild = Utils.pickRandom(root.getChildren());
+        assertTrue(someChild.isFullyExpanded());
+
+        // This should do nothing because we have only two levels expanded
+        root.pruneDescendantLevelsGreaterThan(100);
+        assertTrue(root.isFullyExpanded());
+        someChild = Utils.pickRandom(root.getChildren());
+        assertTrue(someChild.isFullyExpanded());
+
+        // This should leave only the child nodes but prune grandchildren
+        root.pruneDescendantLevelsGreaterThan(1);
+        assertTrue(root.isFullyExpanded());
+        someChild = Utils.pickRandom(root.getChildren());
+        assertFalse(someChild.isFullyExpanded());
+        assertTrue(someChild.getChildren().isEmpty());
+
+        // This should prune all descendants
+        root.pruneDescendantLevelsGreaterThan(0);
+        assertFalse(root.isFullyExpanded());
+        assertTrue(root.getChildren().isEmpty());
+
+        // Expand again
+        root.expandAll();
+        assertEquals(rootNumChildren, root.getChildren().size());
+        assertTrue(root.isFullyExpanded());
     }
 }
