@@ -15,36 +15,6 @@ import static org.junit.Assert.*;
 public class MoveNodeTests {
 
     @Test
-    public void computes_game_state_at_child_nodes_when_expanded() {
-        GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
-        MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());
-        assertEqual(startingState, root.getGameState());
-
-        root.expandAll();
-        MoveNode child = root.getChildren().get(0);
-        GameState expectedState = startingState.next(child.getMove());
-        assertEqual(expectedState, child.getGameState());
-
-        child.expandAll();
-        MoveNode grandChild = child.getChildren().get(1);
-        expectedState = expectedState.next(grandChild.getMove());
-        assertEqual(expectedState, grandChild.getGameState());
-    }
-
-    private void assertEqual(GameState expected, GameState actual) {
-        assertEquals(expected.getBoardRows(), actual.getBoardRows());
-        assertEquals(expected.getBoardCols(), actual.getBoardCols());
-        for (int i = 0; i < expected.getBoardRows(); i++) {
-            for (int j = 0; j < expected.getBoardCols(); j++) {
-                assertEquals(expected.getPiece(i, j), actual.getPiece(i, j));
-            }
-        }
-        assertEquals(expected.getAllowedMoves().size(), actual.getAllowedMoves().size());
-        assertEquals(expected.getNextPlayer(), actual.getNextPlayer());
-        assertEquals(expected.getWinner(), actual.getWinner());
-    }
-
-    @Test
     public void find_move_returns_correct_move_even_if_node_not_expanded_yet() {
         GameState startingState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(startingState, null, new WinLossDrawScheme());

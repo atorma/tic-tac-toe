@@ -5,8 +5,6 @@ import org.atorma.tictactoe.game.state.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -23,11 +21,14 @@ public class MoveNode {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MoveNode.class);
 
-    private Reference<GameState> stateRef;
-    private List<Cell> unexpandedMoves;
-    private Cell cell;
+    private final Cell cell;
+    private final Piece nextPlayer;
+
     private MoveNode parent;
+
+    private List<Cell> unexpandedMoves;
     private List<MoveNode> children = new ArrayList<>();
+
     private Map<Piece, Integer> wins = new EnumMap<>(Piece.class);
     private Map<Piece, Double> rewardSums = new EnumMap<>(Piece.class);
     private int numPlays = 0;
@@ -35,7 +36,6 @@ public class MoveNode {
     private MoveNode root;
     /* Stored in root only */
     private RewardScheme rewardScheme;
-    private GameState rootState;
 
     /**
      * Creates the root node of a game tree.
@@ -48,68 +48,64 @@ public class MoveNode {
      *  the reward scheme to use for scoring moves
      */
     public MoveNode(GameState gameState, Cell cell, RewardScheme rewardScheme) {
-        this();
+        init();
 
         this.root = this;
         this.rewardScheme = rewardScheme;
-        this.rootState = gameState.getCopy();
+        this.parent = null;
 
         this.cell = cell;
+        this.nextPlayer = gameState.getNextPlayer();
         this.unexpandedMoves = new ArrayList<>(gameState.getAllowedMoves()); // sorted by rows then columns
-
     }
 
-    private MoveNode() {
+    private MoveNode(MoveNode parent, Cell cell) {
+        init();
+        this.parent = parent;
+        this.root = parent.root;
+        this.cell = cell;
+        this.nextPlayer = parent.getNextPlayer().other();
+
+        this.unexpandedMoves = parent.getAllowedMoves();
+        this.unexpandedMoves.remove(this.cell);
+        Collections.sort(this.unexpandedMoves, new CellRowOrderComparator());
+    }
+
+    private void init() {
         this.wins.put(Piece.X, 0);
         this.wins.put(Piece.O, 0);
         this.rewardSums.put(Piece.X, (double) 0);
         this.rewardSums.put(Piece.O, (double) 0);
     }
 
-    private MoveNode(MoveNode parent, Cell cell) {
-        this();
-        GameState myState = parent.getGameState().next(cell);
-        this.parent = parent;
-        this.root = parent.root;
-        this.cell = cell;
-        this.stateRef = new SoftReference<>(myState);
-        this.unexpandedMoves = new ArrayList<>(myState.getAllowedMoves()); // sorted by rows then columns
-    }
-
     /**
-     * Returns the move that put the game in the current state.
-     *
-     * @see #getGameState()
-     * @see #getParent()
+     * @return
+     *  the move that took the game in this state, null if this node represents
+     *  an empty board
      */
     public Cell getMove() {
         return cell;
     }
 
     /**
-     * Returns the state of the game after this move.
-     *
-     * @see #getMove()
+     * @return
+     *  all possible moves from this state
      */
-    public GameState getGameState() {
-        if (rootState != null) {
-            return rootState;
+    public List<Cell> getAllowedMoves() {
+        ArrayList<Cell> allowed = new ArrayList<>(children.size() + unexpandedMoves.size());
+        allowed.addAll(unexpandedMoves);
+        for (MoveNode n : children) {
+            allowed.add(n.getMove());
         }
-
-        GameState state = this.stateRef.get();
-        if (state == null) {
-            state = reconstructState();
-            this.stateRef = new SoftReference<>(state);
-        }
-        return state;
+        return allowed;
     }
 
-    private GameState reconstructState() {
-        List<MoveNode> path = getPathToRoot();
-        Collections.reverse(path);
-        GameState state = path.get(0).getGameState().getCopy();
-        path.stream().skip(1).forEachOrdered(n -> state.update(n.getMove()));
-        return state;
+    /**
+     * @return
+     *  the piece of the player who moves next from this state
+     */
+    public Piece getNextPlayer() {
+        return nextPlayer;
     }
 
     public MoveNode getRoot() {
@@ -301,7 +297,7 @@ public class MoveNode {
             throw new IllegalStateException("Node has no children");
         }
 
-        return Utils.max(children, element -> element.getExpectedReward(getGameState().getNextPlayer()));
+        return Utils.max(children, c -> c.getExpectedReward(this.nextPlayer));
     }
 
     /**
@@ -322,7 +318,7 @@ public class MoveNode {
             throw new IllegalStateException("Node has no children");
         }
 
-        return Utils.max(children, element -> element.getExplorationScore(getGameState().getNextPlayer()));
+        return Utils.max(children, c -> c.getExplorationScore(this.nextPlayer));
     }
 
     public double getExplorationScore(Piece player) {
@@ -391,7 +387,6 @@ public class MoveNode {
      */
     public void makeRoot() {
         this.rewardScheme = root.rewardScheme;
-        this.rootState = getGameState();
         this.root = this;
         this.parent = null;
     }
@@ -427,11 +422,13 @@ public class MoveNode {
 
     private void pruneDescendantsIfLevelEqualsTarget(int currentLevel, int targetLevel) {
         if (currentLevel == targetLevel) {
-            this.children.clear();
-            this.unexpandedMoves.clear();
-            this.unexpandedMoves.addAll(getGameState().getAllowedMoves());
+            List<Cell> allowedMoves = getAllowedMoves();
+            children.clear();
+            unexpandedMoves.clear();
+            unexpandedMoves.addAll(allowedMoves);
+            Collections.sort(unexpandedMoves, new CellRowOrderComparator());
         } else {
-            for (MoveNode child : this.children) {
+            for (MoveNode child : children) {
                 child.pruneDescendantsIfLevelEqualsTarget(currentLevel + 1, targetLevel);
             }
         }
