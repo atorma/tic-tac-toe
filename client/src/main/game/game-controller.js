@@ -242,8 +242,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
             message = "Oops. The game ended to an error. Sorry.";
         }
 
-        endGame();
-        showErrorToast(message);
+        showErrorToast(message).then(endGame);
         return $q.reject(response);
     }
 
