@@ -44,7 +44,11 @@ describe("GameController", function() {
             // Set up fake game
             var currentGame = jasmine.createSpyObj("gameService.currentGame", ["playTurn"]);
             currentGame.nextPlayer = PIECES.X;
-            currentGame.board = [[null, null, null], [null, null, null], [null, null, null]];
+            currentGame.board = [
+                [null, null, null],
+                [null, null, null],
+                [null, null, null]
+            ];
             currentGame.playTurn.and.callFake(function() {
                 if (currentGame.nextPlayer === PIECES.X) {
                     currentGame.nextPlayer = PIECES.O;
@@ -498,7 +502,7 @@ describe("GameController", function() {
             $scope.$digest();
 
             // Human player's actual move
-            var okMove = {row: 5, column: 5};
+            var okMove = {row: 0, column: 1};
             $scope.$emit(GAME_EVENTS.MOVE_SELECTED, okMove);
             gameService.currentGame.nextPlayer = PIECES.X;
             $scope.$digest();
@@ -508,6 +512,23 @@ describe("GameController", function() {
             $scope.$emit(GAME_EVENTS.MOVE_SELECTED, justClicking);
             $scope.$digest();
             expect(gameService.currentGame.playTurn).not.toHaveBeenCalledWith(justClicking);
+        });
+
+        it("ignores 'move selected' if human player selects cell that is already occupied", function() {
+            deferredTurn.resolve({gameEnded: false});
+            $scope.$digest();
+
+            gameService.currentGame.board = [
+                [null, null, null],
+                [null, null, "X"],
+                [null, null, null]
+            ];
+
+            var selectedCell = {row: 1, column: 2};
+            $scope.$emit(GAME_EVENTS.MOVE_SELECTED, selectedCell);
+            $scope.$digest();
+
+            expect(gameService.currentGame.playTurn).not.toHaveBeenCalledWith(selectedCell);
         });
     });
 

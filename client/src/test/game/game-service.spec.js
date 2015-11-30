@@ -38,6 +38,11 @@ describe("gameService", function() {
                     type: "HUMAN"
                 }
             },
+            board: [
+                [null, null, null],
+                [null, null, null],
+                [null, null, null]
+            ],
             nextPlayer: PIECE.O,
             turnNumber: 1,
             move: null,
@@ -95,6 +100,7 @@ describe("gameService", function() {
             expect(gameService.currentGame.id).toEqual(initialGameData.id);
             expect(gameService.currentGame[PIECE.O]).toEqual(initialGameData[PIECE.O]);
             expect(gameService.currentGame[PIECE.X]).toEqual(initialGameData[PIECE.X]);
+            expect(gameService.currentGame.board).toEqual(initialGameData.board);
             expect(gameService.currentGame.nextPlayer).toEqual(initialGameData.nextPlayer);
             expect(gameService.currentGame.turnNumber).toEqual(initialGameData.turnNumber);
             expect(gameService.currentGame.move).toEqual(initialGameData.move);
@@ -132,7 +138,7 @@ describe("gameService", function() {
             turnResponse = {
                 move: {
                     piece: PIECE.O,
-                    cell: {row: 5, column: 12}
+                    cell: {row: 0, column: 1}
                 },
                 gameEnded: false,
                 winner: null,
@@ -174,6 +180,8 @@ describe("gameService", function() {
 
             gameService.currentGame.playTurn();
             $httpBackend.flush();
+
+            expect(gameService.currentGame.board[turnResponse.move.cell.row][turnResponse.move.cell.column]).toEqual(turnResponse.move.piece);
 
             expect(gameService.currentGame.nextPlayer).toEqual(turnResponse.nextPlayer);
             expect(gameService.currentGame.turnNumber).toEqual(turnResponse.turnNumber);

@@ -56,6 +56,8 @@ function gameService($http, $q) {
                 move: selectedMove
             }).then(function(response) {
                 _.extend(self, response.data);
+                var move = response.data.move;
+                self.board[move.cell.row][move.cell.column] = move.piece;
                 return response.data;
             });
         }

@@ -226,9 +226,17 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     }
 
     function selectHumanPlayerMove(event, selectedCell) {
-        if (deferredMove) {
-            deferredMove.resolve(selectedCell);
+        if (!vm.gameExists) {
+            return;
         }
+        if (vm.gameConfig.players[gameService.currentGame.nextPlayer].type !== PLAYER_TYPES.HUMAN) {
+            return;
+        }
+        if (gameService.currentGame.board[selectedCell.row][selectedCell.column]) {
+            return;
+        }
+
+        deferredMove.resolve(selectedCell);
     }
 
 
