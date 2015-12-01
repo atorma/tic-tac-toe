@@ -10,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Monte Carlo Tree Search using a reinforcement learning
@@ -24,12 +26,16 @@ public class MCTSPlayer implements Player {
     public static final MCTSParameters DEFAULT_PARAMS = new MCTSParameters();
 
     private MCTSParameters params;
+
     private Piece mySide;
+
     private int boardRowsNum, boardColsNum;
     private MoveNode lastMove; // Last move overall, may be my move or opponent's move, depending on algorithm progress
     private GameState lastState;
-    private long planningStartTime;
 
+    private long planningStartTime;
+    private AtomicInteger planningRollouts = new AtomicInteger();
+    private ForkJoinPool workerPool;
 
     public MCTSPlayer() {
         this(DEFAULT_PARAMS);
@@ -37,6 +43,7 @@ public class MCTSPlayer implements Player {
 
     public MCTSPlayer(MCTSParameters params) {
         this.params = params;
+        this.workerPool = (ForkJoinPool) Executors.newWorkStealingPool();
     }
 
 
@@ -98,40 +105,49 @@ public class MCTSPlayer implements Player {
         MoveNode bestMove = checkForMandatoryMove();
         boolean isMandatoryMove = bestMove != null;
 
-        int numIter = 0;
-        while (isThinkTimeLeft() && numIter < params.maxRolloutsNum) {
-            MoveNode rolloutStartMove;
-            GameState rolloutStartState;
-            if (isMandatoryMove) { // If we have a mandatory move, use the time to plan ahead from that
-                rolloutStartMove = bestMove;
-                rolloutStartState = lastState.next(bestMove.getMove());
-            } else {
-                rolloutStartMove = lastMove;
-                rolloutStartState = lastState;
-            }
 
-            performRollout(rolloutStartState, rolloutStartMove, getSearchRectangles());
-            numIter++;
+        MoveNode rolloutStartMove;
+        GameState rolloutStartState;
+        if (isMandatoryMove) { // If we have a mandatory move, use the time to plan ahead from that
+            rolloutStartMove = bestMove;
+            rolloutStartState = lastState.next(bestMove.getMove());
+        } else {
+            rolloutStartMove = lastMove;
+            rolloutStartState = lastState;
         }
+        List<Rectangle> searchRectangles = getSearchRectangles();
+
+
+        planningRollouts.set(0);
+
+        List<Future> results = new ArrayList<>();
+        for (int i = 0; i < workerPool.getParallelism(); i++) {
+            Runnable task = () -> {
+                while (isThinkTimeLeft() && planningRollouts.get() < params.maxRolloutsNum) {
+                    performRollout(rolloutStartState, rolloutStartMove, searchRectangles);
+                }
+            };
+            results.add(workerPool.submit(task));
+        }
+        LOGGER.debug("Created {} planning tasks", results.size());
+        for (Future result : results) {
+            try {
+                result.get();
+            } catch (InterruptedException e) {
+                LOGGER.warn("Interrupted", e);
+            } catch (ExecutionException e) {
+                LOGGER.error("Rollout exception", e);
+            }
+        }
+
+
 
         if (!isMandatoryMove) {
             bestMove = selectNextMoveBasedOnExpectedReward();
         }
 
-        LOGGER.debug(numIter + " rollouts in " + (System.currentTimeMillis() - planningStartTime) + " ms");
+        LOGGER.debug(planningRollouts + " rollouts in " + (System.currentTimeMillis() - planningStartTime) + " ms");
         LOGGER.debug("Chose " + (isMandatoryMove ? "mandatory" : "MCTS") + " " + bestMove.printStatsFor(mySide));
-
-        /*
-        List<MoveNode> choices = new ArrayList<MoveNode>(bestMove.getParent().getChildren());
-        Collections.sort(choices, new Comparator<MoveNode>() {
-            public int compare(MoveNode o1, MoveNode o2) {
-                return Double.valueOf(o2.getExpectedReward(mySide)).compareTo(Double.valueOf(o1.getExpectedReward(mySide)));
-            }
-        });
-        for (MoveNode choice : choices) {
-            System.out.println(choice.printStatsFor(mySide));
-        }
-        */
 
         return bestMove;
     }
@@ -190,9 +206,15 @@ public class MCTSPlayer implements Player {
     private void performRollout(GameState startState, MoveNode startNode, List<Rectangle> searchAreas) {
 
         // Selection and expansion
-        StateAndNode selected = selectMove(startState, startNode, searchAreas);
+        LOGGER.trace("{} starts selecting node", Thread.currentThread());
+        StateAndNode selected;
+        synchronized (this) {
+            selected = selectMove(startState, startNode, searchAreas);
+            LOGGER.trace("{} selected node {}", Thread.currentThread(), startNode);
+        }
 
         // Simulation
+        LOGGER.trace("{} starts simulating game...", Thread.currentThread());
         GameState endState;
         if (params.simulationStrategy == MCTSParameters.SimulationStrategy.NAIVE) {
             NaivePlayer player1 = new NaivePlayer();
@@ -207,9 +229,15 @@ public class MCTSPlayer implements Player {
         } else {
             throw new IllegalArgumentException("Invalid simulation strategy " + params.simulationStrategy);
         }
+        LOGGER.trace("{} done simulating game", Thread.currentThread());
 
         // Back-propagation
-        selected.node.propagateSimulatedResult(endState);
+        synchronized (this) {
+            selected.node.propagateSimulatedResult(endState);
+            LOGGER.trace("{} done propagating results", Thread.currentThread());
+        }
+
+        planningRollouts.incrementAndGet();
     }
 
     /**
