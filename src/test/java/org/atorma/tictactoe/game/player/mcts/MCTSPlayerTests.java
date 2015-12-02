@@ -88,7 +88,7 @@ public class MCTSPlayerTests {
 
     @Test
     // Should pass _most_ of the time (due to randomness) - should be automated to assert win at frequency > threshold
-    public void beats_naive_player_in_10x10_connect_5_tic_tac_toe_if_gets_to_start() {
+    public void beats_naive_player_in_10x10_connect_5_tic_tac_toe_even_naive_player_starts() {
         MCTSParameters params = new MCTSParameters();
         params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxRolloutsNum = Integer.MAX_VALUE;
@@ -108,7 +108,7 @@ public class MCTSPlayerTests {
         GameState startState = GameState.builder()
                 .setConnectHowMany(5)
                 .setBoard(new Piece[10][10])
-                .setNextPlayer(mctsPlayer.getPiece())
+                .setNextPlayer(naivePlayer.getPiece())
                 .build();
 
         Simulator simulator = new Simulator(startState, mctsPlayer, naivePlayer);
