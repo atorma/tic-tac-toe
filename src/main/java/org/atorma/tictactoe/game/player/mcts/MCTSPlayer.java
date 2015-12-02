@@ -7,6 +7,7 @@ import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.state.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,15 +36,17 @@ public class MCTSPlayer implements Player {
 
     private long planningStartTime;
     private AtomicInteger planningRollouts = new AtomicInteger();
-    private ForkJoinPool workerPool;
+    private ExecutorService workerPool;
+
 
     public MCTSPlayer() {
         this(DEFAULT_PARAMS);
     }
 
     public MCTSPlayer(MCTSParameters params) {
+        Assert.isTrue(params.rolloutThreads >= 1);
         this.params = params;
-        this.workerPool = (ForkJoinPool) Executors.newWorkStealingPool();
+        this.workerPool = Executors.newFixedThreadPool(params.rolloutThreads);
     }
 
 
@@ -121,7 +124,7 @@ public class MCTSPlayer implements Player {
         planningRollouts.set(0);
 
         List<Future> results = new ArrayList<>();
-        for (int i = 0; i < workerPool.getParallelism(); i++) {
+        for (int i = 0; i < params.rolloutThreads; i++) {
             Runnable task = () -> {
                 while (isThinkTimeLeft() && planningRollouts.get() < params.maxRolloutsNum) {
                     performRollout(rolloutStartState, rolloutStartMove, searchRectangles);
@@ -129,7 +132,6 @@ public class MCTSPlayer implements Player {
             };
             results.add(workerPool.submit(task));
         }
-        LOGGER.debug("Created {} planning tasks", results.size());
         for (Future result : results) {
             try {
                 result.get();

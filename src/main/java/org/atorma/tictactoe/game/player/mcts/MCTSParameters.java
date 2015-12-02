@@ -23,6 +23,9 @@ public class MCTSParameters {
     /** How long in wall clock milliseconds the player is allowed to plan the next move */
     public long maxThinkTimeMillis = 5000;
 
+    /** Number of threads to use for rollouts */
+    public int rolloutThreads = 4;
+
     /**
      * true: maxThinkTimeMillis must be taken into account in game simulations
      *
@@ -88,6 +91,6 @@ public class MCTSParameters {
      * @see #pruneParent
      * @see #pruneSiblings
      */
-    public int pruneDescendantLevelsGreaterThan = 2;
+    public int pruneDescendantLevelsGreaterThan = Integer.MAX_VALUE;
 }
 
