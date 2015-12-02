@@ -132,6 +132,7 @@ public class MCTSPlayer implements Player {
             };
             results.add(workerPool.submit(task));
         }
+        LOGGER.debug("Created {} planning tasks", results.size());
         for (Future result : results) {
             try {
                 result.get();
