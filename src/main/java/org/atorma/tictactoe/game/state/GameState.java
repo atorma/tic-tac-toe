@@ -54,10 +54,14 @@ public class GameState {
 
         this.nextPlayer = this.nextPlayer.other();
 
-        int positionIndex = Collections.binarySearch(this.allowedMoves, position, new CellRowOrderComparator());
-        this.allowedMoves.remove(positionIndex);
-
         findSequencesThatCrossCell(position);
+
+        if (isAtEnd()) {
+            this.allowedMoves = new ArrayList<>(0);
+        } else {
+            int positionIndex = Collections.binarySearch(this.allowedMoves, position, new CellRowOrderComparator());
+            this.allowedMoves.remove(positionIndex);
+        }
     }
 
     public GameState getCopy() {

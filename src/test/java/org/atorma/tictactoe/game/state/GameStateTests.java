@@ -41,14 +41,25 @@ public class GameStateTests {
     public void no_allowed_moves_when_winner_found() {
         Piece[][] board = {
                 {Piece.O, Piece.X, Piece.O},
-                {null,        Piece.X, null},
-                {null,        Piece.X, null}
+                {null,    Piece.X, null},
+                {null,    Piece.X, null}
         };
 
-        GameState gameState = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.O).build();
-        List<Cell> allowedMoves = gameState.getAllowedMoves();
+        GameState endState = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.O).build();
+        assertEquals(Piece.X, endState.getWinner());
+        assertTrue(endState.isAtEnd());
+        assertEquals(0, endState.getAllowedMoves().size());
 
-        assertEquals(0, allowedMoves.size());
+        board[0][1] = null;
+        GameState nearEndState = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+        assertEquals(null, nearEndState.getWinner());
+        assertFalse(nearEndState.isAtEnd());
+        assertEquals(5, nearEndState.getAllowedMoves().size());
+
+        endState = nearEndState.next(new Cell(0, 1));
+        assertEquals(Piece.X, endState.getWinner());
+        assertTrue(endState.isAtEnd());
+        assertEquals(0, endState.getAllowedMoves().size());
     }
 
     @Test

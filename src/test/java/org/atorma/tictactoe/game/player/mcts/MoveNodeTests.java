@@ -26,6 +26,44 @@ public class MoveNodeTests {
     }
 
     @Test
+    public void when_initial_state_is_end_state_then_root_has_no_allowed_moves() {
+        Piece[][] alreadyAtEndBoard = new Piece[3][3];
+        alreadyAtEndBoard[0][0] = Piece.X;
+        alreadyAtEndBoard[1][1] = Piece.X;
+        alreadyAtEndBoard[2][2] = Piece.X;
+        alreadyAtEndBoard[0][1] = Piece.O;
+        alreadyAtEndBoard[0][2] = Piece.O;
+
+        GameState alreadyAtEndState = GameState.builder().setConnectHowMany(3).setBoard(alreadyAtEndBoard).setNextPlayer(Piece.O).build();
+        alreadyAtEndState.print();
+
+        MoveNode root = new MoveNode(alreadyAtEndState, null, new WinLossDrawScheme());
+        assertTrue(root.getAllowedMoves().isEmpty());
+    }
+
+    @Test
+    public void when_child_move_should_represent_and_end_state_then_no_allowed_moves_in_child() {
+        Piece[][] almostAtEndBoard = new Piece[3][3];
+        almostAtEndBoard[1][1] = Piece.X;
+        almostAtEndBoard[2][2] = Piece.X;
+        almostAtEndBoard[0][1] = Piece.O;
+        almostAtEndBoard[0][2] = Piece.O;
+
+        GameState nearlyEndState = GameState.builder().setConnectHowMany(3).setBoard(almostAtEndBoard).setNextPlayer(Piece.X).build();
+        nearlyEndState.print();
+
+        MoveNode root = new MoveNode(nearlyEndState, null, new WinLossDrawScheme());
+        root.expandAll();
+        MoveNode endStateNode = root.findMoveTo(new Cell(0, 0));
+        GameState endState = nearlyEndState.next(endStateNode.getMove());
+        endState.print();
+        assertTrue(endState.isAtEnd());
+        assertTrue(endState.getAllowedMoves().isEmpty());
+        System.out.println(endStateNode.getAllowedMoves());
+        assertTrue(endStateNode.getAllowedMoves().isEmpty());
+    }
+
+    @Test
     public void expand_random_in_rectangle_returns_allowed_move_in_rectangle_and_adds_it_as_child_node() {
         Rectangle rectangle = new Rectangle(5, 5, 6, 6); // 2 x 2 rectangle
 
