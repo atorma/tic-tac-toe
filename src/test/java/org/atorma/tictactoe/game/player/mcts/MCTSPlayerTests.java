@@ -11,6 +11,7 @@ import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.springframework.test.annotation.Repeat;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -22,14 +23,7 @@ public class MCTSPlayerTests {
     @Test
     public void ties_or_wins_naive_player_in_3x3_tic_tac_toe_if_gets_to_start() {
         MCTSParameters params = new MCTSParameters();
-        params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxThinkTimeMillis = 1000;
-        params.maxThinkTimeIncludesSimulation = true;
-        params.maxSimulatedGameTurns = Integer.MAX_VALUE;
-        params.maxRolloutsNum = Integer.MAX_VALUE;
-        params.searchRadius = Integer.MAX_VALUE;
-        params.pastMovesSearchNumber = Integer.MAX_VALUE;
-        params.rewardScheme = new WinLossDrawScheme();
 
         Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
@@ -54,14 +48,7 @@ public class MCTSPlayerTests {
     @Test
     public void ties_or_wins_naive_player_in_3x3_tic_tac_toe_if_does_not_get_to_start() {
         MCTSParameters params = new MCTSParameters();
-        params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxThinkTimeMillis = 1000;
-        params.maxThinkTimeIncludesSimulation = true;
-        params.maxSimulatedGameTurns = Integer.MAX_VALUE;
-        params.maxRolloutsNum = Integer.MAX_VALUE;
-        params.searchRadius = Integer.MAX_VALUE;
-        params.pastMovesSearchNumber = Integer.MAX_VALUE;
-        params.rewardScheme = new WinLossDrawScheme();
 
         Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
@@ -87,17 +74,8 @@ public class MCTSPlayerTests {
     }
 
     @Test
-    // Should pass _most_ of the time (due to randomness) - should be automated to assert win at frequency > threshold
-    public void beats_naive_player_in_10x10_connect_5_tic_tac_toe_even_naive_player_starts() {
+    public void beats_naive_player_in_18x18_connect_5_tic_tac_toe_even_when_naive_player_starts() {
         MCTSParameters params = new MCTSParameters();
-        params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
-        params.maxRolloutsNum = Integer.MAX_VALUE;
-        params.maxSimulatedGameTurns = Integer.MAX_VALUE;
-        params.maxThinkTimeMillis = 3000;
-        params.maxThinkTimeIncludesSimulation = true;
-        params.searchRadius = 2;
-        params.pastMovesSearchNumber = 4;
-        params.rewardScheme = new WinLossDrawScheme();
 
         Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
@@ -122,14 +100,7 @@ public class MCTSPlayerTests {
     @Test
     public void beats_random_player_in_18x18_connect_5_game() {
         MCTSParameters params = new MCTSParameters();
-        params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
-        params.maxRolloutsNum = Integer.MAX_VALUE;
-        params.maxSimulatedGameTurns = Integer.MAX_VALUE;
         params.maxThinkTimeMillis = 1000;
-        params.maxThinkTimeIncludesSimulation = true;
-        params.searchRadius = 2;
-        params.pastMovesSearchNumber = 4;
-        params.rewardScheme = new WinLossDrawScheme();
 
         Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
@@ -154,14 +125,9 @@ public class MCTSPlayerTests {
     @Test
     public void mcts_player_chooses_decisive_move_in_one_rollout() {
         MCTSParameters params = new MCTSParameters();
-        params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
-        params.maxRolloutsNum = 1;
-        params.maxSimulatedGameTurns = Integer.MAX_VALUE;
         params.maxThinkTimeMillis = 1000;
-        params.maxThinkTimeIncludesSimulation = true;
-        params.searchRadius = 2;
-        params.pastMovesSearchNumber = 4;
-        params.rewardScheme = new WinLossDrawScheme();
+        params.maxRolloutsNum = 1;
+        params.searchRadius = Integer.MAX_VALUE; // give freedom to choose any free cell, but we still expect decisive move
 
         Piece[][] board = new Piece[18][18];
         // Both have 4 in sequence
@@ -194,14 +160,9 @@ public class MCTSPlayerTests {
     @Test
     public void mcts_player_chooses_antidecisive_move_in_one_rollout() {
         MCTSParameters params = new MCTSParameters();
-        params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
-        params.maxRolloutsNum = 1;
-        params.maxSimulatedGameTurns = Integer.MAX_VALUE;
         params.maxThinkTimeMillis = 1000;
-        params.maxThinkTimeIncludesSimulation = true;
-        params.searchRadius = 2;
-        params.pastMovesSearchNumber = 4;
-        params.rewardScheme = new WinLossDrawScheme();
+        params.maxRolloutsNum = 1;
+        params.searchRadius = Integer.MAX_VALUE; // give freedom to choose any free cell, but we still expect decisive move
 
         Piece[][] board = new Piece[18][18];
         // Cross has 3 in sequence
@@ -233,17 +194,10 @@ public class MCTSPlayerTests {
         assertEquals(0, mctsPlayerMove.getColumn());
     }
 
+    // TODO This fails often.
     @Test
     public void test_18x18_connect_5_mcts_player_blocks_3_in_row_with_free_ends_if_given_enough_time() {
         MCTSParameters params = new MCTSParameters();
-        params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
-        params.maxRolloutsNum = Integer.MAX_VALUE;
-        params.maxSimulatedGameTurns = Integer.MAX_VALUE;
-        params.maxThinkTimeMillis = 5000;
-        params.maxThinkTimeIncludesSimulation = true;
-        params.searchRadius = 2;
-        params.pastMovesSearchNumber = 4;
-        params.rewardScheme = new WinLossDrawScheme();
 
         Piece[][] board = new Piece[18][18];
         // Cross has 2 in sequence
@@ -273,13 +227,7 @@ public class MCTSPlayerTests {
         gameState = gameState.next(mctsPlayerMove);
         gameState.print();
 
-        try {
-            assertEquals(5, mctsPlayerMove.getRow());
-            assertEquals(0, mctsPlayerMove.getColumn());
-        } catch (AssertionError e) {
-            assertEquals(9, mctsPlayerMove.getRow());
-            assertEquals(0, mctsPlayerMove.getColumn());
-        }
+        assertTrue(mctsPlayerMove.equals(new Cell(5, 0)) || mctsPlayerMove.equals(new Cell(9, 0)));
 
         Cell naivePlayerMove = naivePlayer.move(gameState, mctsPlayerMove);
         gameState = gameState.next(naivePlayerMove);
@@ -291,13 +239,7 @@ public class MCTSPlayerTests {
         gameState.print();
 
         // Assuming that NaivePlayer has tried to elongate the sequence
-        try {
-            assertEquals(4, mctsPlayerMove.getRow());
-            assertEquals(0, mctsPlayerMove.getColumn());
-        } catch (AssertionError e) {
-            assertEquals(10, mctsPlayerMove.getRow());
-            assertEquals(0, mctsPlayerMove.getColumn());
-        }
+        assertTrue(mctsPlayerMove.equals(new Cell(4, 0)) || mctsPlayerMove.equals(new Cell(10, 0)));
     }
 
     @Test
@@ -321,15 +263,11 @@ public class MCTSPlayerTests {
     @Test
     public void when_search_radius_given_then_search_expands_only_within_radius_around_specified_number_of_past_moves() {
         MCTSParameters params = new MCTSParameters();
-        params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
-        params.maxRolloutsNum = 5;
-        params.maxSimulatedGameTurns = Integer.MAX_VALUE;
-        params.maxThinkTimeMillis = 1000;
-        params.maxThinkTimeIncludesSimulation = true;
         params.searchRadius = 1;
         params.pastMovesSearchNumber = 2; // opponent's and own last moves
-        params.rewardScheme = new WinLossDrawScheme();
         params.pruneSiblings = false;
+        params.pruneParent = false;
+        params.pruneDescendantLevelsGreaterThan = Integer.MAX_VALUE;
 
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
@@ -343,7 +281,6 @@ public class MCTSPlayerTests {
 
         // mctsPlayer starts from empty board, can expand anywhere
         Cell mctsPlayerMove = mctsPlayer.move(gameState, null);
-        MoveNode mctsPlayerFirstNode = mctsPlayer.getLastMove();
         gameState = gameState.next(mctsPlayerMove);
         gameState.print();
 
@@ -351,39 +288,34 @@ public class MCTSPlayerTests {
         gameState = gameState.next(opponentsMove);
         gameState.print();
 
-        // Both have moved, can within params.searchRadius around own or opponent's move
+        // Both have moved, can now move only within params.searchRadius around own or opponent's move
         Cell mctsPlayer2ndMove = mctsPlayer.move(gameState, opponentsMove);
         gameState = gameState.next(mctsPlayer2ndMove);
         gameState.print();
 
-        // Check expanded children around the moves
-        assertTrue(mctsPlayerFirstNode.getChildren().size() > 0);
-        for (MoveNode child : mctsPlayerFirstNode.getChildren()) { // child is opponent's move
-            assertTrue(Cell.getDistance(child.getMove(), mctsPlayerMove) <= params.searchRadius
-                    || Cell.getDistance(child.getMove(), opponentsMove) <= params.searchRadius);
-            for (MoveNode grandChild : child.getChildren()) { // grandChild is mctsPlayer's last move
-                assertTrue(Cell.getDistance(grandChild.getMove(), mctsPlayerMove) <= params.searchRadius
-                        || Cell.getDistance(grandChild.getMove(), opponentsMove) <= params.searchRadius);
-            }
-        }
-
-        // Here we're assuming that the best move to play is chosen among expanded children of the current node.
-        // Because only nodes around previous moves are expanded and there are no decisive moves, mctsPlayer's
-        // move should be within the search area.
         assertTrue(Cell.getDistance(mctsPlayer2ndMove, mctsPlayerMove) <= params.searchRadius
-        || Cell.getDistance(mctsPlayer2ndMove, opponentsMove) <= params.searchRadius);
+                || Cell.getDistance(mctsPlayer2ndMove, opponentsMove) <= params.searchRadius);
+
+        // Furthermore, it should search for alternatives within search radius of past moves only
+        MoveNode mctsPlayer2ndNode = mctsPlayer.getLastMove();
+        assertTrue(mctsPlayer2ndNode.getChildren().size() > 0);
+        for (MoveNode n : mctsPlayer2ndNode.getChildren()) {
+            assertTrue(Cell.getDistance(n.getMove(), mctsPlayerMove) <= params.searchRadius
+                    || Cell.getDistance(n.getMove(), opponentsMove) <= params.searchRadius);
+        }
+        MoveNode opponentNode = mctsPlayer2ndNode.getParent();
+        assertTrue(opponentNode.getChildren().size() > 0);
+        for (MoveNode n : opponentNode.getChildren()) {
+            assertTrue(Cell.getDistance(n.getMove(), mctsPlayerMove) <= params.searchRadius
+                    || Cell.getDistance(n.getMove(), opponentsMove) <= params.searchRadius);
+        }
     }
 
     @Test
     public void when_opponent_has_started_then_search_expands_around_opponents_move() {
         MCTSParameters params = new MCTSParameters();
-        params.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         params.maxRolloutsNum = 1;
-        params.maxSimulatedGameTurns = Integer.MAX_VALUE;
-        params.maxThinkTimeMillis = 1000;
-        params.maxThinkTimeIncludesSimulation = true;
         params.searchRadius = 1;
-        params.rewardScheme = new WinLossDrawScheme();
         params.pruneSiblings = false;
         params.pruneParent = false;
 

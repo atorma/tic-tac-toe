@@ -26,7 +26,7 @@ public class MoveNodeTests {
     }
 
     @Test
-    public void when_initial_state_is_end_state_then_root_has_no_allowed_moves() {
+    public void when_root_node_is_end_state_then_no_allowed_moves() {
         Piece[][] alreadyAtEndBoard = new Piece[3][3];
         alreadyAtEndBoard[0][0] = Piece.X;
         alreadyAtEndBoard[1][1] = Piece.X;
@@ -38,11 +38,12 @@ public class MoveNodeTests {
         alreadyAtEndState.print();
 
         MoveNode root = new MoveNode(alreadyAtEndState, null, new WinLossDrawScheme());
-        assertTrue(root.getAllowedMoves().isEmpty());
+        root.expandAll();
+        assertTrue(root.getChildren().isEmpty());
     }
 
     @Test
-    public void when_child_move_should_represent_and_end_state_then_no_allowed_moves_in_child() {
+    public void when_child_node_is_end_state_then_no_allowed_moves() {
         Piece[][] almostAtEndBoard = new Piece[3][3];
         almostAtEndBoard[1][1] = Piece.X;
         almostAtEndBoard[2][2] = Piece.X;
@@ -59,8 +60,8 @@ public class MoveNodeTests {
         endState.print();
         assertTrue(endState.isAtEnd());
         assertTrue(endState.getAllowedMoves().isEmpty());
-        System.out.println(endStateNode.getAllowedMoves());
-        assertTrue(endStateNode.getAllowedMoves().isEmpty());
+        endStateNode.expandAll();
+        assertTrue(endStateNode.getChildren().isEmpty());
     }
 
     @Test

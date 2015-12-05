@@ -32,7 +32,6 @@ public class MCTSPlayer implements Player {
 
     private int boardRowsNum, boardColsNum;
     private MoveNode lastMove; // Last move overall, may be my move or opponent's move, depending on algorithm progress
-    private GameState lastState;
 
     private long planningStartTime;
     private AtomicInteger planningRollouts = new AtomicInteger();
@@ -70,24 +69,21 @@ public class MCTSPlayer implements Player {
 
 
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
-        if (lastState == null || updatedState.getNumPieces() < lastState.getNumPieces()) {
+        if (lastMove == null || updatedState.getNumPieces() < lastMove.getGameState().getNumPieces()) {
             // Reset the learning following an earlier game,
             // otherwise we'll easily run out of memory in repeated games (tried that).
             boardRowsNum = updatedState.getBoardRows();
             boardColsNum = updatedState.getBoardCols();
             lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
-            lastState = updatedState.getCopy();
             LOGGER.debug("New game started!");
         } else {
             lastMove = lastMove.findMoveTo(opponentsLastMove);
-            lastState = lastState.next(opponentsLastMove);
         }
 
         // Don't prune here. Seems it can cause so much GC activity that it steals CPU resources for simulation.
 
         /* Main work */
         lastMove = planMove();
-        lastState = lastState.next(lastMove.getMove());
 
         if (params.pruneSiblings) {
             lastMove.pruneOtherBranchesOnPathToRoot();
@@ -110,16 +106,13 @@ public class MCTSPlayer implements Player {
 
 
         MoveNode rolloutStartMove;
-        GameState rolloutStartState;
         if (isMandatoryMove) { // If we have a mandatory move, use the time to plan ahead from that
             rolloutStartMove = bestMove;
-            rolloutStartState = lastState.next(bestMove.getMove());
         } else {
             rolloutStartMove = lastMove;
-            rolloutStartState = lastState;
         }
         List<Rectangle> searchRectangles = getSearchRectangles();
-
+        LOGGER.debug("{}", searchRectangles);
 
         planningRollouts.set(0);
 
@@ -127,7 +120,7 @@ public class MCTSPlayer implements Player {
         for (int i = 0; i < params.rolloutThreads; i++) {
             Runnable task = () -> {
                 while (isThinkTimeLeft() && planningRollouts.get() < params.maxRolloutsNum) {
-                    performRollout(rolloutStartState, rolloutStartMove, searchRectangles);
+                    performRollout(rolloutStartMove, searchRectangles);
                 }
             };
             results.add(workerPool.submit(task));
@@ -152,6 +145,8 @@ public class MCTSPlayer implements Player {
         LOGGER.debug(planningRollouts + " rollouts in " + (System.currentTimeMillis() - planningStartTime) + " ms");
         LOGGER.debug("Chose " + (isMandatoryMove ? "mandatory" : "MCTS") + " " + bestMove.printStatsFor(mySide));
 
+        LOGGER.debug("Alternatives were: {}", bestMove.getParent().getChildren());
+
         return bestMove;
     }
 
@@ -160,15 +155,15 @@ public class MCTSPlayer implements Player {
         // Check for a decisive move
         NaivePlayer myself = new NaivePlayer();
         myself.setPiece(mySide);
-        Cell naiveMove = myself.move(lastState, null);
-        GameState result = lastState.next(naiveMove);
+        Cell naiveMove = myself.move(lastMove.getGameState(), null);
+        GameState result = lastMove.getGameState().next(naiveMove);
         if (result.getWinner() == myself.getPiece()) {
             return lastMove.findMoveTo(naiveMove);
         }
 
         // If opponent would get a decisive move, steal the move
         GameState fakeState = GameState.builder()
-                .setTemplate(lastState)
+                .setTemplate(lastMove.getGameState())
                 .setNextPlayer(mySide.other())
                 .build();
         NaivePlayer opponent = new NaivePlayer();
@@ -206,13 +201,13 @@ public class MCTSPlayer implements Player {
         return searchAreas;
     }
 
-    private void performRollout(GameState startState, MoveNode startNode, List<Rectangle> searchAreas) {
+    private void performRollout(MoveNode startNode, List<Rectangle> searchAreas) {
 
         // Selection and expansion
         LOGGER.trace("{} starts selecting node", Thread.currentThread());
-        StateAndNode selected;
+        MoveNode selected;
         synchronized (this) {
-            selected = selectMove(startState, startNode, searchAreas);
+            selected = selectMove(startNode, searchAreas);
             LOGGER.trace("{} selected node {}", Thread.currentThread(), startNode);
         }
 
@@ -224,11 +219,11 @@ public class MCTSPlayer implements Player {
             player1.setPiece(mySide);
             NaivePlayer player2 = new NaivePlayer();
             player2.setPiece(mySide.other());
-            Simulator simulator = new Simulator(selected.state, player1, player2);
+            Simulator simulator = new Simulator(selected.getGameState(), player1, player2);
             simulator.setCopyBoard(false); // NaivePlayer does not modify the input board when moving, this setting improves performance
             endState = simulateGame(simulator);
         } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.UNIFORM_RANDOM) {
-            endState = simulateUniformRandomGame(selected.state);
+            endState = simulateUniformRandomGame(selected.getGameState());
         } else {
             throw new IllegalArgumentException("Invalid simulation strategy " + params.simulationStrategy);
         }
@@ -236,7 +231,7 @@ public class MCTSPlayer implements Player {
 
         // Back-propagation
         synchronized (this) {
-            selected.node.propagateSimulatedResult(endState);
+            selected.propagateSimulatedResult(endState);
             LOGGER.trace("{} done propagating results", Thread.currentThread());
         }
 
@@ -249,39 +244,31 @@ public class MCTSPlayer implements Player {
      *
      * Returns a promising move, or one that ends the game.
      */
-    private StateAndNode selectMove(GameState startState, MoveNode startNode, List<Rectangle> searchAreas) {
+    private MoveNode selectMove(MoveNode startNode, List<Rectangle> searchAreas) {
         MoveNode moveNode = startNode;
-        GameState state = startState.getCopy();
 
-        while (!state.isAtEnd()) {
+        while (!moveNode.getGameState().isAtEnd()) {
             if (searchAreas.isEmpty()) {
                 if (!moveNode.isFullyExpanded()) {
-                    moveNode = moveNode.expandRandom();
-                    state.update(moveNode.getMove());
-                    return new StateAndNode(moveNode, state);
+                    return moveNode.expandRandom();
                 } else {
                     moveNode = Utils.pickRandom(moveNode.getBestExploratoryMoves());
-                    state.update(moveNode.getMove());
                 }
             } else {
                 MoveNode child = moveNode.expandRandomIn(searchAreas);
                 if (child != null) { // not yet fully expanded in searchAreas
-                    moveNode = child;
-                    state.update(moveNode.getMove());
-                    return new StateAndNode(moveNode, state);
-                } else { // all children visited at least once, now pick the currently most promising
+                    return child;
+                } else { // all children visited at least once, now continue to searching in the most promising branch
                     if (moveNode.getChildren().size() > 0) {
                         moveNode = Utils.pickRandom(moveNode.getBestExploratoryMoves());
                     } else { // search area is fully occupied, pick one outside it
                         moveNode = moveNode.expandRandom();
                     }
-                    state.update(moveNode.getMove());
                 }
             }
-
         }
 
-        return new StateAndNode(moveNode, state);
+        return moveNode;
     }
 
 
@@ -337,7 +324,7 @@ public class MCTSPlayer implements Player {
         // rewarding moves, a naive move may be a good choice
         NaivePlayer naivePlayer = new NaivePlayer();
         naivePlayer.setPiece(mySide);
-        Cell naiveMove = naivePlayer.move(lastState, lastMove.getMove());
+        Cell naiveMove = naivePlayer.move(lastMove.getGameState(), lastMove.getMove());
         for (MoveNode candidate : candidates) {
             if (candidate.getMove().equals(naiveMove)) {
                 return candidate;
@@ -356,14 +343,4 @@ public class MCTSPlayer implements Player {
         return Utils.pickRandom(candidates);
     }
 
-
-    private static class StateAndNode {
-        final MoveNode node;
-        final GameState state;
-
-        StateAndNode(MoveNode node, GameState state) {
-            this.node = node;
-            this.state = state;
-        }
-    }
 }

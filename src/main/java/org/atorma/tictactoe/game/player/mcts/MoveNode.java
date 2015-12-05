@@ -5,6 +5,8 @@ import org.atorma.tictactoe.game.state.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -21,6 +23,7 @@ public class MoveNode {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MoveNode.class);
 
+    private Reference<GameState> stateRef;
     private final Cell cell;
     private final Piece nextPlayer;
 
@@ -36,6 +39,7 @@ public class MoveNode {
     private MoveNode root;
     /* Stored in root only */
     private RewardScheme rewardScheme;
+    private GameState rootState;
 
     /**
      * Creates the root node of a game tree.
@@ -53,6 +57,7 @@ public class MoveNode {
         this.root = this;
         this.rewardScheme = rewardScheme;
         this.parent = null;
+        this.rootState = gameState.getCopy();
 
         this.cell = cell;
         this.nextPlayer = gameState.getNextPlayer();
@@ -61,14 +66,13 @@ public class MoveNode {
 
     private MoveNode(MoveNode parent, Cell cell) {
         init();
+        GameState myState = parent.getGameState().next(cell);
         this.parent = parent;
         this.root = parent.root;
         this.cell = cell;
-        this.nextPlayer = parent.getNextPlayer().other();
-
-        this.unexpandedMoves = parent.getAllowedMoves();
-        this.unexpandedMoves.remove(this.cell);
-        Collections.sort(this.unexpandedMoves, new CellRowOrderComparator());
+        this.nextPlayer = myState.getNextPlayer();
+        this.stateRef = new SoftReference<>(myState);
+        this.unexpandedMoves = new ArrayList<>(myState.getAllowedMoves()); // sorted by rows then columns
     }
 
     private void init() {
@@ -81,32 +85,38 @@ public class MoveNode {
     /**
      * @return
      *  the move that took the game in this state, null if this node represents
-     *  an empty board
+     *  an initial state
      */
     public Cell getMove() {
         return cell;
     }
 
     /**
-     * @return
-     *  all possible moves from this state
+     * Returns the state of the game after this move.
+     *
+     * @see #getMove()
      */
-    public List<Cell> getAllowedMoves() {
-        ArrayList<Cell> allowed = new ArrayList<>(children.size() + unexpandedMoves.size());
-        allowed.addAll(unexpandedMoves);
-        for (MoveNode n : children) {
-            allowed.add(n.getMove());
+    public GameState getGameState() {
+        if (rootState != null) {
+            return rootState;
         }
-        return allowed;
+
+        GameState state = this.stateRef.get();
+        if (state == null) {
+            state = reconstructState();
+            this.stateRef = new SoftReference<>(state);
+        }
+        return state;
     }
 
-    /**
-     * @return
-     *  the piece of the player who moves next from this state
-     */
-    public Piece getNextPlayer() {
-        return nextPlayer;
+    private GameState reconstructState() {
+        List<MoveNode> path = getPathToRoot();
+        Collections.reverse(path);
+        GameState state = path.get(0).getGameState().getCopy();
+        path.stream().skip(1).forEachOrdered(n -> state.update(n.getMove()));
+        return state;
     }
+
 
     public MoveNode getRoot() {
         return root;
@@ -387,6 +397,7 @@ public class MoveNode {
      */
     public void makeRoot() {
         this.rewardScheme = root.rewardScheme;
+        this.rootState = getGameState();
         this.root = this;
         this.parent = null;
     }
@@ -422,13 +433,11 @@ public class MoveNode {
 
     private void pruneDescendantsIfLevelEqualsTarget(int currentLevel, int targetLevel) {
         if (currentLevel == targetLevel) {
-            List<Cell> allowedMoves = getAllowedMoves();
-            children.clear();
-            unexpandedMoves.clear();
-            unexpandedMoves.addAll(allowedMoves);
-            Collections.sort(unexpandedMoves, new CellRowOrderComparator());
+            this.children.clear();
+            this.unexpandedMoves.clear();
+            this.unexpandedMoves.addAll(getGameState().getAllowedMoves());
         } else {
-            for (MoveNode child : children) {
+            for (MoveNode child : this.children) {
                 child.pruneDescendantsIfLevelEqualsTarget(currentLevel + 1, targetLevel);
             }
         }
