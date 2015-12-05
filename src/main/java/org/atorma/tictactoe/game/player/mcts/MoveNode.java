@@ -26,6 +26,7 @@ public class MoveNode {
     private Reference<GameState> stateRef;
     private final Cell cell;
     private final Piece nextPlayer;
+    private final boolean isEndState;
 
     private MoveNode parent;
 
@@ -60,6 +61,7 @@ public class MoveNode {
         this.rootState = gameState.getCopy();
 
         this.cell = cell;
+        this.isEndState = gameState.isAtEnd();
         this.nextPlayer = gameState.getNextPlayer();
         this.unexpandedMoves = new ArrayList<>(gameState.getAllowedMoves()); // sorted by rows then columns
     }
@@ -70,6 +72,7 @@ public class MoveNode {
         this.parent = parent;
         this.root = parent.root;
         this.cell = cell;
+        this.isEndState = myState.isAtEnd();
         this.nextPlayer = myState.getNextPlayer();
         this.stateRef = new SoftReference<>(myState);
         this.unexpandedMoves = new ArrayList<>(myState.getAllowedMoves()); // sorted by rows then columns
@@ -89,6 +92,14 @@ public class MoveNode {
      */
     public Cell getMove() {
         return cell;
+    }
+
+    /**
+     * @return
+     *  whether this move is an end state of the game
+     */
+    public boolean isEndState() {
+        return isEndState;
     }
 
     /**

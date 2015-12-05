@@ -112,7 +112,6 @@ public class MCTSPlayer implements Player {
             rolloutStartMove = lastMove;
         }
         List<Rectangle> searchRectangles = getSearchRectangles();
-        LOGGER.debug("{}", searchRectangles);
 
         planningRollouts.set(0);
 
@@ -125,7 +124,7 @@ public class MCTSPlayer implements Player {
             };
             results.add(workerPool.submit(task));
         }
-        LOGGER.debug("Created {} planning tasks", results.size());
+        LOGGER.trace("Created {} planning tasks", results.size());
         for (Future result : results) {
             try {
                 result.get();
@@ -142,10 +141,8 @@ public class MCTSPlayer implements Player {
             bestMove = selectNextMoveBasedOnExpectedReward();
         }
 
-        LOGGER.debug(planningRollouts + " rollouts in " + (System.currentTimeMillis() - planningStartTime) + " ms");
-        LOGGER.debug("Chose " + (isMandatoryMove ? "mandatory" : "MCTS") + " " + bestMove.printStatsFor(mySide));
-
-        LOGGER.debug("Alternatives were: {}", bestMove.getParent().getChildren());
+        LOGGER.debug("{} rollouts in {} ms", planningRollouts, System.currentTimeMillis() - planningStartTime);
+        LOGGER.debug("Chose {} {}", isMandatoryMove ? "mandatory" : "MCTS", bestMove.printStatsFor(mySide));
 
         return bestMove;
     }
@@ -247,7 +244,7 @@ public class MCTSPlayer implements Player {
     private MoveNode selectMove(MoveNode startNode, List<Rectangle> searchAreas) {
         MoveNode moveNode = startNode;
 
-        while (!moveNode.getGameState().isAtEnd()) {
+        while (!moveNode.isEndState()) {
             if (searchAreas.isEmpty()) {
                 if (!moveNode.isFullyExpanded()) {
                     return moveNode.expandRandom();
