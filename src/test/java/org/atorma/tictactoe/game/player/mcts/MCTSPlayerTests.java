@@ -2,6 +2,7 @@ package org.atorma.tictactoe.game.player.mcts;
 
 
 import org.atorma.tictactoe.SlowTests;
+import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.game.*;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
@@ -11,6 +12,8 @@ import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.test.annotation.Repeat;
 
 import static org.junit.Assert.assertEquals;
@@ -19,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 @Category(SlowTests.class)
 public class MCTSPlayerTests {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MCTSPlayerTests.class);
 
     @Test
     public void ties_or_wins_naive_player_in_3x3_tic_tac_toe_if_gets_to_start() {
@@ -194,10 +198,12 @@ public class MCTSPlayerTests {
         assertEquals(0, mctsPlayerMove.getColumn());
     }
 
-    // TODO This fails often.
     @Test
     public void test_18x18_connect_5_mcts_player_blocks_3_in_row_with_free_ends_if_given_enough_time() {
         MCTSParameters params = new MCTSParameters();
+        params.pruneParent = false;
+        params.pruneSiblings = false;
+        params.pruneDescendantLevelsGreaterThan = Integer.MAX_VALUE;
 
         Piece[][] board = new Piece[18][18];
         // Cross has 2 in sequence
@@ -223,6 +229,13 @@ public class MCTSPlayerTests {
         gameState.print();
 
         Cell mctsPlayerMove = mctsPlayer.move(gameState, new Cell(8, 0));
+        LOGGER.debug("Move alternatives were");
+        for (MoveNode c : mctsPlayer.getLastMove().getParent().getChildren()) {
+            LOGGER.debug("Move ({},{}), E[r] = {}, S = {}, X wins {}, O wins {}, Total {}",
+                    c.getMove().getRow(), c.getMove().getColumn(),
+                    c.getExpectedReward(mctsPlayer.getPiece()), c.getExplorationScore(mctsPlayer.getPiece()),
+                    c.getWins(mctsPlayer.getPiece()), c.getWins(mctsPlayer.getPiece().other()), c.getNumPlays());
+        }
 
         gameState = gameState.next(mctsPlayerMove);
         gameState.print();
@@ -264,7 +277,6 @@ public class MCTSPlayerTests {
     public void when_search_radius_given_then_search_expands_only_within_radius_around_specified_number_of_past_moves() {
         MCTSParameters params = new MCTSParameters();
         params.searchRadius = 1;
-        params.pastMovesSearchNumber = 2; // opponent's and own last moves
         params.pruneSiblings = false;
         params.pruneParent = false;
         params.pruneDescendantLevelsGreaterThan = Integer.MAX_VALUE;
@@ -288,7 +300,7 @@ public class MCTSPlayerTests {
         gameState = gameState.next(opponentsMove);
         gameState.print();
 
-        // Both have moved, can now move only within params.searchRadius around own or opponent's move
+        // Both have moved, can now move only within params.searchRadius around the past moves
         Cell mctsPlayer2ndMove = mctsPlayer.move(gameState, opponentsMove);
         gameState = gameState.next(mctsPlayer2ndMove);
         gameState.print();
@@ -296,7 +308,7 @@ public class MCTSPlayerTests {
         assertTrue(Cell.getDistance(mctsPlayer2ndMove, mctsPlayerMove) <= params.searchRadius
                 || Cell.getDistance(mctsPlayer2ndMove, opponentsMove) <= params.searchRadius);
 
-        // Furthermore, it should search for alternatives within search radius of past moves only
+        // Furthermore, it should expand (search) alternatives within search radius of past moves only
         MoveNode mctsPlayer2ndNode = mctsPlayer.getLastMove();
         assertTrue(mctsPlayer2ndNode.getChildren().size() > 0);
         for (MoveNode n : mctsPlayer2ndNode.getChildren()) {

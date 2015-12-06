@@ -181,21 +181,23 @@ public class MCTSPlayer implements Player {
 
 
     private List<Rectangle> getSearchRectangles() {
-        List<Rectangle> searchAreas = new ArrayList<>();
         if (params.searchRadius < Integer.MAX_VALUE) {
-            int numMoves = 0;
-            MoveNode moveNode = lastMove;
-            while (numMoves < params.pastMovesSearchNumber && moveNode != null && moveNode.getMove() != null) {
-                Cell pos = moveNode.getMove();
-                Rectangle rectangle = new Rectangle(
-                        pos.getRow() - params.searchRadius, pos.getColumn() - params.searchRadius,
-                        pos.getRow() + params.searchRadius, pos.getColumn() + params.searchRadius);
-                searchAreas.add(rectangle);
-                moveNode = moveNode.getParent();
-                numMoves++;
+            GameState currentState = lastMove.getGameState();
+            ArrayList<Rectangle> searchAreas = new ArrayList<>();
+            for (int row = 0; row < boardRowsNum; row++) {
+                for (int col = 0; col < boardColsNum; col++) {
+                    if (currentState.getPiece(row, col) != null) {
+                        Rectangle rectangle = new Rectangle(
+                                row - params.searchRadius, col - params.searchRadius,
+                                row + params.searchRadius, col + params.searchRadius);
+                        searchAreas.add(rectangle);
+                    }
+                }
             }
+            return searchAreas;
+        } else {
+            return null;
         }
-        return searchAreas;
     }
 
     private void performRollout(MoveNode startNode, List<Rectangle> searchAreas) {
@@ -245,7 +247,7 @@ public class MCTSPlayer implements Player {
         MoveNode moveNode = startNode;
 
         while (!moveNode.isEndState()) {
-            if (searchAreas.isEmpty()) {
+            if (searchAreas == null) {
                 if (!moveNode.isFullyExpanded()) {
                     return moveNode.expandRandom();
                 } else {

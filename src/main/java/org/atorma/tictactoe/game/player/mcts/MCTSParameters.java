@@ -35,17 +35,11 @@ public class MCTSParameters {
     public boolean maxThinkTimeIncludesSimulation = false;
 
     /**
-     * The radius (cell distance) of the areas around the player's and the opponent's
-     * previous moves to constrain the search to.
+     * Constrains the search to specified "radius" (cell distance) around previous moves.
+     * Value 1 means searching next possible moves next to previous moves only.
      * Integer.MAX_VALUE to allow searching the entire board.
      */
     public int searchRadius = 1;
-
-    /**
-     * Around how many past moves, including player's and opponent's moves, to search.
-     * E.g. value 2 means searching around the opponent's and the player's previous moves.
-     */
-    public int pastMovesSearchNumber = Integer.MAX_VALUE;
 
     /**
      * A scheme defining the players' reward when the game ends at some state, as well as
