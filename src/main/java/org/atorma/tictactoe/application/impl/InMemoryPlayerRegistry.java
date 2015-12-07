@@ -8,6 +8,7 @@ import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.human.HumanPlayer;
 import org.atorma.tictactoe.game.player.mcts.MCTSPlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
+import org.atorma.tictactoe.game.player.random.RandomAdjacentPlayer;
 import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,8 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
         createPlayer("Human", PlayerInfo.Type.HUMAN, HumanPlayer.class);
         createPlayer("Monte Carlo Tree Search", PlayerInfo.Type.AI, MCTSPlayer.class);
         createPlayer("Naive", PlayerInfo.Type.AI, NaivePlayer.class);
-        createPlayer("Random", PlayerInfo.Type.AI, RandomPlayer.class);
+        createPlayer("Random adjacent", PlayerInfo.Type.AI, RandomAdjacentPlayer.class);
+        createPlayer("Uniform random", PlayerInfo.Type.AI, RandomPlayer.class);
     }
 
     private void createPlayer(String name, PlayerInfo.Type type, Class<? extends Player> playerClass) {
