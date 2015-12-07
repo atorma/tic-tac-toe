@@ -4,6 +4,7 @@ package org.atorma.tictactoe.game.player.mcts;
 import org.atorma.tictactoe.game.*;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
+import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.atorma.tictactoe.game.state.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -212,20 +213,26 @@ public class MCTSPlayer implements Player {
 
         // Simulation
         LOGGER.trace("{} starts simulating game...", Thread.currentThread());
+        Simulator simulator;
         GameState endState;
         if (params.simulationStrategy == MCTSParameters.SimulationStrategy.NAIVE) {
             NaivePlayer player1 = new NaivePlayer();
             player1.setPiece(mySide);
             NaivePlayer player2 = new NaivePlayer();
             player2.setPiece(mySide.other());
-            Simulator simulator = new Simulator(selected.getGameState(), player1, player2);
+            simulator = new Simulator(selected.getGameState(), player1, player2);
             simulator.setCopyBoard(false); // NaivePlayer does not modify the input board when moving, this setting improves performance
-            endState = simulateGame(simulator);
         } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.UNIFORM_RANDOM) {
-            endState = simulateUniformRandomGame(selected.getGameState());
+            RandomPlayer player1 = new RandomPlayer();
+            player1.setPiece(mySide);
+            RandomPlayer player2 = new RandomPlayer();
+            player2.setPiece(mySide.other());
+            simulator = new Simulator(selected.getGameState(), player1, player2);
+            simulator.setCopyBoard(false); // RandomPlayer does not modify the input board when moving, this setting improves performance
         } else {
             throw new IllegalArgumentException("Invalid simulation strategy " + params.simulationStrategy);
         }
+        endState = simulateGame(simulator);
         LOGGER.trace("{} done simulating game", Thread.currentThread());
 
         // Back-propagation
@@ -268,32 +275,6 @@ public class MCTSPlayer implements Player {
         }
 
         return moveNode;
-    }
-
-
-    /**
-     * Simulates a game with uniformly random moves until it ends,
-     * or time runs out, or maximum number of simulated turns is exceeded.
-     * This method plays a fully random play, not using a Simulator for performance reasons.
-     *
-     * @return
-     *  state where the game ended
-     */
-    private GameState simulateUniformRandomGame(GameState startingState) {
-        GameState gameState = startingState.getCopy();
-        int turns = 0;
-
-        while (!gameState.isAtEnd()
-                && (!params.maxThinkTimeIncludesSimulation || isThinkTimeLeft())
-                && turns < params.maxSimulatedGameTurns) {
-
-            List<Cell> allowedMoves = gameState.getAllowedMoves();
-            Cell nextPosition = Utils.pickRandom(allowedMoves);
-            gameState.update(nextPosition);
-            turns++;
-        }
-
-        return gameState;
     }
 
     /**
