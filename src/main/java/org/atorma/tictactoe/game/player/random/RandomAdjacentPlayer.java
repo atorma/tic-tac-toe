@@ -6,6 +6,7 @@ import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,55 +27,20 @@ public class RandomAdjacentPlayer implements Player {
     }
 
     private boolean hasAdjacentPiece(Cell cell, GameState state) {
-        try {
-            if (state.getPiece(cell.getRow() - 1, cell.getColumn() - 1) != null) {
-                return true;
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {}
+        List<Cell> adjacentCells = new ArrayList<>(8);
+        adjacentCells.add(new Cell(cell.getRow() - 1, cell.getColumn() - 1));
+        adjacentCells.add(new Cell(cell.getRow() - 1, cell.getColumn()));
+        adjacentCells.add(new Cell(cell.getRow() - 1, cell.getColumn() + 1));
+        adjacentCells.add(new Cell(cell.getRow(), cell.getColumn() - 1));
+        adjacentCells.add(new Cell(cell.getRow(), cell.getColumn() + 1));
+        adjacentCells.add(new Cell(cell.getRow() + 1, cell.getColumn() - 1));
+        adjacentCells.add(new Cell(cell.getRow() + 1, cell.getColumn()));
+        adjacentCells.add(new Cell(cell.getRow() + 1, cell.getColumn() + 1));
 
-        try {
-            if (state.getPiece(cell.getRow() - 1, cell.getColumn()) != null) {
-                return true;
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {}
-
-        try {
-            if (state.getPiece(cell.getRow() - 1, cell.getColumn() + 1) != null) {
-                return true;
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {}
-
-        try {
-            if (state.getPiece(cell.getRow(), cell.getColumn() - 1) != null) {
-                return true;
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {}
-
-        try {
-            if (state.getPiece(cell.getRow(), cell.getColumn() + 1) != null) {
-                return true;
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {}
-
-        try {
-            if (state.getPiece(cell.getRow() + 1, cell.getColumn() - 1) != null) {
-                return true;
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {}
-
-        try {
-            if (state.getPiece(cell.getRow() + 1, cell.getColumn()) != null) {
-                return true;
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {}
-
-        try {
-            if (state.getPiece(cell.getRow() + 1, cell.getColumn() + 1) != null) {
-                return true;
-            }
-        } catch (ArrayIndexOutOfBoundsException e) {}
-
-        return false;
+        return adjacentCells.stream()
+                .anyMatch(c -> c.getRow() >= 0 && c.getRow() < state.getBoardRows()
+                        && c.getColumn() >= 0 && c.getColumn() < state.getBoardCols()
+                        && state.getPiece(c) != null);
     }
 
 
