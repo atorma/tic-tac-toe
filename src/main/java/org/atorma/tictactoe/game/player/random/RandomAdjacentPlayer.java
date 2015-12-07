@@ -8,39 +8,61 @@ import org.atorma.tictactoe.game.state.Piece;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.stream.Collectors;
 
 public class RandomAdjacentPlayer implements Player {
     private Piece myPiece;
+    private List<Cell> centroids = new ArrayList<>();
+    private GameState currentState;
 
     @Override
     public Cell move(GameState currentState, Cell opponentsLastMove) {
-        List<Cell> candidates = currentState.getAllowedMoves()
-                .stream()
-                .filter(c -> hasAdjacentPiece(c, currentState))
-                .collect(Collectors.toList());
-        if (candidates.size() > 0) {
-            return Utils.pickRandom(candidates);
-        } else {
-            return Utils.pickRandom(currentState.getAllowedMoves());
+        this.currentState = currentState;
+        if (opponentsLastMove != null) {
+            centroids.add(opponentsLastMove);
         }
+
+        return planMove();
     }
 
-    private boolean hasAdjacentPiece(Cell cell, GameState state) {
-        List<Cell> adjacentCells = new ArrayList<>(8);
-        adjacentCells.add(new Cell(cell.getRow() - 1, cell.getColumn() - 1));
-        adjacentCells.add(new Cell(cell.getRow() - 1, cell.getColumn()));
-        adjacentCells.add(new Cell(cell.getRow() - 1, cell.getColumn() + 1));
-        adjacentCells.add(new Cell(cell.getRow(), cell.getColumn() - 1));
-        adjacentCells.add(new Cell(cell.getRow(), cell.getColumn() + 1));
-        adjacentCells.add(new Cell(cell.getRow() + 1, cell.getColumn() - 1));
-        adjacentCells.add(new Cell(cell.getRow() + 1, cell.getColumn()));
-        adjacentCells.add(new Cell(cell.getRow() + 1, cell.getColumn() + 1));
+    private Cell planMove() {
+        Cell myMove;
 
-        return adjacentCells.stream()
-                .anyMatch(c -> c.getRow() >= 0 && c.getRow() < state.getBoardRows()
-                        && c.getColumn() >= 0 && c.getColumn() < state.getBoardCols()
-                        && state.getPiece(c) != null);
+        List<Cell> candidates = new ArrayList<>();
+        ListIterator<Cell> centroidIter = centroids.listIterator();
+        while (centroidIter.hasNext()) {
+            Cell centroid = centroidIter.next();
+            List<Cell> adjacentCells = new ArrayList<>(8);
+            adjacentCells.add(new Cell(centroid.getRow() - 1, centroid.getColumn() - 1));
+            adjacentCells.add(new Cell(centroid.getRow() - 1, centroid.getColumn()));
+            adjacentCells.add(new Cell(centroid.getRow() - 1, centroid.getColumn() + 1));
+            adjacentCells.add(new Cell(centroid.getRow(), centroid.getColumn() - 1));
+            adjacentCells.add(new Cell(centroid.getRow(), centroid.getColumn() + 1));
+            adjacentCells.add(new Cell(centroid.getRow() + 1, centroid.getColumn() - 1));
+            adjacentCells.add(new Cell(centroid.getRow() + 1, centroid.getColumn()));
+            adjacentCells.add(new Cell(centroid.getRow() + 1, centroid.getColumn() + 1));
+            List<Cell> unoccupiedNeighbors = adjacentCells.stream()
+                    .filter(c -> c.getRow() >= 0 && c.getRow() < currentState.getBoardRows()
+                            && c.getColumn() >= 0 && c.getColumn() < currentState.getBoardCols()
+                            && currentState.getPiece(c) == null)
+                    .collect(Collectors.toList());
+
+            if (unoccupiedNeighbors.isEmpty()) {
+                centroidIter.remove();
+            } else {
+                candidates.addAll(unoccupiedNeighbors);
+            }
+        }
+
+        if (candidates.isEmpty()) {
+            myMove = Utils.pickRandom(currentState.getAllowedMoves());
+        } else {
+            myMove = Utils.pickRandom(candidates);
+        }
+        centroids.add(myMove);
+
+        return myMove;
     }
 
 
