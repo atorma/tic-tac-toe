@@ -4,6 +4,7 @@ package org.atorma.tictactoe.game.player.mcts;
 import org.atorma.tictactoe.game.*;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
+import org.atorma.tictactoe.game.player.random.RandomAdjacentPlayer;
 import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.atorma.tictactoe.game.state.*;
 import org.slf4j.Logger;
@@ -213,25 +214,24 @@ public class MCTSPlayer implements Player {
 
         // Simulation
         LOGGER.trace("{} starts simulating game...", Thread.currentThread());
-        Simulator simulator;
+        Player player1, player2;
         GameState endState;
         if (params.simulationStrategy == MCTSParameters.SimulationStrategy.NAIVE) {
-            NaivePlayer player1 = new NaivePlayer();
-            player1.setPiece(mySide);
-            NaivePlayer player2 = new NaivePlayer();
-            player2.setPiece(mySide.other());
-            simulator = new Simulator(selected.getGameState(), player1, player2);
-            simulator.setCopyBoard(false); // NaivePlayer does not modify the input board when moving, this setting improves performance
+            player1 = new NaivePlayer();
+            player2 = new NaivePlayer();
+        } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.RANDOM_ADJACENT) {
+            player1 = new RandomAdjacentPlayer();
+            player2 = new RandomAdjacentPlayer();
         } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.UNIFORM_RANDOM) {
-            RandomPlayer player1 = new RandomPlayer();
-            player1.setPiece(mySide);
-            RandomPlayer player2 = new RandomPlayer();
-            player2.setPiece(mySide.other());
-            simulator = new Simulator(selected.getGameState(), player1, player2);
-            simulator.setCopyBoard(false); // RandomPlayer does not modify the input board when moving, this setting improves performance
+            player1 = new RandomPlayer();
+            player2 = new RandomPlayer();
         } else {
             throw new IllegalArgumentException("Invalid simulation strategy " + params.simulationStrategy);
         }
+        player1.setPiece(mySide);
+        player2.setPiece(mySide.other());
+        Simulator simulator = new Simulator(selected.getGameState(), player1, player2);
+        simulator.setCopyBoard(false);
         endState = simulateGame(simulator);
         LOGGER.trace("{} done simulating game", Thread.currentThread());
 

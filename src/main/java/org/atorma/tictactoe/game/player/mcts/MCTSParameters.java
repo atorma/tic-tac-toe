@@ -8,11 +8,11 @@ package org.atorma.tictactoe.game.player.mcts;
  */
 public class MCTSParameters {
 
-    enum SimulationStrategy {UNIFORM_RANDOM, NAIVE}
+    enum SimulationStrategy {UNIFORM_RANDOM, RANDOM_ADJACENT, NAIVE}
 
 
     /** How to simulate games */
-    public SimulationStrategy simulationStrategy = SimulationStrategy.NAIVE;
+    public SimulationStrategy simulationStrategy = SimulationStrategy.UNIFORM_RANDOM;
 
     /** Maximum number of planning rollouts (iterations) to perform */
     public int maxRolloutsNum = Integer.MAX_VALUE;
