@@ -29,7 +29,7 @@ public class GameFactoryTests extends ApplicationTests {
         params.board.rows = 3;
         params.board.columns = 4;
         params.players.put(Piece.X, playerRegistry.getPlayerInfoList().stream()
-                .filter(x -> x.getName().equals("Random"))
+                .filter(x -> x.getName().equals("Uniform random"))
                 .findFirst()
                 .get()
         );
