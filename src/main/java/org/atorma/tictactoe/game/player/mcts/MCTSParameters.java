@@ -12,7 +12,7 @@ public class MCTSParameters {
 
 
     /** How to simulate games */
-    public SimulationStrategy simulationStrategy = SimulationStrategy.UNIFORM_RANDOM;
+    public SimulationStrategy simulationStrategy = SimulationStrategy.NAIVE;
 
     /** Maximum number of planning rollouts (iterations) to perform */
     public int maxRolloutsNum = Integer.MAX_VALUE;
@@ -22,9 +22,6 @@ public class MCTSParameters {
 
     /** How long in wall clock milliseconds the player is allowed to plan the next move */
     public long maxThinkTimeMillis = 5000;
-
-    /** Number of threads to use for rollouts */
-    public int rolloutThreads = 4;
 
     /**
      * true: maxThinkTimeMillis must be taken into account in game simulations

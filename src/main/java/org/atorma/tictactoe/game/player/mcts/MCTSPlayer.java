@@ -45,9 +45,8 @@ public class MCTSPlayer implements Player {
     }
 
     public MCTSPlayer(MCTSParameters params) {
-        Assert.isTrue(params.rolloutThreads >= 1);
         this.params = params;
-        this.workerPool = Executors.newFixedThreadPool(params.rolloutThreads);
+        this.workerPool =  Executors.newWorkStealingPool();
     }
 
 
@@ -118,7 +117,7 @@ public class MCTSPlayer implements Player {
         planningRollouts.set(0);
 
         List<Future> results = new ArrayList<>();
-        for (int i = 0; i < params.rolloutThreads; i++) {
+        for (int i = 0; i < Runtime.getRuntime().availableProcessors() ; i++) {
             Runnable task = () -> {
                 while (isThinkTimeLeft() && planningRollouts.get() < params.maxRolloutsNum) {
                     performRollout(rolloutStartMove, searchRectangles);
@@ -134,6 +133,7 @@ public class MCTSPlayer implements Player {
                 LOGGER.warn("Interrupted", e);
             } catch (ExecutionException e) {
                 LOGGER.error("Rollout exception", e);
+                throw new RuntimeException(e);
             }
         }
 
