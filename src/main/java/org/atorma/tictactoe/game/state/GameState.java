@@ -15,7 +15,8 @@ public class GameState {
     private Board board;
     private Piece nextPlayer;
     private List<Cell> allowedMoves;
-    private Map<Piece, Sequence> longestSequences;
+    private Sequence longestSequenceX;
+    private Sequence longestSequenceO;
     private Map<Piece, List<Sequence>> allSequences;
 
 
@@ -68,12 +69,21 @@ public class GameState {
         GameState nextState = new GameState();
         nextState.connectHowMany = this.connectHowMany;
         nextState.nextPlayer = this.nextPlayer;
-        nextState.board = this.board.copy();
-        nextState.allowedMoves = new ArrayList<>(this.allowedMoves);
-        nextState.longestSequences = new EnumMap<>(this.longestSequences);
+        nextState.board = copyBoard();
+        nextState.allowedMoves = copyAllowedMoves();
+        nextState.longestSequenceX = this.longestSequenceX;
+        nextState.longestSequenceO = this.longestSequenceO;
         return nextState;
     }
 
+    // TODO this can take percentually the longest CPU time in human vs MCTS player
+    private ArrayList<Cell> copyAllowedMoves() {
+        return new ArrayList<>(this.allowedMoves);
+    }
+
+    private Board copyBoard() {
+        return this.board.copy();
+    }
 
 
     public int getBoardRows() {
@@ -151,22 +161,23 @@ public class GameState {
      * @see #getLongestSequence(Piece)
      */
     public Piece getWinner() {
-        if (longestSequences.get(Piece.X).length == connectHowMany) {
+        if (longestSequenceX.length == connectHowMany) {
             return Piece.X;
-        } else if (longestSequences.get(Piece.O).length == connectHowMany) {
+        } else if (longestSequenceO.length == connectHowMany) {
             return Piece.O;
         } else {
             return null;
         }
     }
 
-
-    public Map<Piece, Sequence> getLongestSequences() {
-        return Collections.unmodifiableMap(longestSequences);
-    }
-
     public Sequence getLongestSequence(Piece player) {
-        return longestSequences.get(player);
+        if (player == Piece.X) {
+            return longestSequenceX;
+        } else if ( player == Piece.O) {
+            return longestSequenceO;
+        } else {
+            throw new IllegalArgumentException("Invalid piece " + player);
+        }
     }
 
     public Map<Piece, List<Sequence>> getAllSequences() {
@@ -181,7 +192,7 @@ public class GameState {
     }
 
     /**
-     * Finds longest sequences ({@link #longestSequences}) by going through the entire game board (4 times).
+     * Finds longest sequences by going through the entire game board (4 times).
      * If {@link #allSequences} is not null, finds also all sequences.
      *
      * @see #findSequencesThatCrossCell(Cell)
@@ -228,10 +239,8 @@ public class GameState {
     }
 
     private void initLongestSequences() {
-        longestSequences = new EnumMap<>(Piece.class);
-        for (Piece piece : Piece.values()) {
-            longestSequences.put(piece, new Sequence(0, null, null));
-        }
+        longestSequenceX = new Sequence(0, null, null);
+        longestSequenceO = new Sequence(0, null, null);
     }
 
     private int findSequencesInLine(Iterator<Cell> lineIterator) {
@@ -266,8 +275,14 @@ public class GameState {
 
         Sequence sequence = new Sequence(length, start, end);
 
-        if (longestSequences.get(piece).length < length) {
-            longestSequences.put(piece, sequence);
+        if (piece == Piece.X) {
+            if (longestSequenceX.length < sequence.length) {
+                longestSequenceX = sequence;
+            }
+        } else {
+            if (longestSequenceO.length < sequence.length) {
+                longestSequenceO = sequence;
+            }
         }
 
         if (allSequences != null) {
