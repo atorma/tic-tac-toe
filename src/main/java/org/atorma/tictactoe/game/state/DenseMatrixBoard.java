@@ -24,7 +24,7 @@ public class DenseMatrixBoard implements Board {
     }
 
     public Board copy() {
-        return new DenseArrayBoard(this.board);
+        return new DenseMatrixBoard(this.board);
     }
 
     private Piece[][] copy(Piece[][] board) {
