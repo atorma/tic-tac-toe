@@ -76,7 +76,7 @@ public class GameState {
         return nextState;
     }
 
-    // TODO this can take percentually the longest CPU time in human vs MCTS player
+    // TODO this can take percentually the longest CPU time in human vs MCTS player when the latter uses NaivePlayer for simulations
     private ArrayList<Cell> copyAllowedMoves() {
         return new ArrayList<>(this.allowedMoves);
     }
