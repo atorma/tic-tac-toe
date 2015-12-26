@@ -13,17 +13,32 @@ import java.util.stream.Collectors;
 
 public class RandomAdjacentPlayer implements Player {
     private Piece myPiece;
-    private List<Cell> centroids = new ArrayList<>();
+    private List<Cell> centroids;
     private GameState currentState;
 
     @Override
     public Cell move(GameState currentState, Cell opponentsLastMove) {
+        if (this.currentState == null || this.currentState.getNumPieces() < currentState.getNumPieces()) {
+            startNewGame(currentState);
+        }
+
         this.currentState = currentState;
         if (opponentsLastMove != null) {
             centroids.add(opponentsLastMove);
         }
 
         return planMove();
+    }
+
+    private void startNewGame(GameState currentState) {
+        centroids = new ArrayList<>();
+        for (int i = 0; i < currentState.getBoardRows(); i++) {
+            for (int j = 0; j < currentState.getBoardCols(); j++) {
+                if (currentState.getPiece(i, j) != null) {
+                    centroids.add(new Cell(i, j));
+                }
+            }
+        }
     }
 
     private Cell planMove() {
