@@ -41,12 +41,20 @@ public class HashMapBoard implements Board {
         return numCols;
     }
 
+    public int getNumPieces() {
+        return map.size();
+    }
+
     public Piece get(Cell cell) {
         return map.get(getIndex(cell.row, cell.column));
     }
 
     public void set(Cell cell, Piece piece) {
-        map.put(getIndex(cell.row, cell.column), piece);
+        if (piece != null) {
+            map.put(getIndex(cell.row, cell.column), piece);
+        } else {
+            map.remove(getIndex(cell.row, cell.column));
+        }
     }
 
     private int getIndex(int row, int col) {

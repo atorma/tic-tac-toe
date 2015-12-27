@@ -14,7 +14,7 @@ public class GameState {
     private int connectHowMany;
     private Board board;
     private Piece nextPlayer;
-    private List<Cell> allowedMoves;
+    private Optional<List<Cell>> allowedMoves = Optional.empty();
     private Sequence longestSequenceX;
     private Sequence longestSequenceO;
     private Map<Piece, List<Sequence>> allSequences;
@@ -51,17 +51,15 @@ public class GameState {
             throw new IllegalArgumentException("Illegal move: " + position + " already occupied by " + existingPiece);
         }
 
-        board.set(position, this.nextPlayer);
+        board.set(position, nextPlayer);
 
-        this.nextPlayer = this.nextPlayer.other();
+        nextPlayer = nextPlayer.other();
 
         findSequencesThatCrossCell(position);
 
-        if (isAtEnd()) {
-            this.allowedMoves = new ArrayList<>(0);
-        } else {
-            int positionIndex = Collections.binarySearch(this.allowedMoves, position, new CellRowOrderComparator());
-            this.allowedMoves.remove(positionIndex);
+        if (allowedMoves.isPresent()) {
+            int positionIndex = Collections.binarySearch(allowedMoves.get(), position, new CellRowOrderComparator());
+            allowedMoves.get().remove(positionIndex);
         }
     }
 
@@ -70,15 +68,9 @@ public class GameState {
         nextState.connectHowMany = this.connectHowMany;
         nextState.nextPlayer = this.nextPlayer;
         nextState.board = copyBoard();
-        nextState.allowedMoves = copyAllowedMoves();
         nextState.longestSequenceX = this.longestSequenceX;
         nextState.longestSequenceO = this.longestSequenceO;
         return nextState;
-    }
-
-    // TODO this can take percentually the longest CPU time in human vs MCTS player when the latter uses NaivePlayer for simulations
-    private ArrayList<Cell> copyAllowedMoves() {
-        return new ArrayList<>(this.allowedMoves);
     }
 
     private Board copyBoard() {
@@ -94,16 +86,9 @@ public class GameState {
         return board.getNumCols();
     }
 
-    public int getConnectHowMany() {
-        return connectHowMany;
+    public int getNumPieces() {
+        return board.getNumPieces();
     }
-
-
-    public Piece getNextPlayer() {
-        return nextPlayer;
-    }
-
-
 
     public Piece getPiece(int row, int col) {
         return board.get(new Cell(row, col));
@@ -113,30 +98,40 @@ public class GameState {
         return board.get(position);
     }
 
-    public int getNumPieces() {
-        return getBoardRows()*getBoardCols() - getAllowedMoves().size();
+
+    public int getConnectHowMany() {
+        return connectHowMany;
+    }
+
+    public Piece getNextPlayer() {
+        return nextPlayer;
+    }
+
+
+    public boolean isAllowed(Cell move) {
+        return Collections.binarySearch(getAllowedMoves(), move, new CellRowOrderComparator()) >= 0;
     }
 
     /** Returns allowed moves sorted first by row, then by column. */
     public List<Cell> getAllowedMoves() {
-        return Collections.unmodifiableList(allowedMoves);
-    }
-
-    public boolean isAllowed(Cell move) {
-        return Collections.binarySearch(this.allowedMoves, move, new CellRowOrderComparator()) >= 0;
+        if (!allowedMoves.isPresent()) {
+            checkAllowedMoves();
+        }
+        return Collections.unmodifiableList(allowedMoves.get());
     }
 
     private void checkAllowedMoves() {
-        allowedMoves = new ArrayList<>(getBoardRows() * getBoardCols());
+        allowedMoves = Optional.of(new ArrayList<>(getBoardRows()*getBoardCols() - getNumPieces()));
 
         if (getWinner() != null) {
             return;
         }
 
-        for (int i = 0; i < board.getNumRows(); i++) {
-            for (int j = 0; j < board.getNumCols(); j++) {
-                if (board.get(new Cell(i, j)) == null) {
-                    allowedMoves.add(new Cell(i, j));
+        for (int i = 0; i < getBoardRows(); i++) {
+            for (int j = 0; j <getBoardCols(); j++) {
+                Cell cell = new Cell(i, j);
+                if (board.get(cell) == null) {
+                    allowedMoves.get().add(cell);
                 }
             }
         }
@@ -144,7 +139,7 @@ public class GameState {
 
 
     public boolean isTie() {
-        return getWinner() == null && getAllowedMoves().isEmpty();
+        return getWinner() == null && getNumPieces() == getBoardRows()*getBoardCols();
     }
 
     public boolean isAtEnd() {
@@ -715,7 +710,6 @@ public class GameState {
 
             if (fullInit) {
                 state.findSequencesFromScratch();
-                state.checkAllowedMoves();
             }
 
             return state;

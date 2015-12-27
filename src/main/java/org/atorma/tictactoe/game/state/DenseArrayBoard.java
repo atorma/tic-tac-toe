@@ -10,6 +10,7 @@ public class DenseArrayBoard implements Board {
     private final Piece[] board;
     private final int numRows;
     private final int numCols;
+    private int numPieces;
 
     public DenseArrayBoard(Piece[][] board) {
         this(board.length, board[0].length);
@@ -25,6 +26,7 @@ public class DenseArrayBoard implements Board {
         this.numRows = numRows;
         this.numCols = numCols;
         this.board = new Piece[numRows*numCols];
+        this.numPieces = 0;
     }
 
     public int getNumRows() {
@@ -35,12 +37,22 @@ public class DenseArrayBoard implements Board {
         return numCols;
     }
 
+    public int getNumPieces() {
+        return numPieces;
+    }
+
     public Piece get(Cell cell) {
         return board[getIndex(cell.row, cell.column)];
     }
 
     public void set(Cell cell, Piece piece) {
-        board[getIndex(cell.row, cell.column)] = piece;
+        int index = getIndex(cell.row, cell.column);
+        if (piece != null && board[index] == null) {
+            numPieces = numPieces + 1;
+        } else if (piece == null && board[index] != null) {
+            numPieces = numPieces - 1;
+        }
+        board[index] = piece;
     }
 
     private int getIndex(int row, int col) {
@@ -50,6 +62,7 @@ public class DenseArrayBoard implements Board {
     public Board copy() {
         DenseArrayBoard copy = new DenseArrayBoard(numRows, numCols);
         System.arraycopy(board, 0, copy.board, 0, board.length);
+        copy.numPieces = this.numPieces;
         return copy;
     }
 

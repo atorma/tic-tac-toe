@@ -8,5 +8,7 @@ public interface Board {
     Piece get(Cell cell);
     void set(Cell cell, Piece piece);
 
+    int getNumPieces();
+
     Board copy();
 }
