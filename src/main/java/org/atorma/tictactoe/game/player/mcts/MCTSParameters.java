@@ -12,7 +12,7 @@ public class MCTSParameters {
 
 
     /** How to simulate games */
-    public SimulationStrategy simulationStrategy = SimulationStrategy.NAIVE;
+    public SimulationStrategy simulationStrategy = SimulationStrategy.RANDOM_ADJACENT;
 
     /** Maximum number of planning rollouts (iterations) to perform */
     public int maxRolloutsNum = Integer.MAX_VALUE;

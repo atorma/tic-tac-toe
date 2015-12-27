@@ -6,76 +6,74 @@ import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class RandomAdjacentPlayer implements Player {
     private Piece myPiece;
-    private List<Cell> centroids;
+    private Set<Cell> adjacentToOccupied;
     private GameState currentState;
 
     @Override
     public Cell move(GameState currentState, Cell opponentsLastMove) {
         if (this.currentState == null || this.currentState.getNumPieces() < currentState.getNumPieces()) {
-            startNewGame(currentState);
+            this.currentState = currentState;
+            startNewGame();
+        } else {
+            this.currentState = currentState;
         }
 
-        this.currentState = currentState;
         if (opponentsLastMove != null) {
-            centroids.add(opponentsLastMove);
+            adjacentToOccupied.remove(opponentsLastMove);
+            collectAdjacentToOccupied(opponentsLastMove);
         }
 
-        return planMove();
+        Cell myMove = planMove();
+
+        collectAdjacentToOccupied(myMove);
+        adjacentToOccupied.remove(myMove);
+
+        return myMove;
     }
 
-    private void startNewGame(GameState currentState) {
-        centroids = new ArrayList<>();
+    private void startNewGame() {
+        adjacentToOccupied = new HashSet<>();
         for (int i = 0; i < currentState.getBoardRows(); i++) {
             for (int j = 0; j < currentState.getBoardCols(); j++) {
-                if (currentState.getPiece(i, j) != null) {
-                    centroids.add(new Cell(i, j));
+                Cell c = new Cell(i, j);
+                if (!currentState.isAllowed(c)) {
+                    collectAdjacentToOccupied(c);
                 }
             }
         }
     }
 
-    private Cell planMove() {
-        Cell myMove;
+    private void collectAdjacentToOccupied(Cell occupied) {
+        Cell[] adjacent = new Cell[8];
+        adjacent[0] = new Cell(occupied.getRow() - 1, occupied.getColumn() - 1);
+        adjacent[1] = new Cell(occupied.getRow() - 1, occupied.getColumn());
+        adjacent[2] = new Cell(occupied.getRow() - 1, occupied.getColumn() + 1);
+        adjacent[3] = new Cell(occupied.getRow(), occupied.getColumn() - 1);
+        adjacent[4] = new Cell(occupied.getRow(), occupied.getColumn() + 1);
+        adjacent[5] = new Cell(occupied.getRow() + 1, occupied.getColumn() - 1);
+        adjacent[6] = new Cell(occupied.getRow() + 1, occupied.getColumn());
+        adjacent[7] = new Cell(occupied.getRow() + 1, occupied.getColumn() + 1);
 
-        List<Cell> candidates = new ArrayList<>();
-        ListIterator<Cell> centroidIter = centroids.listIterator();
-        while (centroidIter.hasNext()) {
-            Cell centroid = centroidIter.next();
-            List<Cell> adjacentCells = new ArrayList<>(8);
-            adjacentCells.add(new Cell(centroid.getRow() - 1, centroid.getColumn() - 1));
-            adjacentCells.add(new Cell(centroid.getRow() - 1, centroid.getColumn()));
-            adjacentCells.add(new Cell(centroid.getRow() - 1, centroid.getColumn() + 1));
-            adjacentCells.add(new Cell(centroid.getRow(), centroid.getColumn() - 1));
-            adjacentCells.add(new Cell(centroid.getRow(), centroid.getColumn() + 1));
-            adjacentCells.add(new Cell(centroid.getRow() + 1, centroid.getColumn() - 1));
-            adjacentCells.add(new Cell(centroid.getRow() + 1, centroid.getColumn()));
-            adjacentCells.add(new Cell(centroid.getRow() + 1, centroid.getColumn() + 1));
-            List<Cell> unoccupiedNeighbors = adjacentCells.stream()
-                    .filter(c -> c.getRow() >= 0 && c.getRow() < currentState.getBoardRows()
-                            && c.getColumn() >= 0 && c.getColumn() < currentState.getBoardCols()
-                            && currentState.getPiece(c) == null)
-                    .collect(Collectors.toList());
-
-            if (unoccupiedNeighbors.isEmpty()) {
-                centroidIter.remove();
-            } else {
-                candidates.addAll(unoccupiedNeighbors);
+        for (Cell c : adjacent) {
+            if (currentState.isAllowed(c)) {
+                adjacentToOccupied.add(c);
             }
         }
+    }
 
-        if (candidates.isEmpty()) {
-            myMove = Utils.pickRandom(currentState.getAllowedMoves());
+    private Cell planMove() {
+        List<Cell> candidates;
+        if (adjacentToOccupied.isEmpty()) {
+            candidates = currentState.getAllowedMoves();
         } else {
-            myMove = Utils.pickRandom(candidates);
+            candidates = new ArrayList<>(adjacentToOccupied);
         }
-        centroids.add(myMove);
+
+        Cell myMove = Utils.pickRandom(candidates);
 
         return myMove;
     }
