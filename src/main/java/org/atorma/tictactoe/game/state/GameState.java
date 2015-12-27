@@ -108,8 +108,26 @@ public class GameState {
     }
 
 
-    public boolean isAllowed(Cell move) {
-        return Collections.binarySearch(getAllowedMoves(), move, new CellRowOrderComparator()) >= 0;
+    /**
+     * Checks whether a move in the given cell is allowed,
+     * i.e. the cell is within the board's boundaries and unoccupied.
+     *
+     * @param cell
+     * @return
+     *  true if the move is allowed
+     */
+    public boolean isAllowed(Cell cell) {
+        if (cell == null) {
+            return false;
+        }
+
+        if (cell.getRow() >= 0 && cell.getRow() < getBoardRows()
+                && cell.getColumn() >= 0 && cell.getColumn() < getBoardCols()
+                && getPiece(cell) == null) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /** Returns allowed moves sorted first by row, then by column. */
