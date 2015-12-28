@@ -1,19 +1,26 @@
 package org.atorma.tictactoe.game.player.mcts;
 
 
-import org.atorma.tictactoe.game.*;
+import org.atorma.tictactoe.game.Simulator;
+import org.atorma.tictactoe.game.Utils;
+import org.atorma.tictactoe.game.player.Configurable;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.player.random.RandomAdjacentPlayer;
 import org.atorma.tictactoe.game.player.random.RandomPlayer;
-import org.atorma.tictactoe.game.state.*;
+import org.atorma.tictactoe.game.state.Cell;
+import org.atorma.tictactoe.game.state.GameState;
+import org.atorma.tictactoe.game.state.Piece;
+import org.atorma.tictactoe.game.state.Rectangle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -24,7 +31,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * * Browne et al, A Survey of Monte Carlo Tree Search Methods, IEEE Transactions on Computational Intelligence and AI in Games, vol. 4, no. 1, March 2012
  * * https://en.wikipedia.org/wiki/Monte_Carlo_tree_search
  */
-public class MCTSPlayer implements Player {
+public class MCTSPlayer implements Player, Configurable {
     private static final Logger LOGGER = LoggerFactory.getLogger(MCTSPlayer.class);
     public static final MCTSParameters DEFAULT_PARAMS = new MCTSParameters();
 
@@ -45,30 +52,29 @@ public class MCTSPlayer implements Player {
     }
 
     public MCTSPlayer(MCTSParameters params) {
+        if (params == null) throw new IllegalArgumentException("Parameters missing");
+
         this.params = params;
         this.workerPool =  Executors.newWorkStealingPool();
     }
 
 
-    public String toString() {
-        return "MCTS";
-    }
-
-
-    public void setPiece(Piece p) {
-        this.mySide = p;
-    }
-
+    @Override
     public Piece getPiece() {
         return this.mySide;
     }
 
-
-    public MoveNode getLastMove() {
-        return lastMove;
+    @Override
+    public void setPiece(Piece p) {
+        this.mySide = p;
     }
 
+    @Override
+    public void configure(Object configuration) {
+        this.params = (MCTSParameters) configuration;
+    }
 
+    @Override
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
         if (lastMove == null || updatedState.getNumPieces() < lastMove.getGameState().getNumPieces()) {
             // Reset the learning following an earlier game,
@@ -76,7 +82,7 @@ public class MCTSPlayer implements Player {
             boardRowsNum = updatedState.getBoardRows();
             boardColsNum = updatedState.getBoardCols();
             lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
-            LOGGER.debug("New game started!");
+            LOGGER.debug("New game started! Simulation strategy {}.", params.simulationStrategy.toString().toLowerCase());
         } else {
             lastMove = lastMove.findMoveTo(opponentsLastMove);
         }
@@ -98,6 +104,7 @@ public class MCTSPlayer implements Player {
 
         return lastMove.getMove();
     }
+
 
     private MoveNode planMove() {
         planningStartTime = System.currentTimeMillis();
@@ -323,4 +330,12 @@ public class MCTSPlayer implements Player {
         return Utils.pickRandom(candidates);
     }
 
+    public MoveNode getLastMove() {
+        return lastMove;
+    }
+
+    @Override
+    public String toString() {
+        return "MCTS (" + params.simulationStrategy.toString().toLowerCase() + ")";
+    }
 }

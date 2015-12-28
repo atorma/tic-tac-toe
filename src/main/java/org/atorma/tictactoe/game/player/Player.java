@@ -5,9 +5,6 @@ import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 
-/**
- * Interface of Tic-tac-toe AI implementations.
- */
 public interface Player {
 
     /**

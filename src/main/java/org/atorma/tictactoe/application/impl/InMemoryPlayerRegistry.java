@@ -3,9 +3,10 @@ package org.atorma.tictactoe.application.impl;
 import org.atorma.tictactoe.application.PlayerInfo;
 import org.atorma.tictactoe.application.PlayerRegistry;
 import org.atorma.tictactoe.exception.NotFoundException;
-import org.atorma.tictactoe.exception.TicTacToeException;
+import org.atorma.tictactoe.game.player.Configurable;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.human.HumanPlayer;
+import org.atorma.tictactoe.game.player.mcts.MCTSParameters;
 import org.atorma.tictactoe.game.player.mcts.MCTSPlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.player.random.RandomAdjacentPlayer;
@@ -22,20 +23,41 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
 
     private List<PlayerInfo> playerInfoList = new ArrayList<>();
     private Map<String, Class<? extends Player>> playerClasses = new HashMap<>();
-
+    private Map<String, Object> playerConfigs = new HashMap<>();
 
     public InMemoryPlayerRegistry() {
-        createPlayer("Human", PlayerInfo.Type.HUMAN, HumanPlayer.class);
-        createPlayer("Monte Carlo Tree Search", PlayerInfo.Type.AI, MCTSPlayer.class);
-        createPlayer("Naive", PlayerInfo.Type.AI, NaivePlayer.class);
-        createPlayer("Random adjacent", PlayerInfo.Type.AI, RandomAdjacentPlayer.class);
-        createPlayer("Uniform random", PlayerInfo.Type.AI, RandomPlayer.class);
+        addPlayerInfo("Human", PlayerInfo.Type.HUMAN, HumanPlayer.class);
+
+        MCTSParameters uniformRandomParams = new MCTSParameters();
+        uniformRandomParams.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
+        addPlayerInfo("MCTS uniform random", PlayerInfo.Type.AI, MCTSPlayer.class, uniformRandomParams);
+
+        MCTSParameters randomAdjacentParams = new MCTSParameters();
+        randomAdjacentParams.simulationStrategy = MCTSParameters.SimulationStrategy.RANDOM_ADJACENT;
+        addPlayerInfo("MCTS random adjacent", PlayerInfo.Type.AI, MCTSPlayer.class, randomAdjacentParams);
+
+        MCTSParameters naiveParams = new MCTSParameters();
+        naiveParams.simulationStrategy = MCTSParameters.SimulationStrategy.NAIVE;
+        addPlayerInfo("MCTS naive heuristics", PlayerInfo.Type.AI, MCTSPlayer.class, naiveParams);
+
+        addPlayerInfo("Naive heuristics", PlayerInfo.Type.AI, NaivePlayer.class);
+
+        addPlayerInfo("Random adjacent", PlayerInfo.Type.AI, RandomAdjacentPlayer.class);
+
+        addPlayerInfo("Uniform random", PlayerInfo.Type.AI, RandomPlayer.class);
     }
 
-    private void createPlayer(String name, PlayerInfo.Type type, Class<? extends Player> playerClass) {
+    private PlayerInfo addPlayerInfo(String name, PlayerInfo.Type type, Class<? extends Player> playerClass, Object configuration) {
+        PlayerInfo playerInfo = addPlayerInfo(name, type, playerClass);
+        playerConfigs.put(playerInfo.getId(), configuration);
+        return playerInfo;
+    }
+
+    private PlayerInfo addPlayerInfo(String name, PlayerInfo.Type type, Class<? extends Player> playerClass) {
         PlayerInfo playerInfo = new PlayerInfo(UUID.randomUUID().toString(), name, type);
         playerInfoList.add(playerInfo);
         playerClasses.put(playerInfo.getId(), playerClass);
+        return playerInfo;
     }
 
 
@@ -64,7 +86,11 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
         }
         try {
             Player player = playerClass.newInstance();
-            // TODO configure using input
+            if (player instanceof Configurable) {
+                Configurable configurable = (Configurable) player;
+                configurable.configure(playerConfigs.get(playerInfo.getId()));
+            }
+            // TODO configure with user input
             return player;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException("Error when creating player", e);

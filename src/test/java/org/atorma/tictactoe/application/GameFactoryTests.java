@@ -34,7 +34,7 @@ public class GameFactoryTests extends ApplicationTests {
                 .get()
         );
         params.players.put(Piece.O, playerRegistry.getPlayerInfoList().stream()
-                .filter(x -> x.getName().equals("Naive"))
+                .filter(x -> x.getName().equals("Naive heuristics"))
                 .findFirst()
                 .get()
         );
