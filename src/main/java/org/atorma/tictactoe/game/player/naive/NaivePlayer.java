@@ -6,10 +6,14 @@ import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.atorma.tictactoe.game.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * A player that tries to elongate its longest sequence,
@@ -17,9 +21,8 @@ import java.util.List;
  * the opponent's decisive move.
  */
 public class NaivePlayer implements Player {
-
     private Piece mySide;
-
+    private GameState currentState;
 
     public void setPiece(Piece p) {
         this.mySide = p;
@@ -30,14 +33,25 @@ public class NaivePlayer implements Player {
     }
 
     public Cell move(GameState currentState, Cell opponentsLastMove) {
-        Cell winningMove = null;
-        Cell opponentWinningMove = null;
+        this.currentState = currentState;
 
+        return Stream.<Supplier<Optional<Cell>>>of(
+                this::getMandatoryMove,
+                this::elongateLongestSequence,
+                this::elongateNextLongestSequence)
+                .map(Supplier::get)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .findFirst()
+                .orElseGet(this::pickRandomCell);
+    }
+
+    private Optional<Cell> getMandatoryMove() {
         for (Cell move : currentState.getAllowedMoves()) {
+
             // Will I win?
             if (currentState.next(move).getWinner() == mySide) {
-                winningMove = move;
-                break;
+                return Optional.of(move);
             }
 
             // Would my opponent win if she were me?
@@ -47,39 +61,35 @@ public class NaivePlayer implements Player {
                     .build();
             fakeState.update(move);
             if (fakeState.getWinner() == mySide.other()) {
-                opponentWinningMove =  move;
+                return Optional.of(move);
             }
+
         }
 
-        // If I have a decisive move, take it
-        if (winningMove != null) {
-            return winningMove;
-        }
+        return Optional.empty();
+    }
 
-        // If opponent would win, try to prevent it by stealing the move
-        if (opponentWinningMove != null) {
-            return opponentWinningMove;
-        }
-
-        // Otherwise elongate my longest sequence if possible
-        // (longest sequence is already computed and cached)
+    private Optional<Cell> elongateLongestSequence() {
         GameState.Sequence myLongestSequence = currentState.getLongestSequence(mySide);
         List<Cell> candidates = getFreeSequenceEnds(currentState, myLongestSequence);
         if (!candidates.isEmpty()) {
-            return Utils.pickRandom(candidates);
+            return Optional.of(Utils.pickRandom(candidates));
+        } else {
+            return Optional.empty();
         }
+    }
 
-        // My longest sequence is blocked, elongate the next longest possible
+    private Optional<Cell> elongateNextLongestSequence() {
         List<GameState.Sequence> mySequences = currentState.getAllSequences().get(mySide);
-        Collections.sort(mySequences, (o1, o2) -> o2.length - o1.length);
-        for (GameState.Sequence seq : mySequences) {
-            candidates = getFreeSequenceEnds(currentState, seq);
-            if (!candidates.isEmpty()) {
-                return Utils.pickRandom(candidates);
-            }
-        }
+        return mySequences.stream()
+                .sorted((o1, o2) -> o2.length - o1.length)
+                .map(sequence -> getFreeSequenceEnds(currentState, sequence))
+                .filter(sequenceEnds -> !sequenceEnds.isEmpty())
+                .findFirst()
+                .map(Utils::pickRandom);
+    }
 
-        // If no sequences to elongate, pick random
+    private Cell pickRandomCell() {
         return Utils.pickRandom(currentState.getAllowedMoves());
     }
 
