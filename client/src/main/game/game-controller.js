@@ -162,7 +162,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     function showToast(message, additionalOptions) {
         var options = _.extend({
             template: '<md-toast>{{vm.message}}</md-toast>',
-            position: "top left",
+            position: "bottom left",
             locals: {
                 message: message
             },
