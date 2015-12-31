@@ -103,8 +103,8 @@ describe("GameController", function() {
 
             expect(vm.gameConfig.connectHowMany).toBe(5);
             expect(vm.gameConfig.firstPlayer).toBe("RANDOM");
-            expect(vm.gameConfig.board.rows).toBe(18);
-            expect(vm.gameConfig.board.columns).toBe(18);
+            expect(vm.gameConfig.board.rows).toBeDefined();
+            expect(vm.gameConfig.board.columns).toBeDefined();
             expect(vm.gameConfig.players[PIECES.X]).toBeDefined();
             expect(vm.gameConfig.players[PIECES.O]).toBeDefined();
 

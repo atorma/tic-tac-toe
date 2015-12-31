@@ -7,7 +7,7 @@ angular.module("ticTacToe")
     .controller("GameController", GameController)
     .controller("GameController.ToastController", ToastController);
 
-function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, $q, $mdToast, spinnerOverlay) {
+function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, $q, $mdToast, spinnerOverlay, $mdMedia) {
     var vm = this;
     var deferredMove;
     var boardSpinner;
@@ -16,8 +16,13 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     vm.startGame = startGame;
     vm.setPaused = setPaused;
     vm.endGame = endGame;
+    vm.toggleConfigMode = toggleConfigMode;
+
 
     $scope.$on(GAME_EVENTS.MOVE_SELECTED, selectHumanPlayerMove);
+
+    $scope.$watch(screenIsSmall, handleSmallScreen);
+
 
     init();
 
@@ -25,6 +30,8 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     function init() {
         vm.gameExists = false;
         vm.paused = false;
+        vm.showConfig = false;
+        vm.screenIsSmall = true;
         boardSpinner = spinnerOverlay("board-container");
         resetStats();
 
@@ -37,8 +44,8 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                 connectHowMany: 5,
                 firstPlayer: "RANDOM",
                 board: {
-                    rows: 18,
-                    columns: 18
+                    rows: vm.screenIsSmall ? 15 : 18,
+                    columns: vm.screenIsSmall ? 15 : 18
                 },
                 players: {},
                 rounds: 1
@@ -252,6 +259,19 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
 
         showErrorToast(message).then(endGame);
         return $q.reject(response);
+    }
+
+
+    function screenIsSmall() {
+        return $mdMedia("(max-width: 599px)") || $mdMedia("(max-height: 799px)");
+    }
+
+    function handleSmallScreen(screenIsSmall) {
+        vm.screenIsSmall = screenIsSmall;
+    }
+
+    function toggleConfigMode() {
+        vm.showConfig = !vm.showConfig;
     }
 
 }

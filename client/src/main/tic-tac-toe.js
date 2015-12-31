@@ -39,6 +39,7 @@ function configureIcons($mdIconProvider) {
         .icon("stop", "resources/material-design-icons/ic_stop_black_24px.svg")
         .icon("forward", "resources/material-design-icons/ic_forward_black_24px.svg")
         .icon("close", "resources/material-design-icons/ic_close_black_24px.svg")
+        .icon("settings", "resources/material-design-icons/ic_settings_black_24px.svg")
     ;
 }
 

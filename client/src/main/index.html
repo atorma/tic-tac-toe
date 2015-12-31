@@ -14,14 +14,13 @@
     <script src="tic-tac-toe.js"></script>
 </head>
 
-<body ng-app="ticTacToe"
-      ng-controller="GameController as vm"
-      ng-strict-di ng-cloak>
+<body ng-app="ticTacToe" ng-controller="GameController as vm" ng-strict-di layout="column">
 
-<section layout-padding>
+<section ng-show="vm.showConfig || !vm.screenIsSmall" flex-order="{{vm.screenIsSmall ? 2 : 1}}">
+
     <form name="gameConfig" novalidate>
 
-        <div layout="column">
+        <div layout="column" layout-padding>
 
             <div layout="row">
 
@@ -102,56 +101,63 @@
         </div>
 
     </form>
+
 </section>
 
-<section>
+<section flex-order="{{vm.screenIsSmall ? 1 : 2}}">
 
-    <div layout="row" layout-align="start center">
+    <div layout="row" layout-align="start" layout-padding>
 
-        <md-button class="md-primary md-raised"
+        <md-button class="md-primary md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
                    ng-if="!vm.gameExists"
                    ng-disabled="!gameConfig.$valid"
                    ng-click="vm.startGame()">
-            <md-icon md-svg-icon="play"></md-icon> Play
+            <md-icon md-svg-icon="play"></md-icon> <span ng-hide="vm.screenIsSmall">Play</span>
         </md-button>
 
-        <md-button class="md-primary md-raised"
+        <md-button class="md-primary md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
                    ng-if="vm.gameExists"
                    ng-disabled="!(vm.paused && vm.gameExists)"
                    ng-click="vm.setPaused(false)">
-            <md-icon md-svg-icon="play"></md-icon> Play
+            <md-icon md-svg-icon="play"></md-icon> <span ng-hide="vm.screenIsSmall">Play</span>
         </md-button>
 
-        <md-button class="md-raised"
+        <md-button class="md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
                    ng-disabled="!(!vm.paused && vm.gameExists)"
                    ng-click="vm.setPaused(true)">
-            <md-icon md-svg-icon="pause"></md-icon> Pause
+            <md-icon md-svg-icon="pause"></md-icon> <span ng-hide="vm.screenIsSmall">Pause</span>
+        </md-button>
+
+        <md-button class="md-raised" ng-class="{'md-icon-button': vm.screenIsSmall, 'pressed': vm.showConfig}"
+                   ng-show="vm.screenIsSmall"
+                   ng-click="vm.toggleConfigMode()">
+            <md-icon md-svg-icon="settings"></md-icon> <span ng-hide="vm.screenIsSmall">Settings</span>
         </md-button>
 
         <span flex></span>
 
-        <md-button ng-disabled="!(vm.gameExists)"
-                   class="md-warn md-raised"
+        <md-button class="md-warn md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
+                   ng-disabled="!(vm.gameExists)"
                    ng-click="vm.endGame()">
-            <md-icon md-svg-icon="stop"></md-icon> End
+            <md-icon md-svg-icon="stop"></md-icon> <span ng-hide="vm.screenIsSmall">End</span>
         </md-button>
     </div>
 
 </section>
 
-<section layout-padding>
+<section ng-show="!vm.screenIsSmall" flex-order="3">
 
-    <div layout="row">
-        <span flex>Next: {{vm.currentGame.nextPlayer}}</span>
-        <span flex>Round: {{vm.gameStats.roundsPlayed}}</span>
-        <span flex>X wins: {{vm.gameStats.wins[vm.PIECES.X]}}</span>
-        <span flex>O wins: {{vm.gameStats.wins[vm.PIECES.O]}}</span>
-        <span flex>Ties: {{vm.gameStats.ties}}</span>
+    <div layout="row" layout-align="space-between" layout-padding class="md-caption">
+        <span>Next: {{vm.currentGame.nextPlayer}}</span>
+        <span>Round: {{vm.gameStats.roundsPlayed}}</span>
+        <span>X wins: {{vm.gameStats.wins[vm.PIECES.X]}}</span>
+        <span>O wins: {{vm.gameStats.wins[vm.PIECES.O]}}</span>
+        <span>Ties: {{vm.gameStats.ties}}</span>
     </div>
 
 </section>
 
-<section>
+<section flex-order="4">
 
     <div id="board-container" layout="row" layout-align="center center" style="position: relative">
         <board flex="100" num-rows="vm.gameConfig.board.rows" num-cols="vm.gameConfig.board.columns"></board>

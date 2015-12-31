@@ -9,3 +9,11 @@
 md-toast[md-theme="error"] {
     background-color: #F44336;
 }
+
+.md-errors-spacer:empty {
+     display: none;
+}
+
+button.pressed {
+    background-color: grey !important;
+}
