@@ -42,6 +42,7 @@
         </md-button>
 
         <md-button class="md-raised" ng-class="{'md-icon-button': vm.screenIsSmall, 'pressed': vm.showConfig}"
+                   ng-disabled="vm.gameExists"
                    ng-click="vm.toggleConfigMode()">
             <md-icon md-svg-icon="settings"></md-icon> <span ng-hide="vm.screenIsSmall">Settings</span>
         </md-button>
