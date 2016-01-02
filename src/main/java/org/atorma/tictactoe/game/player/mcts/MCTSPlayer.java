@@ -76,7 +76,7 @@ public class MCTSPlayer implements Player, Configurable {
 
     @Override
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
-        if (lastMove == null || updatedState.getNumPieces() < lastMove.getGameState().getNumPieces()) {
+        if (lastMove == null || updatedState.getNumPieces() <= lastMove.getGameState().getNumPieces()) {
             // Reset the learning following an earlier game,
             // otherwise we'll easily run out of memory in repeated games (tried that).
             boardRowsNum = updatedState.getBoardRows();
