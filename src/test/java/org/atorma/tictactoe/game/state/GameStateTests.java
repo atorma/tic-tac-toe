@@ -476,6 +476,77 @@ public class GameStateTests {
     }
 
 
+    @Test
+    public void test_sequence_where_winner_was_not_correctly_determined_in_game() {
+        GameState state = GameState.builder()
+                .setBoard(new Piece[18][18])
+                .setConnectHowMany(5)
+                .setNextPlayer(Piece.X)
+                .build();
 
+        state = state.next(new Cell(7, 5)); // 1
+        state = state.next(new Cell(7, 6)); // 2
+        state = state.next(new Cell(8, 6)); // 3
+        state = state.next(new Cell(9, 7)); // 4
+        state = state.next(new Cell(8, 7)); // 5
+        state = state.next(new Cell(8, 5)); // 6
+        state = state.next(new Cell(6, 7)); // 7
+        state = state.next(new Cell(7, 4)); // 8
+        state = state.next(new Cell(9, 6)); // 9
+        state = state.next(new Cell(7, 8)); // 10
+        state = state.next(new Cell(7, 7)); // 11
+        state = state.next(new Cell(6, 6)); // 12
+        state = state.next(new Cell(5, 7)); // 13
+        state = state.next(new Cell(4, 7)); // 14
+        state = state.next(new Cell(9, 5)); // 15
+        state = state.next(new Cell(6, 8)); // 16
+        state = state.next(new Cell(10, 4)); // 17
+        state = state.next(new Cell(11, 3)); // 18
+        state = state.next(new Cell(8, 8)); // 19
+        state = state.next(new Cell(5, 6)); // 20
+        state = state.next(new Cell(6, 5)); // 21
+        state = state.next(new Cell(3, 6)); // 22
+        state = state.next(new Cell(4, 6)); // 23
+        state = state.next(new Cell(2, 5)); // 24
+        state = state.next(new Cell(5, 8)); // 25
+        state = state.next(new Cell(10, 6)); // 26
+        state = state.next(new Cell(8, 9)); // 27
+        state = state.next(new Cell(8, 10)); // 28
+        state = state.next(new Cell(9, 4)); // 29
+        state = state.next(new Cell(1, 4)); // 30
+        state = state.next(new Cell(0, 3)); // 31
+        state = state.next(new Cell(3, 7)); // 32
+        state = state.next(new Cell(9, 3)); // 33
+        state = state.next(new Cell(9, 2)); // 34
+        state = state.next(new Cell(10, 5)); // 35
+        state = state.next(new Cell(11, 4)); // 36
+        state = state.next(new Cell(11, 5)); // 37
+        state = state.next(new Cell(12, 6)); // 38
+        state = state.next(new Cell(8, 2)); // 39
+        state = state.next(new Cell(7, 1)); // 40
+        state = state.next(new Cell(11, 6)); // 41
+        state = state.next(new Cell(8, 3)); // 42
+        state = state.next(new Cell(12, 7)); // 43
+        state = state.next(new Cell(13, 8)); // 44
+        state = state.next(new Cell(12, 5)); // 45
+        state = state.next(new Cell(13, 5)); // 46
+        state = state.next(new Cell(13, 4)); // 47
+        state = state.next(new Cell(14, 3)); // 48
+        state.print();
+        state = state.next(new Cell(10, 7)); // 49
+        state.print();
+        state = state.next(new Cell(10, 1)); // 50
+        state.print();
+        state = state.next(new Cell(9, 8)); // 51
+        state.print();
+        assertEquals(Piece.X, state.getWinner()); // Has 6 in a row!
+        try {
+            state = state.next(new Cell(11, 0)); // 52
+            state.print();
+            fail();
+        } catch (IllegalArgumentException e) {
+            // Expected
+        }
+    }
 
 }
