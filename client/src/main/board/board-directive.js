@@ -34,6 +34,7 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
         var cellSize; // square cell width = height
 
         var canvasWidth, canvasHeight;
+        var windowInnerWidth;
 
         var board;
         var lastTurnResult;
@@ -50,10 +51,16 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
             resizeAndDrawCanvas();
         });
 
-        $window.addEventListener("resize", _.debounce(resizeAndDrawCanvas, 150));
+        $window.addEventListener("resize", _.debounce(function() {
+            resizeAndDrawCanvas(false);
+        }, 150));
 
         $scope.$on(GAME_EVENTS.GAME_STARTED, onGameStarted);
         $scope.$on(GAME_EVENTS.MOVE_COMPLETED, onMoveCompleted);
+        $scope.$on(GAME_EVENTS.RESIZE_BOARD, function() {
+            console.log("FORCE RESIZE");
+            resizeAndDrawCanvas(true);
+        });
 
         canvas.onclick = onCanvasClick;
 
@@ -76,10 +83,15 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
         }
 
 
-        function resizeAndDrawCanvas() {
+        function resizeAndDrawCanvas(force) {
+            if (!force && windowInnerWidth === window.innerWidth) {
+                return;
+            }
+
             if (numRows && numCols) {
                 resizeCanvas();
                 drawGameBoard();
+                windowInnerWidth = window.innerWidth;
             }
             if (board) {
                 drawPieces();
@@ -88,7 +100,7 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
 
 
         function resizeCanvas() {
-            // We assume that the parent container can adapt to content vertically but not horizontally
+            // We assume that the parent container can adapt to content vertically but not horizontally.
 
             // 1st pass: resize to available width
             cellSize = _.floor(canvas.parentNode.clientWidth/numCols); // square cells

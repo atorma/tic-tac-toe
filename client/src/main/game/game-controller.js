@@ -7,7 +7,7 @@ angular.module("ticTacToe")
     .controller("GameController", GameController)
     .controller("GameController.ToastController", ToastController);
 
-function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, $q, $mdToast, spinnerOverlay, $mdMedia) {
+function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, $q, $mdToast, spinnerOverlay, $mdMedia, $timeout) {
     var vm = this;
     var deferredMove;
     var boardSpinner;
@@ -272,6 +272,11 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
 
     function toggleConfigMode() {
         vm.showConfig = !vm.showConfig;
+        $timeout(function() {
+            if (!vm.showConfig) {
+                $scope.$broadcast(GAME_EVENTS.RESIZE_BOARD);
+            }
+        }, 300, false);
     }
 
 }

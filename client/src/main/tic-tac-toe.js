@@ -11,7 +11,8 @@ var PIECES = {
 var GAME_EVENTS = {
     GAME_STARTED: "game started",
     MOVE_COMPLETED: "move completed",
-    MOVE_SELECTED: "move selected"
+    MOVE_SELECTED: "move selected",
+    RESIZE_BOARD: "resize board"
 };
 
 var PLAYER_TYPES = {
