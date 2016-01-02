@@ -46,9 +46,8 @@ public class GameState {
      * #next(Cell)
      */
     public void update(Cell position) {
-        Piece existingPiece = getPiece(position);
-        if (existingPiece != null) {
-            throw new IllegalArgumentException("Illegal move: " + position + " already occupied by " + existingPiece);
+        if (!isAllowed(position)) {
+            throw new IllegalArgumentException("Illegal move: " + position);
         }
 
         board.set(position, nextPlayer);
@@ -117,7 +116,9 @@ public class GameState {
      *  true if the move is allowed
      */
     public boolean isAllowed(Cell cell) {
-        if (cell == null) {
+        if (cell == null ) {
+            return false;
+        } else if (isAtEnd()) {
             return false;
         }
 
@@ -132,6 +133,9 @@ public class GameState {
 
     /** Returns allowed moves sorted first by row, then by column. */
     public List<Cell> getAllowedMoves() {
+        if (isAtEnd()) {
+            return Collections.emptyList();
+        }
         if (!allowedMoves.isPresent()) {
             checkAllowedMoves();
         }
@@ -174,9 +178,9 @@ public class GameState {
      * @see #getLongestSequence(Piece)
      */
     public Piece getWinner() {
-        if (longestSequenceX.length == connectHowMany) {
+        if (longestSequenceX.length >= connectHowMany) {
             return Piece.X;
-        } else if (longestSequenceO.length == connectHowMany) {
+        } else if (longestSequenceO.length >= connectHowMany) {
             return Piece.O;
         } else {
             return null;
