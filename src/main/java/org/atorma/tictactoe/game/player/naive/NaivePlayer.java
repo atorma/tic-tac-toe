@@ -2,6 +2,7 @@ package org.atorma.tictactoe.game.player.naive;
 
 
 import org.atorma.tictactoe.game.player.Player;
+import org.atorma.tictactoe.game.player.random.AdjancentCellPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
@@ -12,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -20,21 +22,11 @@ import java.util.stream.Stream;
  * takes a decisive move if possible and tries to block
  * the opponent's decisive move.
  */
-public class NaivePlayer implements Player {
+public class NaivePlayer extends AdjancentCellPlayer implements Player {
     private Piece mySide;
-    private GameState currentState;
 
-    public void setPiece(Piece p) {
-        this.mySide = p;
-    }
-
-    public Piece getPiece() {
-        return this.mySide;
-    }
-
-    public Cell move(GameState currentState, Cell opponentsLastMove) {
-        this.currentState = currentState;
-
+    @Override
+    protected Cell planMove() {
         return Stream.<Supplier<Optional<Cell>>>of(
                 this::getMandatoryMove,
                 this::elongateLongestSequence,
@@ -47,7 +39,7 @@ public class NaivePlayer implements Player {
     }
 
     private Optional<Cell> getMandatoryMove() {
-        for (Cell move : currentState.getAllowedMoves()) {
+        for (Cell move : adjacentToOccupied) {
 
             // Will I win?
             if (currentState.next(move).getWinner() == mySide) {
@@ -165,6 +157,15 @@ public class NaivePlayer implements Player {
         }
 
         return candidates;
+    }
+
+
+    public void setPiece(Piece p) {
+        this.mySide = p;
+    }
+
+    public Piece getPiece() {
+        return this.mySide;
     }
 
     @Override
