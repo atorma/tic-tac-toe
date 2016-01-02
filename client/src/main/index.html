@@ -16,7 +16,48 @@
 
 <body ng-app="ticTacToe" ng-controller="GameController as vm" ng-strict-di layout="column">
 
-<section ng-show="vm.showConfig || !vm.screenIsSmall" flex-order="{{vm.screenIsSmall ? 2 : 1}}">
+<section>
+
+    <div layout="row" layout-align="start" layout-padding>
+
+        <md-button class="md-primary md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
+                   ng-if="!vm.gameExists"
+                   ng-disabled="!gameConfig.$valid"
+                   ng-click="vm.startGame()">
+            <md-icon md-svg-icon="play"></md-icon> <span ng-hide="vm.screenIsSmall">Play</span>
+        </md-button>
+
+        <md-button class="md-primary md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
+                   ng-if="vm.gameExists"
+                   ng-show="vm.paused"
+                   ng-click="vm.setPaused(false)">
+            <md-icon md-svg-icon="play"></md-icon> <span ng-hide="vm.screenIsSmall">Play</span>
+        </md-button>
+
+        <md-button class="md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
+                   ng-if="vm.gameExists"
+                   ng-hide="vm.paused"
+                   ng-click="vm.setPaused(true)">
+            <md-icon md-svg-icon="pause"></md-icon> <span ng-hide="vm.screenIsSmall">Pause</span>
+        </md-button>
+
+        <md-button class="md-raised" ng-class="{'md-icon-button': vm.screenIsSmall, 'pressed': vm.showConfig}"
+                   ng-click="vm.toggleConfigMode()">
+            <md-icon md-svg-icon="settings"></md-icon> <span ng-hide="vm.screenIsSmall">Settings</span>
+        </md-button>
+
+        <span flex></span>
+
+        <md-button class="md-warn md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
+                   ng-disabled="!(vm.gameExists)"
+                   ng-click="vm.endGame()">
+            <md-icon md-svg-icon="stop"></md-icon> <span ng-hide="vm.screenIsSmall">End</span>
+        </md-button>
+    </div>
+
+</section>
+
+<section ng-show="vm.showConfig">
 
     <form name="gameConfig" novalidate>
 
@@ -101,47 +142,6 @@
         </div>
 
     </form>
-
-</section>
-
-<section flex-order="{{vm.screenIsSmall ? 1 : 2}}">
-
-    <div layout="row" layout-align="start" layout-padding>
-
-        <md-button class="md-primary md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
-                   ng-if="!vm.gameExists"
-                   ng-disabled="!gameConfig.$valid"
-                   ng-click="vm.startGame()">
-            <md-icon md-svg-icon="play"></md-icon> <span ng-hide="vm.screenIsSmall">Play</span>
-        </md-button>
-
-        <md-button class="md-primary md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
-                   ng-if="vm.gameExists"
-                   ng-disabled="!(vm.paused && vm.gameExists)"
-                   ng-click="vm.setPaused(false)">
-            <md-icon md-svg-icon="play"></md-icon> <span ng-hide="vm.screenIsSmall">Play</span>
-        </md-button>
-
-        <md-button class="md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
-                   ng-disabled="!(!vm.paused && vm.gameExists)"
-                   ng-click="vm.setPaused(true)">
-            <md-icon md-svg-icon="pause"></md-icon> <span ng-hide="vm.screenIsSmall">Pause</span>
-        </md-button>
-
-        <md-button class="md-raised" ng-class="{'md-icon-button': vm.screenIsSmall, 'pressed': vm.showConfig}"
-                   ng-show="vm.screenIsSmall"
-                   ng-click="vm.toggleConfigMode()">
-            <md-icon md-svg-icon="settings"></md-icon> <span ng-hide="vm.screenIsSmall">Settings</span>
-        </md-button>
-
-        <span flex></span>
-
-        <md-button class="md-warn md-raised" ng-class="{'md-icon-button': vm.screenIsSmall}"
-                   ng-disabled="!(vm.gameExists)"
-                   ng-click="vm.endGame()">
-            <md-icon md-svg-icon="stop"></md-icon> <span ng-hide="vm.screenIsSmall">End</span>
-        </md-button>
-    </div>
 
 </section>
 

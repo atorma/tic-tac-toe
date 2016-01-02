@@ -31,7 +31,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
         vm.gameExists = false;
         vm.paused = false;
         vm.showConfig = false;
-        vm.screenIsSmall = true;
+        vm.screenIsSmall = screenIsSmall();
         boardSpinner = spinnerOverlay("board-container");
         resetStats();
 
@@ -263,7 +263,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
 
 
     function screenIsSmall() {
-        return $mdMedia("(max-width: 599px)") || $mdMedia("(max-height: 799px)");
+        return !$mdMedia("gt-xs");
     }
 
     function handleSmallScreen(screenIsSmall) {
