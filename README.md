@@ -23,4 +23,3 @@ Done
   
 Todo 
   * Two human players against each other remotely using Websockets
-  * Optimize UI for mobile clients
