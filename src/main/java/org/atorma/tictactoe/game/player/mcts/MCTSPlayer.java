@@ -40,6 +40,7 @@ public class MCTSPlayer implements Player, Configurable {
     private Piece mySide;
 
     private int boardRowsNum, boardColsNum;
+
     private MoveNode lastMove; // Last move overall, may be my move or opponent's move, depending on algorithm progress
 
     private long planningStartTime;
@@ -53,9 +54,10 @@ public class MCTSPlayer implements Player, Configurable {
 
     public MCTSPlayer(MCTSParameters params) {
         if (params == null) throw new IllegalArgumentException("Parameters missing");
+        if (params.numPlanningThreads < 1) throw new IllegalArgumentException("Invalid planning thread number " + params.numPlanningThreads + ". Must be >= 1.");
 
         this.params = params;
-        this.workerPool =  Executors.newWorkStealingPool();
+        this.workerPool =  Executors.newFixedThreadPool(params.numPlanningThreads);
     }
 
 
@@ -124,7 +126,7 @@ public class MCTSPlayer implements Player, Configurable {
         planningRollouts.set(0);
 
         List<Future> results = new ArrayList<>();
-        for (int i = 0; i < Runtime.getRuntime().availableProcessors() ; i++) {
+        for (int i = 0; i < params.numPlanningThreads ; i++) {
             Runnable task = () -> {
                 while (isThinkTimeLeft() && planningRollouts.get() < params.maxRolloutsNum) {
                     performRollout(rolloutStartMove, searchRectangles);
@@ -155,7 +157,6 @@ public class MCTSPlayer implements Player, Configurable {
 
         return bestMove;
     }
-
 
     private MoveNode checkForMandatoryMove() {
         // Check for a decisive move
@@ -210,6 +211,7 @@ public class MCTSPlayer implements Player, Configurable {
     }
 
     private void performRollout(MoveNode startNode, List<Rectangle> searchAreas) {
+        planningRollouts.incrementAndGet();
 
         // Selection and expansion
         LOGGER.trace("{} starts selecting node", Thread.currentThread());
@@ -247,8 +249,6 @@ public class MCTSPlayer implements Player, Configurable {
             selected.propagateSimulatedResult(endState);
             LOGGER.trace("{} done propagating results", Thread.currentThread());
         }
-
-        planningRollouts.incrementAndGet();
     }
 
     /**

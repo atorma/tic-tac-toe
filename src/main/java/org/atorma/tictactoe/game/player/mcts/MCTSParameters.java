@@ -12,12 +12,15 @@ public class MCTSParameters {
 
 
     /** How to simulate games */
-    public SimulationStrategy simulationStrategy = SimulationStrategy.UNIFORM_RANDOM;
+    public SimulationStrategy simulationStrategy = SimulationStrategy.NAIVE;
+
+    /** Number of planning threads */
+    public int numPlanningThreads = 3;
 
     /** Maximum number of planning rollouts (iterations) to perform */
     public int maxRolloutsNum = Integer.MAX_VALUE;
 
-    /** Maximum number of game turns to simulate */
+    /** Maximum number of game turns to simulate in one rollout */
     public int maxSimulatedGameTurns = Integer.MAX_VALUE;
 
     /** How long in wall clock milliseconds the player is allowed to plan the next move */
