@@ -51,6 +51,8 @@ public class Game {
         state.set(initialState.getCopy());
 
         timeLastPlayed.set(ZonedDateTime.now());
+
+        LOGGER.debug("New game created. {}: {}, {}: {}", player1.getPiece(), player1, player2.getPiece(), player2);
     }
 
     private void assignPieces(Player player1, Player player2) {
@@ -65,7 +67,6 @@ public class Game {
         } else if (player1.getPiece() == player2.getPiece()) {
             throw new IllegalArgumentException("Both players have piece " + player1.getPiece());
         }
-        LOGGER.debug("Pieces assigned. {}: {}, {}: {}", player1.getPiece(), player1, player2.getPiece(), player2);
     }
 
     public String getId() {
