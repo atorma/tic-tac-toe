@@ -58,7 +58,6 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
         $scope.$on(GAME_EVENTS.GAME_STARTED, onGameStarted);
         $scope.$on(GAME_EVENTS.MOVE_COMPLETED, onMoveCompleted);
         $scope.$on(GAME_EVENTS.RESIZE_BOARD, function() {
-            console.log("FORCE RESIZE");
             resizeAndDrawCanvas(true);
         });
 
