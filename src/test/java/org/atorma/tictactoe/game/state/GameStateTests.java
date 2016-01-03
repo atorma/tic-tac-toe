@@ -4,6 +4,7 @@ import org.atorma.tictactoe.FastTests;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -60,6 +61,48 @@ public class GameStateTests {
         assertEquals(Piece.X, endState.getWinner());
         assertTrue(endState.isAtEnd());
         assertEquals(0, endState.getAllowedMoves().size());
+    }
+
+    @Test
+    public void exception_if_trying_to_make_a_move_that_is_not_allowed() {
+        Piece[][] board = {
+                {Piece.O, null,    Piece.O},
+                {null,    Piece.X, null},
+                {null,    Piece.X, null}
+        };
+        GameState state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
+
+        // Null not allowed
+        assertFalse(state.isAllowed(null));
+        assertIllegalArgumentExceptionWithMove(null, state);
+
+        // Out of bounds not allowed
+        assertFalse(state.isAllowed(new Cell(3, 0)));
+        assertIllegalArgumentExceptionWithMove(new Cell(3, 0), state);
+
+        // Occupied cells not allowed
+        for (Cell c : Arrays.asList(new Cell(0, 0), new Cell(0, 2), new Cell(1, 1), new Cell(2, 1))) {
+            assertFalse(state.isAllowed(c));
+            assertIllegalArgumentExceptionWithMove(c, state);
+        }
+
+        // No cell allowed when game is at end
+        state = state.next(new Cell(0, 1));
+        assertTrue(state.isAtEnd());
+        for (int i = 0; i < state.getBoardRows(); i++) {
+            for (int j = 0; j < state.getBoardCols(); j++) {
+                Cell c = new Cell(i, j);
+                assertFalse(state.isAllowed(c));
+                assertIllegalArgumentExceptionWithMove(c, state);
+            }
+        }
+    }
+
+    private void assertIllegalArgumentExceptionWithMove(Cell move, GameState state) {
+        try {
+            state.next(move);
+            fail();
+        } catch (IllegalArgumentException e) {}
     }
 
     @Test
