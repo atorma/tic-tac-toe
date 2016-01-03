@@ -41,8 +41,7 @@
             <md-icon md-svg-icon="pause"></md-icon> <span ng-hide="vm.screenIsSmall">Pause</span>
         </md-button>
 
-        <md-button class="md-raised" ng-class="{'md-icon-button': vm.screenIsSmall, 'pressed': vm.showConfig}"
-                   ng-disabled="vm.gameExists"
+        <md-button class="md-raised" ng-class="{'md-icon-button': vm.screenIsSmall, 'pressed': vm.showConfig}" md-no-ink="true"
                    ng-click="vm.toggleConfigMode()">
             <md-icon md-svg-icon="settings"></md-icon> <span ng-hide="vm.screenIsSmall">Settings</span>
         </md-button>
