@@ -8,8 +8,8 @@ import org.atorma.tictactoe.exception.GameDeletedException;
 import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.application.Game;
-import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
+import org.atorma.tictactoe.game.state.Sequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,7 +129,7 @@ public class GameController {
             return game.getState().getWinner();
         }
 
-        public GameState.Sequence getWinningSequence() {
+        public Sequence getWinningSequence() {
             Piece winner = game.getState().getWinner();
             if (winner != null) {
                 return game.getState().getLongestSequence(winner);

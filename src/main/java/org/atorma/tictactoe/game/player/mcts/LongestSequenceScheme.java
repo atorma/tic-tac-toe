@@ -24,7 +24,7 @@ public class LongestSequenceScheme implements RewardScheme {
         } else if (gameState.getWinner() == player.other()) {
             return -1000;
         } else {
-            return gameState.getLongestSequence(player).length;
+            return gameState.getLongestSequence(player).getLength();
         }
     }
 

@@ -7,16 +7,13 @@ import java.util.*;
  */
 public class GameState {
 
-    private enum Direction {
-        HORIZONTAL, VERTICAL, LEFT_RIGHT_DIAGONAL, RIGHT_LEFT_DIAGONAL
-    }
-
     private int connectHowMany;
     private Board board;
     private Piece nextPlayer;
     private Optional<List<Cell>> allowedMoves = Optional.empty();
     private Sequence longestSequenceX;
     private Sequence longestSequenceO;
+    private Set<Sequence> updatedSequences = new HashSet<>(4);
     private Map<Piece, List<Sequence>> allSequences;
 
 
@@ -178,13 +175,23 @@ public class GameState {
      * @see #getLongestSequence(Piece)
      */
     public Piece getWinner() {
-        if (longestSequenceX.length >= connectHowMany) {
+        if (longestSequenceX.getLength() >= connectHowMany) {
             return Piece.X;
-        } else if (longestSequenceO.length >= connectHowMany) {
+        } else if (longestSequenceO.getLength() >= connectHowMany) {
             return Piece.O;
         } else {
             return null;
         }
+    }
+
+    /**
+     * Returns sequences that were updated as a result of the previous move.
+     *
+     * @return
+     *  sequences updated in the previous move, empty list of no previous move
+     */
+    public Set<Sequence> getUpdatedSequences() {
+        return Collections.unmodifiableSet(updatedSequences);
     }
 
     public Sequence getLongestSequence(Piece player) {
@@ -256,8 +263,8 @@ public class GameState {
     }
 
     private void initLongestSequences() {
-        longestSequenceX = new Sequence(0, null, null);
-        longestSequenceO = new Sequence(0, null, null);
+        longestSequenceX = new Sequence(null, null);
+        longestSequenceO = new Sequence(null, null);
     }
 
     private int findSequencesInLine(Iterator<Cell> lineIterator) {
@@ -265,39 +272,33 @@ public class GameState {
         Cell prev;
         Cell end = start;
         Piece current = board.get(start);
-        int length = 1;
         int checked = 1;
 
         while (lineIterator.hasNext()) {
             prev = end;
             end = lineIterator.next();
             Piece piece = board.get(end);
-            if (piece == current) {
-                length++;
-            } else {
-                recordSequence(current, length, start, prev);
+            if (piece != current) {
+                recordSequence(current, new Sequence(start, prev));
                 start = end;
-                length = 1;
                 current = piece;
             }
             checked++;
         }
-        recordSequence(current, length, start, end);
+        recordSequence(current, new Sequence(start, end));
 
         return checked;
     }
 
-    private void recordSequence(Piece piece, int length, Cell start, Cell end) {
+    private void recordSequence(Piece piece, Sequence sequence) {
         if (piece == null) return;
 
-        Sequence sequence = new Sequence(length, start, end);
-
         if (piece == Piece.X) {
-            if (longestSequenceX.length < sequence.length) {
+            if (longestSequenceX.getLength() < sequence.getLength()) {
                 longestSequenceX = sequence;
             }
         } else {
-            if (longestSequenceO.length < sequence.length) {
+            if (longestSequenceO.getLength() < sequence.getLength()) {
                 longestSequenceO = sequence;
             }
         }
@@ -317,13 +318,14 @@ public class GameState {
      *  an updated cell (all found sequences cross this cell)
      */
     private void findSequencesThatCrossCell(Cell lastMove) {
-        findSequencesThatCrossCell(lastMove, Direction.HORIZONTAL);
-        findSequencesThatCrossCell(lastMove, Direction.VERTICAL);
-        findSequencesThatCrossCell(lastMove, Direction.LEFT_RIGHT_DIAGONAL);
-        findSequencesThatCrossCell(lastMove, Direction.RIGHT_LEFT_DIAGONAL);
+        updatedSequences.clear();
+        findSequencesThatCrossCell(lastMove, Sequence.Direction.HORIZONTAL);
+        findSequencesThatCrossCell(lastMove, Sequence.Direction.VERTICAL);
+        findSequencesThatCrossCell(lastMove, Sequence.Direction.LEFT_RIGHT_DIAGONAL);
+        findSequencesThatCrossCell(lastMove, Sequence.Direction.RIGHT_LEFT_DIAGONAL);
     }
 
-    private void findSequencesThatCrossCell(Cell lastMove, Direction direction) {
+    private void findSequencesThatCrossCell(Cell lastMove, Sequence.Direction direction) {
         ListIterator<Cell> iter1, iter2;
         switch (direction) {
             case HORIZONTAL:
@@ -347,7 +349,6 @@ public class GameState {
         }
 
         Piece piece = board.get(lastMove);
-        int length = 1;
 
         Cell last = lastMove;
         while (iter1.hasNext()) {
@@ -355,7 +356,6 @@ public class GameState {
             if (board.get(next) != piece) {
                 break;
             }
-            length++;
             last = next;
         }
 
@@ -365,11 +365,12 @@ public class GameState {
             if (board.get(prev) != piece) {
                 break;
             }
-            length++;
             first = prev;
         }
 
-        recordSequence(piece, length, first, last);
+        Sequence sequence = new Sequence(first, last);
+        updatedSequences.add(sequence);
+        recordSequence(piece, sequence);
     }
 
 
@@ -396,35 +397,6 @@ public class GameState {
 
     public void print() {
         System.out.println(getStringRepresentation());
-    }
-
-
-
-    public static class Sequence {
-        public final int length;
-        public final Cell start;
-        public final Cell end;
-
-        public Sequence(int length, Cell start, Cell end) {
-            this.length = length;
-            this.start = start;
-            this.end = end;
-        }
-
-        @Override
-        public String toString() {
-            if (start == null) {
-                return "Sequence{" +
-                        "length=" + length +
-                        '}';
-            } else {
-                return "Sequence{" +
-                        "length=" + length +
-                        ", start=(" + start.getRow() + ", " + start.getColumn() + ")" +
-                        ", end=(" + end.getRow() + ", " + end.getColumn() + ")" +
-                        '}';
-            }
-        }
     }
 
 
