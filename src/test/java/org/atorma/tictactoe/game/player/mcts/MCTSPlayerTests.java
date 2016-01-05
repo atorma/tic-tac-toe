@@ -402,9 +402,6 @@ public class MCTSPlayerTests {
         params.pruneParent = false;
         params.pruneSiblings = false;
         params.pruneDescendantLevelsGreaterThan = Integer.MAX_VALUE;
-        // Usually passes when enough rollouts and memory
-        //params.maxThinkTimeMillis = Long.MAX_VALUE;
-        //params.maxRolloutsNum = 50000;
 
         MCTSPlayer mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.O);
@@ -414,7 +411,7 @@ public class MCTSPlayerTests {
         state.print();
         LOGGER.debug("Alternatives:");
         List<MoveNode> alternatives = mctsPlayer.getLastMove().getParent().getChildren()
-                .stream().sorted((n1, n2) -> (int) Math.signum(n1.getExpectedReward(Piece.O) - n2.getExpectedReward(Piece.O)))
+                .stream().sorted((n1, n2) -> (int) Math.signum(n2.getExpectedReward(Piece.O) - n1.getExpectedReward(Piece.O)))
                 .collect(Collectors.toList());
         for (MoveNode moveNode : alternatives) {
             LOGGER.debug(moveNode.toString());
@@ -446,5 +443,46 @@ public class MCTSPlayerTests {
         }
 
         assertTrue(Arrays.asList(new Cell(7, 9), new Cell(3, 13)).contains(mctsMove));
+    }
+
+
+    @Test
+    public void test_scenario_2_where_mcts_made_a_horrible_move_in_game() {
+        MCTSParameters params = new MCTSParameters();
+        params.simulationStrategy = MCTSParameters.SimulationStrategy.NAIVE;
+        params.pruneParent = false;
+        params.pruneSiblings = false;
+        params.pruneDescendantLevelsGreaterThan = Integer.MAX_VALUE;
+
+        MCTSPlayer mctsPlayer = new MCTSPlayer(params);
+        mctsPlayer.setPiece(Piece.O);
+
+        Piece[][] board = new Piece[15][15];
+        board[13][9] = Piece.O;
+        board[6][7] = Piece.X;
+        board[7][8] = Piece.O;
+        board[7][7] = Piece.X;
+        board[6][8] = Piece.O;
+        board[5][7] = Piece.X;
+
+        GameState state = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(board)
+                .setNextPlayer(Piece.O)
+                .build();
+        state.print();
+
+        Cell mctsMove = mctsPlayer.move(state, new Cell(5, 7));
+
+        state = state.next(mctsMove);
+        state.print();
+        List<MoveNode> alternatives = mctsPlayer.getLastMove().getParent().getChildren()
+                .stream().sorted((n1, n2) -> (int) Math.signum(n2.getExpectedReward(Piece.O) - n1.getExpectedReward(Piece.O)))
+                .collect(Collectors.toList());
+        for (MoveNode moveNode : alternatives) {
+            LOGGER.debug(moveNode.toString());
+        }
+
+        assertTrue(Arrays.asList(new Cell(4, 7), new Cell(8, 7)).contains(mctsMove));
     }
 }
