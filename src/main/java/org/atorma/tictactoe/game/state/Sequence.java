@@ -8,19 +8,25 @@ public class Sequence {
 
     private final Cell start;
     private final Cell end;
+    private final int length;
 
     public Sequence(Cell start, Cell end) {
         if (start == null && end != null || start != null && end == null) throw new IllegalArgumentException();
         this.start = start;
         this.end = end;
+        this.length = computeLength();
     }
 
-    public int getLength() {
+    private int computeLength() {
         if (start == null || end == null) {
             return 0;
         } else {
             return Cell.getDistance(start, end) + 1;
         }
+    }
+
+    public int getLength() {
+        return length;
     }
 
     public Cell getStart() {
