@@ -88,10 +88,18 @@ public class MoveNode {
     /**
      * @return
      *  the move that took the game in this state, null if this node represents
-     *  an initial state
+     *  an initial state. The move was made by the other player compared to {@link #getNextPlayer()}.
      */
     public Cell getMove() {
         return cell;
+    }
+
+    /**
+     * @return
+     *  the player who makes the move from this state
+     */
+    public Piece getNextPlayer() {
+        return nextPlayer;
     }
 
     /**
