@@ -37,23 +37,37 @@ public class NaivePlayer extends AdjancentCellPlayer implements Player {
     }
 
     private Optional<Cell> getMandatoryMove() {
-        for (Cell move : adjacentToOccupied) {
+        GameState fakeState = GameState.builder()
+                .setTemplate(currentState)
+                .setNextPlayer(mySide.other())
+                .build();
 
+        for (Cell move : adjacentToOccupied) {
             // Will I win?
             if (currentState.next(move).getWinner() == mySide) {
                 return Optional.of(move);
             }
 
             // Would my opponent win if she were me?
-            GameState fakeState = GameState.builder()
-                    .setTemplate(currentState)
-                    .setNextPlayer(mySide.other())
-                    .build();
-            fakeState.update(move);
-            if (fakeState.getWinner() == mySide.other()) {
+            if (fakeState.next(move).getWinner() == mySide.other()) {
+                return Optional.of(move);
+            }
+        }
+
+        for (Cell move : adjacentToOccupied) {
+            // Will I get a sequence that will yield a victory in my next turn?
+            GameState nextState = currentState.next(move);
+            if (nextState.getUpdatedSequences().stream()
+                    .anyMatch(sequence -> sequence.getLength() >= 4 && getFreeSequenceEnds(nextState, sequence).size() >= 2)) {
                 return Optional.of(move);
             }
 
+            // Would my opponent get a sequence that would yield a victory for her if she were me?
+            GameState fakeState2 = fakeState.next(move);
+            if (fakeState2.getUpdatedSequences().stream()
+                    .anyMatch(sequence -> sequence.getLength() >= 4 && getFreeSequenceEnds(fakeState2, sequence).size() >= 2)) {
+                return Optional.of(move);
+            }
         }
 
         return Optional.empty();
