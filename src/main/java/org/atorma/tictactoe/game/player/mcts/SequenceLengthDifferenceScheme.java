@@ -24,7 +24,7 @@ public class SequenceLengthDifferenceScheme implements RewardScheme {
         } else if (gameState.getWinner() == player.other()) {
             return -1000;
         } else {
-            double lengthDiff = gameState.getLongestSequence(player).length - gameState.getLongestSequence(player.other()).length;
+            double lengthDiff = gameState.getLongestSequence(player).getLength() - gameState.getLongestSequence(player.other()).getLength();
             return lengthDiff;
         }
     }

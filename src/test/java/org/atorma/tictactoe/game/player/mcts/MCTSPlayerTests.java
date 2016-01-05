@@ -2,8 +2,7 @@ package org.atorma.tictactoe.game.player.mcts;
 
 
 import org.atorma.tictactoe.SlowTests;
-import org.atorma.tictactoe.application.Game;
-import org.atorma.tictactoe.game.*;
+import org.atorma.tictactoe.game.Simulator;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.player.random.RandomPlayer;
@@ -14,11 +13,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.test.annotation.Repeat;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.junit.Assert.*;
 
 @Category(SlowTests.class)
 public class MCTSPlayerTests {
@@ -357,5 +357,94 @@ public class MCTSPlayerTests {
         }
 
         assertTrue(Cell.getDistance(mctsPlayerMove, opponentsMove) <= params.searchRadius);
+    }
+
+    /**
+     * This scenario is difficult for all MCTS simulation strategies.
+     * Naive strategy fares best but even that requires a lot of rollouts.
+     */
+    @Test
+    public void test_scenario_where_mcts_made_a_bad_move_in_game() {
+        GameState state = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(new Piece[18][18])
+                .setNextPlayer(Piece.O)
+                .build();
+
+        state = state.next(new Cell(7, 13)); // 1
+        state = state.next(new Cell(6, 12)); // 2
+        state = state.next(new Cell(5, 13)); // 3
+        state = state.next(new Cell(6, 13)); // 4
+        state = state.next(new Cell(6, 14)); // 5
+        state = state.next(new Cell(8, 12)); // 6
+        state = state.next(new Cell(5, 12)); // 7
+        state = state.next(new Cell(5, 14)); // 8
+        state = state.next(new Cell(7, 12)); // 9
+        state = state.next(new Cell(7, 11)); // 10
+        state = state.next(new Cell(6, 11)); // 11
+        state = state.next(new Cell(6, 10)); // 12
+        state = state.next(new Cell(5, 9)); // 13
+        state = state.next(new Cell(5, 11)); // 14
+        state = state.next(new Cell(8, 13)); // 15
+        state = state.next(new Cell(5, 10)); // 16
+        state = state.next(new Cell(9, 14)); // 17
+        state = state.next(new Cell(10, 15)); // 18
+        state = state.next(new Cell(7, 10)); // 19
+        state = state.next(new Cell(4, 13)); // 20
+        state = state.next(new Cell(8, 9)); // 21
+        state = state.next(new Cell(9, 8)); // 22
+        state = state.next(new Cell(10, 14)); // 23
+        state = state.next(new Cell(4, 12)); // 24
+        state.print();
+
+        MCTSParameters params = new MCTSParameters();
+        params.simulationStrategy = MCTSParameters.SimulationStrategy.NAIVE;
+        params.pruneParent = false;
+        params.pruneSiblings = false;
+        params.pruneDescendantLevelsGreaterThan = Integer.MAX_VALUE;
+        // Usually passes when enough rollouts and memory
+        //params.maxThinkTimeMillis = Long.MAX_VALUE;
+        //params.maxRolloutsNum = 50000;
+
+        MCTSPlayer mctsPlayer = new MCTSPlayer(params);
+        mctsPlayer.setPiece(Piece.O);
+
+        Cell mctsMove = mctsPlayer.move(state, new Cell(4, 12));
+        state = state.next(mctsMove);
+        state.print();
+        LOGGER.debug("Alternatives:");
+        List<MoveNode> alternatives = mctsPlayer.getLastMove().getParent().getChildren()
+                .stream().sorted((n1, n2) -> (int) Math.signum(n1.getExpectedReward(Piece.O) - n2.getExpectedReward(Piece.O)))
+                .collect(Collectors.toList());
+        for (MoveNode moveNode : alternatives) {
+            LOGGER.debug(moveNode.toString());
+        }
+
+        Cell opponentMove;
+        if (mctsMove.equals(new Cell(7, 14))) { // Forces X to block
+            opponentMove = new Cell(8, 14);
+            state = state.next(opponentMove);
+            state.print();
+        } else if (mctsMove.equals(new Cell(8, 14))) { // Forces X to block
+            opponentMove = new Cell(7, 14);
+            state = state.next(opponentMove);
+            state.print();
+        } else {
+            assertTrue(Arrays.asList(new Cell(7, 9), new Cell(3, 13)).contains(mctsMove));
+            return;
+        }
+
+        mctsMove = mctsPlayer.move(state, opponentMove);
+        state = state.next(mctsMove);
+        state.print();
+        LOGGER.debug("Alternatives:");
+        alternatives = mctsPlayer.getLastMove().getParent().getChildren()
+                .stream().sorted((n1, n2) -> (int) Math.signum(n1.getExpectedReward(Piece.O) - n2.getExpectedReward(Piece.O)))
+                .collect(Collectors.toList());
+        for (MoveNode moveNode : alternatives) {
+            LOGGER.debug(moveNode.toString());
+        }
+
+        assertTrue(Arrays.asList(new Cell(7, 9), new Cell(3, 13)).contains(mctsMove));
     }
 }

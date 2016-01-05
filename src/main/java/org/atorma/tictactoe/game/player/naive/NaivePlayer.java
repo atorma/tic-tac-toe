@@ -7,13 +7,11 @@ import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.atorma.tictactoe.game.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atorma.tictactoe.game.state.Sequence;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -39,30 +37,44 @@ public class NaivePlayer extends AdjancentCellPlayer implements Player {
     }
 
     private Optional<Cell> getMandatoryMove() {
-        for (Cell move : adjacentToOccupied) {
+        GameState fakeState = GameState.builder()
+                .setTemplate(currentState)
+                .setNextPlayer(mySide.other())
+                .build();
 
+        for (Cell move : adjacentToOccupied) {
             // Will I win?
             if (currentState.next(move).getWinner() == mySide) {
                 return Optional.of(move);
             }
 
             // Would my opponent win if she were me?
-            GameState fakeState = GameState.builder()
-                    .setTemplate(currentState)
-                    .setNextPlayer(mySide.other())
-                    .build();
-            fakeState.update(move);
-            if (fakeState.getWinner() == mySide.other()) {
+            if (fakeState.next(move).getWinner() == mySide.other()) {
+                return Optional.of(move);
+            }
+        }
+
+        for (Cell move : adjacentToOccupied) {
+            // Will I get a sequence that will yield a victory in my next turn?
+            GameState nextState = currentState.next(move);
+            if (nextState.getUpdatedSequences().stream()
+                    .anyMatch(sequence -> sequence.getLength() >= 4 && getFreeSequenceEnds(nextState, sequence).size() >= 2)) {
                 return Optional.of(move);
             }
 
+            // Would my opponent get a sequence that would yield a victory for her if she were me?
+            GameState fakeState2 = fakeState.next(move);
+            if (fakeState2.getUpdatedSequences().stream()
+                    .anyMatch(sequence -> sequence.getLength() >= 4 && getFreeSequenceEnds(fakeState2, sequence).size() >= 2)) {
+                return Optional.of(move);
+            }
         }
 
         return Optional.empty();
     }
 
     private Optional<Cell> elongateLongestSequence() {
-        GameState.Sequence myLongestSequence = currentState.getLongestSequence(mySide);
+        Sequence myLongestSequence = currentState.getLongestSequence(mySide);
         List<Cell> candidates = getFreeSequenceEnds(currentState, myLongestSequence);
         if (!candidates.isEmpty()) {
             return Optional.of(Utils.pickRandom(candidates));
@@ -72,9 +84,9 @@ public class NaivePlayer extends AdjancentCellPlayer implements Player {
     }
 
     private Optional<Cell> elongateNextLongestSequence() {
-        List<GameState.Sequence> mySequences = currentState.getAllSequences().get(mySide);
+        List<Sequence> mySequences = currentState.getAllSequences().get(mySide);
         return mySequences.stream()
-                .sorted((o1, o2) -> o2.length - o1.length)
+                .sorted((o1, o2) -> o2.getLength() - o1.getLength())
                 .map(sequence -> getFreeSequenceEnds(currentState, sequence))
                 .filter(sequenceEnds -> !sequenceEnds.isEmpty())
                 .findFirst()
@@ -85,72 +97,66 @@ public class NaivePlayer extends AdjancentCellPlayer implements Player {
         return Utils.pickRandom(currentState.getAllowedMoves());
     }
 
-    private List<Cell> getFreeSequenceEnds(GameState state, GameState.Sequence sequence) {
+    private List<Cell> getFreeSequenceEnds(GameState state, Sequence sequence) {
         List<Cell> candidates = new ArrayList<>();
 
-        if (sequence.length == 0) {
+        if (sequence.getLength() == 0) {
             return candidates;
         }
 
-        // Row sequence
-        if (sequence.start.getRow() == sequence.end.getRow()) {
-            int row = sequence.start.getRow();
+        if (sequence.hasDirection(Sequence.Direction.HORIZONTAL)) {
+            int row = sequence.getStart().getRow();
 
-            int col = sequence.start.getColumn() - 1;
+            int col = sequence.getStart().getColumn() - 1;
             if (col >= 0 && state.getPiece(row, col) == null) {
                 candidates.add(new Cell(row, col));
             }
 
-            col = sequence.end.getColumn() + 1;
+            col = sequence.getEnd().getColumn() + 1;
             if (col < state.getBoardCols() && state.getPiece(row, col) == null) {
                 candidates.add(new Cell(row, col));
             }
         }
 
-        // Column sequence
-        if (sequence.start.getColumn() == sequence.end.getColumn()) {
-            int col = sequence.start.getColumn();
+        if (sequence.hasDirection(Sequence.Direction.VERTICAL)) {
+            int col = sequence.getStart().getColumn();
 
-            int row = sequence.start.getRow() - 1;
+            int row = sequence.getStart().getRow() - 1;
             if (row >= 0 && state.getPiece(row, col) == null) {
                 candidates.add(new Cell(row, col));
             }
 
-            row = sequence.end.getRow() + 1;
+            row = sequence.getEnd().getRow() + 1;
             if (row < state.getBoardRows() && state.getPiece(row, col) == null) {
                 candidates.add(new Cell(row, col));
             }
         }
 
-        // Left-right diagonal sequence
-        if (sequence.length == 1 || (sequence.start.getRow() < sequence.end.getRow()
-                && sequence.start.getColumn() < sequence.end.getColumn()) ) {
+        if (sequence.hasDirection(Sequence.Direction.LEFT_RIGHT_DIAGONAL)) {
 
-            int row = sequence.start.getRow() - 1;
-            int col = sequence.start.getColumn() - 1;
+            int row = sequence.getStart().getRow() - 1;
+            int col = sequence.getStart().getColumn() - 1;
             if (row >= 0 && col >= 0 && state.getPiece(row, col) == null) {
                 candidates.add(new Cell(row, col));
             }
 
-            row = sequence.end.getRow() + 1;
-            col = sequence.end.getColumn() + 1;
+            row = sequence.getEnd().getRow() + 1;
+            col = sequence.getEnd().getColumn() + 1;
             if (row < state.getBoardRows() && col < state.getBoardCols() && state.getPiece(row, col) == null) {
                 candidates.add(new Cell(row, col));
             }
         }
 
-        // Right-left diagonal sequence
-        if (sequence.length == 1 || (sequence.start.getRow() < sequence.end.getRow()
-                && sequence.start.getColumn() > sequence.end.getColumn()) ) {
+        if (sequence.hasDirection(Sequence.Direction.RIGHT_LEFT_DIAGONAL)) {
 
-            int row = sequence.start.getRow() - 1;
-            int col = sequence.start.getColumn() + 1;
+            int row = sequence.getStart().getRow() - 1;
+            int col = sequence.getStart().getColumn() + 1;
             if (row >= 0 && col < state.getBoardCols() && state.getPiece(row, col) == null) {
                 candidates.add(new Cell(row, col));
             }
 
-            row = sequence.end.getRow() + 1;
-            col = sequence.end.getColumn() - 1;
+            row = sequence.getEnd().getRow() + 1;
+            col = sequence.getEnd().getColumn() - 1;
             if (row < state.getBoardRows() && col >= 0 && state.getPiece(row, col) == null) {
                 candidates.add(new Cell(row, col));
             }

@@ -4,9 +4,7 @@ import org.atorma.tictactoe.FastTests;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -163,8 +161,8 @@ public class GameStateTests {
         state = GameState.builder().setConnectHowMany(3).setBoard(noWinnerNoTie).setNextPlayer(Piece.X).build();
         assertEquals(null, state.getWinner());
         assertEquals(false, state.isTie());
-        assertEquals(2, state.getLongestSequence(Piece.X).length);
-        assertEquals(1, state.getLongestSequence(Piece.O).length);
+        assertEquals(2, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(1, state.getLongestSequence(Piece.O).getLength());
 
         Piece[][] roundHorizontal = {
                 {null,        Piece.X, Piece.X},
@@ -210,107 +208,179 @@ public class GameStateTests {
         state = GameState.builder().setConnectHowMany(3).setBoard(tie).setNextPlayer(Piece.O).build();
         assertEquals(null, state.getWinner());
         assertEquals(true, state.isTie());
-        assertEquals(2, state.getLongestSequence(Piece.X).length);
-        assertEquals(2, state.getLongestSequence(Piece.O).length);
+        assertEquals(2, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(2, state.getLongestSequence(Piece.O).getLength());
 
     }
 
     @Test // correctness of the assertions best verified by pen and paper...
-    public void get_longest_sequence_after_consecutive_moves() {
+    public void get_updated_sequences_and_longest_sequence_after_consecutive_moves() {
         GameState state = GameState.builder().setConnectHowMany(5).setBoard(new Piece[10][10]).setNextPlayer(Piece.X).build();
         printBoardAndLongestSequences(state);
-        assertEquals(0, state.getLongestSequence(Piece.X).length);
-        assertEquals(0, state.getLongestSequence(Piece.O).length);
+        assertTrue(state.getUpdatedSequences().isEmpty());
+        assertEquals(0, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(0, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(5, 5));
         printBoardAndLongestSequences(state);
-        assertEquals(1, state.getLongestSequence(Piece.X).length);
-        assertEquals(0, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(5, 5), new Cell(5, 5))
+        ), state.getUpdatedSequences());
+        assertEquals(1, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(0, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(1, 3));
         printBoardAndLongestSequences(state);
-        assertEquals(1, state.getLongestSequence(Piece.X).length);
-        assertEquals(1, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(1, 3), new Cell(1, 3))
+        ), state.getUpdatedSequences());
+        assertEquals(1, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(1, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(3, 3));
         printBoardAndLongestSequences(state);
-        assertEquals(1, state.getLongestSequence(Piece.X).length);
-        assertEquals(1, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(3, 3), new Cell(3, 3))
+        ), state.getUpdatedSequences());
+        assertEquals(1, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(1, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(2, 2));
         printBoardAndLongestSequences(state);
-        assertEquals(1, state.getLongestSequence(Piece.X).length);
-        assertEquals(2, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(2, 2), new Cell(2, 2)),
+                new Sequence(new Cell(1, 3), new Cell(2, 2))
+        ), state.getUpdatedSequences());
+        assertEquals(1, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(2, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(4, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(3, state.getLongestSequence(Piece.X).length);
-        assertEquals(2, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(4, 4), new Cell(4, 4)),
+                new Sequence(new Cell(3, 3), new Cell(5, 5))
+        ), state.getUpdatedSequences());
+        assertEquals(3, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(2, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(1, 2));
         printBoardAndLongestSequences(state);
-        assertEquals(3, state.getLongestSequence(Piece.X).length);
-        assertEquals(2, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(1, 2), new Cell(1, 3)),
+                new Sequence(new Cell(1, 2), new Cell(2, 2)),
+                new Sequence(new Cell(1, 2), new Cell(1, 2))
+        ), state.getUpdatedSequences());
+        assertEquals(3, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(2, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(6, 6));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(2, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(6, 6), new Cell(6, 6)),
+                new Sequence(new Cell(3, 3), new Cell(6, 6))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(2, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(7, 7));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(2, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(7, 7), new Cell(7, 7))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(2, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(1, 1));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(2, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(1, 1), new Cell(1, 1))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(2, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(1, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(3, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(1, 2), new Cell(1, 4)),
+                new Sequence(new Cell(1, 4), new Cell(1, 4))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(3, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(2, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(3, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(2, 4), new Cell(2, 4)),
+                new Sequence(new Cell(2, 4), new Cell(3, 3))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(3, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(1, 5));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(4, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(1, 2), new Cell(1, 5)),
+                new Sequence(new Cell(1, 5), new Cell(1, 5))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(4, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(1, 6));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(4, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(1, 6), new Cell(1, 6))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(4, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(3, 1));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(4, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(3, 1), new Cell(3, 1)),
+                new Sequence(new Cell(1, 3), new Cell(3, 1))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(4, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(3, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(4, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(3, 3), new Cell(3, 4)),
+                new Sequence(new Cell(2, 4), new Cell(4, 4)),
+                new Sequence(new Cell(3, 4), new Cell(3, 4))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(4, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(0, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(4, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(0, 4), new Cell(0, 4)),
+                new Sequence(new Cell(0, 4), new Cell(1, 4)),
+                new Sequence(new Cell(0, 4), new Cell(1, 5)),
+                new Sequence(new Cell(0, 4), new Cell(3, 1))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(4, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(5, 4));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(4, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(5, 4), new Cell(5, 5)),
+                new Sequence(new Cell(2, 4), new Cell(5, 4)),
+                new Sequence(new Cell(5, 4), new Cell(5, 4))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(4, state.getLongestSequence(Piece.O).getLength());
 
         state = state.next(new Cell(4, 0));
         printBoardAndLongestSequences(state);
-        assertEquals(4, state.getLongestSequence(Piece.X).length);
-        assertEquals(5, state.getLongestSequence(Piece.O).length);
+        assertEquals(asSet(
+                new Sequence(new Cell(4, 0), new Cell(4, 0)),
+                new Sequence(new Cell(0, 4), new Cell(4, 0))
+        ), state.getUpdatedSequences());
+        assertEquals(4, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(5, state.getLongestSequence(Piece.O).getLength());
     }
 
     private void printBoardAndLongestSequences(GameState gameState) {
@@ -318,6 +388,10 @@ public class GameStateTests {
         for (Piece p : Piece.values()) System.out.println(p + ": " + gameState.getLongestSequence(p));
         System.out.println();
         System.out.println();
+    }
+
+    private Set<Sequence> asSet(Sequence... sequences) {
+        return new HashSet<>(Arrays.asList(sequences));
     }
 
     @Test
@@ -346,17 +420,17 @@ public class GameStateTests {
 
         printBoardAndLongestSequences(state);
 
-        assertEquals(5, state.getLongestSequence(Piece.X).length);
-        assertEquals(5, state.getLongestSequence(Piece.X).start.getRow());
-        assertEquals(12, state.getLongestSequence(Piece.X).start.getColumn());
-        assertEquals(9, state.getLongestSequence(Piece.X).end.getRow());
-        assertEquals(16, state.getLongestSequence(Piece.X).end.getColumn());
+        assertEquals(5, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(5, state.getLongestSequence(Piece.X).getStart().getRow());
+        assertEquals(12, state.getLongestSequence(Piece.X).getStart().getColumn());
+        assertEquals(9, state.getLongestSequence(Piece.X).getEnd().getRow());
+        assertEquals(16, state.getLongestSequence(Piece.X).getEnd().getColumn());
 
-        assertEquals(4, state.getLongestSequence(Piece.O).length);
-        assertEquals(2, state.getLongestSequence(Piece.O).start.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.O).start.getColumn());
-        assertEquals(5, state.getLongestSequence(Piece.O).end.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.O).end.getColumn());
+        assertEquals(4, state.getLongestSequence(Piece.O).getLength());
+        assertEquals(2, state.getLongestSequence(Piece.O).getStart().getRow());
+        assertEquals(2, state.getLongestSequence(Piece.O).getStart().getColumn());
+        assertEquals(5, state.getLongestSequence(Piece.O).getEnd().getRow());
+        assertEquals(2, state.getLongestSequence(Piece.O).getEnd().getColumn());
     }
 
     @Test
@@ -385,17 +459,17 @@ public class GameStateTests {
 
         printBoardAndLongestSequences(state);
 
-        assertEquals(5, state.getLongestSequence(Piece.X).length);
-        assertEquals(5, state.getLongestSequence(Piece.X).start.getRow());
-        assertEquals(12, state.getLongestSequence(Piece.X).start.getColumn());
-        assertEquals(9, state.getLongestSequence(Piece.X).end.getRow());
-        assertEquals(8, state.getLongestSequence(Piece.X).end.getColumn());
+        assertEquals(5, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(5, state.getLongestSequence(Piece.X).getStart().getRow());
+        assertEquals(12, state.getLongestSequence(Piece.X).getStart().getColumn());
+        assertEquals(9, state.getLongestSequence(Piece.X).getEnd().getRow());
+        assertEquals(8, state.getLongestSequence(Piece.X).getEnd().getColumn());
 
-        assertEquals(4, state.getLongestSequence(Piece.O).length);
-        assertEquals(2, state.getLongestSequence(Piece.O).start.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.O).start.getColumn());
-        assertEquals(2, state.getLongestSequence(Piece.O).end.getRow());
-        assertEquals(5, state.getLongestSequence(Piece.O).end.getColumn());
+        assertEquals(4, state.getLongestSequence(Piece.O).getLength());
+        assertEquals(2, state.getLongestSequence(Piece.O).getStart().getRow());
+        assertEquals(2, state.getLongestSequence(Piece.O).getStart().getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.O).getEnd().getRow());
+        assertEquals(5, state.getLongestSequence(Piece.O).getEnd().getColumn());
     }
 
     @Test
@@ -409,11 +483,11 @@ public class GameStateTests {
                 {null,          null,           null}
         };
         state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
-        assertEquals(2, state.getLongestSequence(Piece.X).length);
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
-        assertEquals(0, state.getLongestSequence(Piece.X).end.getRow());
-        assertEquals(1, state.getLongestSequence(Piece.X).end.getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getColumn());
+        assertEquals(0, state.getLongestSequence(Piece.X).getEnd().getRow());
+        assertEquals(1, state.getLongestSequence(Piece.X).getEnd().getColumn());
 
         board = new Piece[][] {
                 {null,          Piece.X,    Piece.X},
@@ -421,11 +495,11 @@ public class GameStateTests {
                 {null,          null,           null}
         };
         state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
-        assertEquals(2, state.getLongestSequence(Piece.X).length);
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
-        assertEquals(1, state.getLongestSequence(Piece.X).start.getColumn());
-        assertEquals(0, state.getLongestSequence(Piece.X).end.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.X).end.getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getRow());
+        assertEquals(1, state.getLongestSequence(Piece.X).getStart().getColumn());
+        assertEquals(0, state.getLongestSequence(Piece.X).getEnd().getRow());
+        assertEquals(2, state.getLongestSequence(Piece.X).getEnd().getColumn());
 
         board = new Piece[][] {
                 {Piece.X,   null,           null},
@@ -433,11 +507,11 @@ public class GameStateTests {
                 {null,          null,           null}
         };
         state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
-        assertEquals(1, state.getLongestSequence(Piece.X).length);
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
-        assertEquals(0, state.getLongestSequence(Piece.X).end.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.X).end.getColumn());
+        assertEquals(1, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getColumn());
+        assertEquals(0, state.getLongestSequence(Piece.X).getEnd().getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).getEnd().getColumn());
 
         board = new Piece[][] {
                 {null,          null,           null},
@@ -445,11 +519,11 @@ public class GameStateTests {
                 {Piece.X,   null,           null}
         };
         state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
-        assertEquals(1, state.getLongestSequence(Piece.X).length);
-        assertEquals(2, state.getLongestSequence(Piece.X).start.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
-        assertEquals(2, state.getLongestSequence(Piece.X).end.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.X).end.getColumn());
+        assertEquals(1, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(2, state.getLongestSequence(Piece.X).getStart().getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.X).getEnd().getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).getEnd().getColumn());
 
         board = new Piece[][] {
                 {Piece.X,   null,           null},
@@ -457,11 +531,11 @@ public class GameStateTests {
                 {null,          null,           null}
         };
         state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
-        assertEquals(2, state.getLongestSequence(Piece.X).length);
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
-        assertEquals(1, state.getLongestSequence(Piece.X).end.getRow());
-        assertEquals(1, state.getLongestSequence(Piece.X).end.getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getColumn());
+        assertEquals(1, state.getLongestSequence(Piece.X).getEnd().getRow());
+        assertEquals(1, state.getLongestSequence(Piece.X).getEnd().getColumn());
 
         board = new Piece[][] {
                 {Piece.X,   null,           null},
@@ -469,11 +543,11 @@ public class GameStateTests {
                 {null,          null,           Piece.X}
         };
         state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
-        assertEquals(3, state.getLongestSequence(Piece.X).length);
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getColumn());
-        assertEquals(2, state.getLongestSequence(Piece.X).end.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.X).end.getColumn());
+        assertEquals(3, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.X).getEnd().getRow());
+        assertEquals(2, state.getLongestSequence(Piece.X).getEnd().getColumn());
 
         board = new Piece[][] {
                 {null,          null,           Piece.X},
@@ -481,11 +555,11 @@ public class GameStateTests {
                 {null,          null,           null}
         };
         state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
-        assertEquals(1, state.getLongestSequence(Piece.X).length);
-        assertEquals(0, state.getLongestSequence(Piece.X).start.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.X).start.getColumn());
-        assertEquals(0, state.getLongestSequence(Piece.X).end.getRow());
-        assertEquals(2, state.getLongestSequence(Piece.X).end.getColumn());
+        assertEquals(1, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(0, state.getLongestSequence(Piece.X).getStart().getRow());
+        assertEquals(2, state.getLongestSequence(Piece.X).getStart().getColumn());
+        assertEquals(0, state.getLongestSequence(Piece.X).getEnd().getRow());
+        assertEquals(2, state.getLongestSequence(Piece.X).getEnd().getColumn());
 
         board = new Piece[][] {
                 {null,          null,           null},
@@ -493,11 +567,11 @@ public class GameStateTests {
                 {Piece.X,   null,           null}
         };
         state = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
-        assertEquals(2, state.getLongestSequence(Piece.X).length);
-        assertEquals(1, state.getLongestSequence(Piece.X).start.getRow());
-        assertEquals(1, state.getLongestSequence(Piece.X).start.getColumn());
-        assertEquals(2, state.getLongestSequence(Piece.X).end.getRow());
-        assertEquals(0, state.getLongestSequence(Piece.X).end.getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.X).getLength());
+        assertEquals(1, state.getLongestSequence(Piece.X).getStart().getRow());
+        assertEquals(1, state.getLongestSequence(Piece.X).getStart().getColumn());
+        assertEquals(2, state.getLongestSequence(Piece.X).getEnd().getRow());
+        assertEquals(0, state.getLongestSequence(Piece.X).getEnd().getColumn());
     }
 
     @Test
@@ -511,7 +585,7 @@ public class GameStateTests {
         board[0][5] = Piece.O;
 
         GameState gameState = GameState.builder().setConnectHowMany(3).setBoard(board).setNextPlayer(Piece.X).build();
-        Map<Piece, List<GameState.Sequence>> sequences = gameState.getAllSequences();
+        Map<Piece, List<Sequence>> sequences = gameState.getAllSequences();
 
         System.out.println(sequences);
         assertEquals(11, sequences.get(Piece.X).size());
