@@ -21,6 +21,8 @@ import java.util.*;
 public class InMemoryPlayerRegistry implements PlayerRegistry {
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryPlayerRegistry.class);
 
+    private int playerInfoIdSequence = 1;
+
     private List<PlayerInfo> playerInfoList = new ArrayList<>();
     private Map<String, Class<? extends Player>> playerClasses = new HashMap<>();
     private Map<String, Object> playerConfigs = new HashMap<>();
@@ -54,7 +56,8 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
     }
 
     private PlayerInfo addPlayerInfo(String name, PlayerInfo.Type type, Class<? extends Player> playerClass) {
-        PlayerInfo playerInfo = new PlayerInfo(UUID.randomUUID().toString(), name, type);
+        PlayerInfo playerInfo = new PlayerInfo(String.valueOf(playerInfoIdSequence), name, type);
+        playerInfoIdSequence++;
         playerInfoList.add(playerInfo);
         playerClasses.put(playerInfo.getId(), playerClass);
         return playerInfo;
