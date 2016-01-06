@@ -360,8 +360,8 @@ public class MCTSPlayerTests {
     }
 
     /**
-     * This scenario is difficult for all MCTS simulation strategies.
-     * Naive strategy fares best but even that requires a lot of rollouts.
+     * This scenario was difficult for all MCTS simulation strategies.
+     * Naive strategy should now tackle it without a lot of rollouts.
      */
     @Test
     public void test_scenario_where_mcts_made_a_bad_move_in_game() {
