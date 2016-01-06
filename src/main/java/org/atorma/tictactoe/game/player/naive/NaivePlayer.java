@@ -2,7 +2,7 @@ package org.atorma.tictactoe.game.player.naive;
 
 
 import org.atorma.tictactoe.game.player.Player;
-import org.atorma.tictactoe.game.player.random.AdjancentCellPlayer;
+import org.atorma.tictactoe.game.player.random.AdjacentCellPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
@@ -20,20 +20,20 @@ import java.util.stream.Stream;
  * takes a decisive move if possible and tries to block
  * the opponent's decisive move.
  */
-public class NaivePlayer extends AdjancentCellPlayer implements Player {
+public class NaivePlayer extends AdjacentCellPlayer implements Player {
     private Piece mySide;
 
     @Override
     protected Cell planMove() {
         return Stream.<Supplier<Optional<Cell>>>of(
                 this::getMandatoryMove,
-                this::elongateLongestSequence,
-                this::elongateNextLongestSequence)
+                this::getMoveElongatingLongestSequence,
+                this::getMoveElongatingNextLongestSequence)
                 .map(Supplier::get)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .findFirst()
-                .orElseGet(this::pickRandomCell);
+                .orElseGet(this::getRandomAllowedMove);
     }
 
     private Optional<Cell> getMandatoryMove() {
@@ -42,27 +42,31 @@ public class NaivePlayer extends AdjancentCellPlayer implements Player {
                 .setNextPlayer(mySide.other())
                 .build();
 
+        // Can I win with one move?
         for (Cell move : adjacentToOccupied) {
-            // Will I win?
             if (currentState.next(move).getWinner() == mySide) {
                 return Optional.of(move);
             }
+        }
 
-            // Would my opponent win if she were me?
+        // Can my opponent win with one move? If yes, block the move.
+        for (Cell move : adjacentToOccupied) {
             if (fakeState.next(move).getWinner() == mySide.other()) {
                 return Optional.of(move);
             }
         }
 
+        // Can I make a sequence that will yield a victory in my next turn?
         for (Cell move : adjacentToOccupied) {
-            // Will I get a sequence that will yield a victory in my next turn?
             GameState nextState = currentState.next(move);
             if (nextState.getUpdatedSequences().stream()
                     .anyMatch(sequence -> sequence.getLength() >= 4 && getFreeSequenceEnds(nextState, sequence).size() >= 2)) {
                 return Optional.of(move);
             }
+        }
 
-            // Would my opponent get a sequence that would yield a victory for her if she were me?
+        // Can my opponent make a sequence that would will a victory for her in her next turn? If yes, block the move.
+        for (Cell move : adjacentToOccupied) {
             GameState fakeState2 = fakeState.next(move);
             if (fakeState2.getUpdatedSequences().stream()
                     .anyMatch(sequence -> sequence.getLength() >= 4 && getFreeSequenceEnds(fakeState2, sequence).size() >= 2)) {
@@ -73,7 +77,7 @@ public class NaivePlayer extends AdjancentCellPlayer implements Player {
         return Optional.empty();
     }
 
-    private Optional<Cell> elongateLongestSequence() {
+    private Optional<Cell> getMoveElongatingLongestSequence() {
         Sequence myLongestSequence = currentState.getLongestSequence(mySide);
         List<Cell> candidates = getFreeSequenceEnds(currentState, myLongestSequence);
         if (!candidates.isEmpty()) {
@@ -83,7 +87,7 @@ public class NaivePlayer extends AdjancentCellPlayer implements Player {
         }
     }
 
-    private Optional<Cell> elongateNextLongestSequence() {
+    private Optional<Cell> getMoveElongatingNextLongestSequence() {
         List<Sequence> mySequences = currentState.getAllSequences().get(mySide);
         return mySequences.stream()
                 .sorted((o1, o2) -> o2.getLength() - o1.getLength())
@@ -93,7 +97,7 @@ public class NaivePlayer extends AdjancentCellPlayer implements Player {
                 .map(Utils::pickRandom);
     }
 
-    private Cell pickRandomCell() {
+    private Cell getRandomAllowedMove() {
         return Utils.pickRandom(currentState.getAllowedMoves());
     }
 

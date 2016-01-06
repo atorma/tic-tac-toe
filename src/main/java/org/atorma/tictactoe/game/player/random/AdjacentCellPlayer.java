@@ -7,7 +7,7 @@ import org.atorma.tictactoe.game.state.GameState;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class AdjancentCellPlayer implements Player {
+public abstract class AdjacentCellPlayer implements Player {
 
     protected Set<Cell> adjacentToOccupied;
     protected GameState currentState;

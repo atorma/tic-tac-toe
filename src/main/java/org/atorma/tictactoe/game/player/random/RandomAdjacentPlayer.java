@@ -7,7 +7,7 @@ import org.atorma.tictactoe.game.state.Piece;
 
 import java.util.*;
 
-public class RandomAdjacentPlayer extends AdjancentCellPlayer implements Player {
+public class RandomAdjacentPlayer extends AdjacentCellPlayer implements Player {
     private Piece myPiece;
 
     @Override
