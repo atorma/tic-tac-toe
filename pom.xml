@@ -108,6 +108,7 @@
                         <goals>
                             <goal>gulp</goal>
                         </goals>
+                        <phase>test</phase>
                         <configuration>
                             <arguments>test-prod</arguments>
                         </configuration>
