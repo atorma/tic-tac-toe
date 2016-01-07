@@ -5,6 +5,7 @@ import org.atorma.tictactoe.game.Simulator;
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.player.Configurable;
 import org.atorma.tictactoe.game.player.Player;
+import org.atorma.tictactoe.game.player.naive.MandatoryMovePlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.player.random.RandomAdjacentPlayer;
 import org.atorma.tictactoe.game.player.random.RandomPlayer;
@@ -33,14 +34,16 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class MCTSPlayer implements Player, Configurable {
     private static final Logger LOGGER = LoggerFactory.getLogger(MCTSPlayer.class);
-    public static final MCTSParameters DEFAULT_PARAMS = new MCTSParameters();
 
+    private static final MCTSParameters DEFAULT_PARAMS = new MCTSParameters();
     private MCTSParameters params;
 
     private Piece mySide;
 
     private int boardRowsNum, boardColsNum;
 
+    private GameState currentState;
+    private Cell opponentsLastMove;
     private MoveNode lastMove; // Last move overall, may be my move or opponent's move, depending on algorithm progress
 
     private long planningStartTime;
@@ -78,7 +81,7 @@ public class MCTSPlayer implements Player, Configurable {
 
     @Override
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
-        if (lastMove == null || updatedState.getNumPieces() <= lastMove.getGameState().getNumPieces()) {
+        if (currentState == null || updatedState.getNumPieces() <= currentState.getNumPieces()) {
             // Reset the learning following an earlier game,
             // otherwise we'll easily run out of memory in repeated games (tried that).
             boardRowsNum = updatedState.getBoardRows();
@@ -88,6 +91,8 @@ public class MCTSPlayer implements Player, Configurable {
         } else {
             lastMove = lastMove.findMoveTo(opponentsLastMove);
         }
+        this.currentState = updatedState;
+        this.opponentsLastMove = opponentsLastMove;
 
         // Don't prune here. Seems it can cause so much GC activity that it steals CPU resources for simulation.
 
@@ -109,22 +114,37 @@ public class MCTSPlayer implements Player, Configurable {
 
 
     private MoveNode planMove() {
+        MoveNode bestMove = null;
+
         planningStartTime = System.currentTimeMillis();
 
-        MoveNode bestMove = checkForMandatoryMove();
-        boolean isMandatoryMove = bestMove != null;
+        MandatoryMovePlayer mandatoryMovePlayer = new MandatoryMovePlayer() {
+            protected Cell planMove() {
+                return getMandatoryMove().orElse(null);
+            }
 
+            @Override
+            public void setPiece(Piece p) {
+            }
+
+            @Override
+            public Piece getPiece() {
+                return MCTSPlayer.this.getPiece();
+            }
+        };
+        Cell mandatoryMove = mandatoryMovePlayer.move(currentState, opponentsLastMove);
+        boolean isMandatoryMove = mandatoryMove != null;
 
         MoveNode rolloutStartMove;
         if (isMandatoryMove) { // If we have a mandatory move, use the time to plan ahead from that
+            bestMove = lastMove.findMoveTo(mandatoryMove);
             rolloutStartMove = bestMove;
         } else {
             rolloutStartMove = lastMove;
         }
+
         List<Rectangle> searchRectangles = getSearchRectangles();
-
         planningRollouts.set(0);
-
         List<Future> results = new ArrayList<>();
         for (int i = 0; i < params.numPlanningThreads ; i++) {
             Runnable task = () -> {
@@ -146,8 +166,6 @@ public class MCTSPlayer implements Player, Configurable {
             }
         }
 
-
-
         if (!isMandatoryMove) {
             bestMove = selectNextMoveBasedOnExpectedReward();
         }
@@ -158,32 +176,6 @@ public class MCTSPlayer implements Player, Configurable {
         return bestMove;
     }
 
-    private MoveNode checkForMandatoryMove() {
-        // Check for a decisive move
-        NaivePlayer myself = new NaivePlayer();
-        myself.setPiece(mySide);
-        Cell naiveMove = myself.move(lastMove.getGameState(), null);
-        GameState result = lastMove.getGameState().next(naiveMove);
-        if (result.getWinner() == myself.getPiece()) {
-            return lastMove.findMoveTo(naiveMove);
-        }
-
-        // If opponent would get a decisive move, steal the move
-        GameState fakeState = GameState.builder()
-                .setTemplate(lastMove.getGameState())
-                .setNextPlayer(mySide.other())
-                .build();
-        NaivePlayer opponent = new NaivePlayer();
-        opponent.setPiece(mySide.other());
-        naiveMove = opponent.move(fakeState, null);
-        fakeState.update(naiveMove);
-        if (fakeState.getWinner() == opponent.getPiece()) {
-            return lastMove.findMoveTo(naiveMove);
-        }
-
-        return null;
-    }
-
 
     private boolean isThinkTimeLeft() {
         return (System.currentTimeMillis() - planningStartTime) < params.maxThinkTimeMillis;
@@ -192,7 +184,6 @@ public class MCTSPlayer implements Player, Configurable {
 
     private List<Rectangle> getSearchRectangles() {
         if (params.searchRadius < Integer.MAX_VALUE) {
-            GameState currentState = lastMove.getGameState();
             ArrayList<Rectangle> searchAreas = new ArrayList<>();
             for (int row = 0; row < boardRowsNum; row++) {
                 for (int col = 0; col < boardColsNum; col++) {
@@ -338,4 +329,5 @@ public class MCTSPlayer implements Player, Configurable {
     public String toString() {
         return "MCTS (" + params.simulationStrategy.toString().toLowerCase() + ")";
     }
+
 }

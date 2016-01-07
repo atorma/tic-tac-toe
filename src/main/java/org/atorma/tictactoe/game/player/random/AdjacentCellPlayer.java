@@ -28,8 +28,10 @@ public abstract class AdjacentCellPlayer implements Player {
 
         Cell myMove = planMove();
 
-        collectAdjacentToOccupied(myMove);
-        adjacentToOccupied.remove(myMove);
+        if (myMove != null) {
+            collectAdjacentToOccupied(myMove);
+            adjacentToOccupied.remove(myMove);
+        }
 
         return myMove;
     }
