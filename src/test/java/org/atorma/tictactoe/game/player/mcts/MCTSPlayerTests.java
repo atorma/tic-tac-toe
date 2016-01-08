@@ -89,7 +89,7 @@ public class MCTSPlayerTests {
 
         GameState startState = GameState.builder()
                 .setConnectHowMany(5)
-                .setBoard(new Piece[10][10])
+                .setBoard(new Piece[18][18])
                 .setNextPlayer(naivePlayer.getPiece())
                 .build();
 
@@ -199,7 +199,7 @@ public class MCTSPlayerTests {
     }
 
     @Test
-    public void test_18x18_connect_5_mcts_player_blocks_3_in_row_with_free_ends_if_given_enough_time() {
+    public void test_18x18_connect_5_mcts_player_blocks_3_in_row_with_free_ends() {
         MCTSParameters params = new MCTSParameters();
         params.pruneParent = false;
         params.pruneSiblings = false;
@@ -415,6 +415,9 @@ public class MCTSPlayerTests {
                 .collect(Collectors.toList());
         for (MoveNode moveNode : alternatives) {
             LOGGER.debug(moveNode.toString());
+            for (MoveNode child : moveNode.getChildren().stream().sorted((n1, n2) -> (int) Math.signum(n2.getExpectedReward(Piece.X) - n1.getExpectedReward(Piece.X))).collect(Collectors.toList())) {
+                LOGGER.debug("\t" + child.toString());
+            }
         }
 
         Cell opponentMove;
