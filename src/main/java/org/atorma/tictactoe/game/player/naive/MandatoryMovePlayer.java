@@ -36,7 +36,7 @@ public abstract class MandatoryMovePlayer extends AdjacentCellPlayer {
         for (Cell move : adjacentToOccupied) {
             GameState nextState = currentState.next(move);
             if (nextState.getUpdatedSequences().stream()
-                    .anyMatch(sequence -> sequence.getLength() >= 4 && getFreeSequenceEnds(nextState, sequence).size() >= 2)) {
+                    .anyMatch(sequence -> sequence.getLength() >= currentState.getConnectHowMany() - 1 && getFreeSequenceEnds(nextState, sequence).size() >= 2)) {
                 return Optional.of(move);
             }
         }
@@ -45,7 +45,7 @@ public abstract class MandatoryMovePlayer extends AdjacentCellPlayer {
         for (Cell move : adjacentToOccupied) {
             GameState fakeState2 = fakeState.next(move);
             if (fakeState2.getUpdatedSequences().stream()
-                    .anyMatch(sequence -> sequence.getLength() >= 4 && getFreeSequenceEnds(fakeState2, sequence).size() >= 2)) {
+                    .anyMatch(sequence -> sequence.getLength() >= currentState.getConnectHowMany() - 1 && getFreeSequenceEnds(fakeState2, sequence).size() >= 2)) {
                 return Optional.of(move);
             }
         }
