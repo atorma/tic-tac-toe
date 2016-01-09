@@ -40,11 +40,10 @@ public class MCTSPlayer implements Player, Configurable {
 
     private Piece mySide;
 
-    private int boardRowsNum, boardColsNum;
-
     private GameState currentState;
     private Cell opponentsLastMove;
     private MoveNode lastMove; // Last move overall, may be my move or opponent's move, depending on algorithm progress
+    private List<Rectangle> searchAreas = new ArrayList<>();
 
     private long planningStartTime;
     private AtomicInteger planningRollouts = new AtomicInteger();
@@ -82,10 +81,6 @@ public class MCTSPlayer implements Player, Configurable {
     @Override
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
         if (currentState == null || updatedState.getNumPieces() <= currentState.getNumPieces()) {
-            // Reset the learning following an earlier game,
-            // otherwise we'll easily run out of memory in repeated games (tried that).
-            boardRowsNum = updatedState.getBoardRows();
-            boardColsNum = updatedState.getBoardCols();
             lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
             LOGGER.debug("New game started! Simulation strategy {}.", params.simulationStrategy.toString().toLowerCase());
         } else {
@@ -143,13 +138,13 @@ public class MCTSPlayer implements Player, Configurable {
             rolloutStartMove = lastMove;
         }
 
-        List<Rectangle> searchRectangles = getSearchRectangles();
+        updateSearchAreas();
         planningRollouts.set(0);
         List<Future> results = new ArrayList<>();
         for (int i = 0; i < params.numPlanningThreads ; i++) {
             Runnable task = () -> {
                 while (isThinkTimeLeft() && planningRollouts.get() < params.maxRolloutsNum) {
-                    performRollout(rolloutStartMove, searchRectangles);
+                    performRollout(rolloutStartMove);
                 }
             };
             results.add(workerPool.submit(task));
@@ -182,11 +177,11 @@ public class MCTSPlayer implements Player, Configurable {
     }
 
 
-    private List<Rectangle> getSearchRectangles() {
+    private void updateSearchAreas() {
+        searchAreas.clear();
         if (params.searchRadius < Integer.MAX_VALUE) {
-            ArrayList<Rectangle> searchAreas = new ArrayList<>();
-            for (int row = 0; row < boardRowsNum; row++) {
-                for (int col = 0; col < boardColsNum; col++) {
+            for (int row = 0; row < currentState.getBoardRows(); row++) {
+                for (int col = 0; col < currentState.getBoardCols(); col++) {
                     if (currentState.getPiece(row, col) != null) {
                         Rectangle rectangle = new Rectangle(
                                 row - params.searchRadius, col - params.searchRadius,
@@ -195,21 +190,18 @@ public class MCTSPlayer implements Player, Configurable {
                     }
                 }
             }
-            return searchAreas;
-        } else {
-            return null;
         }
     }
 
-    private void performRollout(MoveNode startNode, List<Rectangle> searchAreas) {
+    private void performRollout(MoveNode startNode) {
         planningRollouts.incrementAndGet();
 
         // Selection and expansion
         LOGGER.trace("{} starts selecting node", Thread.currentThread());
         MoveNode selected;
         synchronized (this) {
-            selected = selectMove(startNode, searchAreas);
-            LOGGER.trace("{} selected node {}", Thread.currentThread(), startNode);
+            selected = selectMctsMove(startNode);
+            LOGGER.trace("{} selected node {}", Thread.currentThread(), selected);
         }
 
         // Simulation
@@ -248,11 +240,11 @@ public class MCTSPlayer implements Player, Configurable {
      *
      * Returns a promising move, or one that ends the game.
      */
-    private MoveNode selectMove(MoveNode startNode, List<Rectangle> searchAreas) {
+    private MoveNode selectMctsMove(MoveNode startNode) {
         MoveNode moveNode = startNode;
 
         while (!moveNode.isEndState()) {
-            if (searchAreas == null) {
+            if (searchAreas.isEmpty()) {
                 if (!moveNode.isFullyExpanded()) {
                     return moveNode.expandRandom();
                 } else {
@@ -315,7 +307,7 @@ public class MCTSPlayer implements Player, Configurable {
         if (lastMove.getParent() != null && lastMove.getParent().getMove() != null) {
             target = lastMove.getParent().getMove();
         } else {
-            target = new Cell(boardRowsNum/2, boardColsNum/2);
+            target = new Cell(currentState.getBoardRows()/2, currentState.getBoardCols()/2);
         }
         candidates = Utils.max(candidates, element -> Cell.getDistance(element.getMove(), target));
         return Utils.pickRandom(candidates);
