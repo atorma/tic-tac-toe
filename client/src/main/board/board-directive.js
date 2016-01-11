@@ -43,12 +43,12 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
         $scope.$watch("numRows", function(value) {
             numRows = value;
             resetBoard();
-            resizeAndDrawCanvas();
+            resizeAndDrawCanvas(true);
         });
         $scope.$watch("numCols", function(value) {
             numCols = value;
             resetBoard();
-            resizeAndDrawCanvas();
+            resizeAndDrawCanvas(true);
         });
 
         $window.addEventListener("resize", _.debounce(function() {
