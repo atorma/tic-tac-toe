@@ -12,7 +12,8 @@ var GAME_EVENTS = {
     GAME_STARTED: "game started",
     MOVE_COMPLETED: "move completed",
     MOVE_SELECTED: "move selected",
-    RESIZE_BOARD: "resize board"
+    RESIZE_BOARD: "resize board",
+    SHOW_LAST_MOVE: "show last move"
 };
 
 var PLAYER_TYPES = {
@@ -41,6 +42,7 @@ function configureIcons($mdIconProvider) {
         .icon("forward", "resources/material-design-icons/ic_forward_black_24px.svg")
         .icon("close", "resources/material-design-icons/ic_close_black_24px.svg")
         .icon("settings", "resources/material-design-icons/ic_settings_black_24px.svg")
+        .icon("replay", "resources/material-design-icons/ic_replay_black_24px.svg")
     ;
 }
 

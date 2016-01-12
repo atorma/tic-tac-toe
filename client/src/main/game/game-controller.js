@@ -17,7 +17,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     vm.setPaused = setPaused;
     vm.endGame = endGame;
     vm.toggleConfigMode = toggleConfigMode;
-
+    vm.replayLastMove = replayLastMove;
 
     $scope.$on(GAME_EVENTS.MOVE_SELECTED, selectHumanPlayerMove);
 
@@ -113,6 +113,9 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                 boardSpinner.hide();
                 if (vm.gameExists && !vm.paused) {
                     $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, result);
+                    if (nextPlayer.type === PLAYER_TYPES.AI && !isAiVsAiGame()) {
+                        $scope.$broadcast(GAME_EVENTS.SHOW_LAST_MOVE);
+                    }
                 } else if (vm.gameExists && vm.paused) {
                     vm.pausedResult = result;
                 }
@@ -277,6 +280,10 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                 $scope.$broadcast(GAME_EVENTS.RESIZE_BOARD);
             }
         }, 300, false);
+    }
+
+    function replayLastMove() {
+        $scope.$broadcast(GAME_EVENTS.SHOW_LAST_MOVE);
     }
 
 }

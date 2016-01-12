@@ -13,7 +13,7 @@ var GRID_COLOR = "#eee";
 var PIECE_COLOR = "#000";
 
 
-function board(GAME_EVENTS, PIECES, $window, $log) {
+function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
     return {
         restrict: "E",
         template: '<canvas style="margin: auto; display: block"></canvas>',
@@ -32,6 +32,7 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
         var numRows, numCols;
 
         var cellSize; // square cell width = height
+        var GRID_LINE_WIDTH = 1;
 
         var canvasWidth, canvasHeight;
         var windowInnerWidth;
@@ -60,6 +61,7 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
         $scope.$on(GAME_EVENTS.RESIZE_BOARD, function() {
             resizeAndDrawCanvas(true);
         });
+        $scope.$on(GAME_EVENTS.SHOW_LAST_MOVE, blinkLastMove);
 
         canvas.onclick = onCanvasClick;
 
@@ -124,6 +126,7 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
 
         function drawGameBoard() {
             ctx.strokeStyle = GRID_COLOR;
+            ctx.lineWidth = GRID_LINE_WIDTH;
 
             // Draw horizontal lines
             for (var i = 0; i < numRows - 1; i++) {
@@ -233,6 +236,38 @@ function board(GAME_EVENTS, PIECES, $window, $log) {
             ctx.stroke();
         }
 
+        function clearCell(cell) {
+            ctx.clearRect(cell.column*cellSize + GRID_LINE_WIDTH, cell.row*cellSize + GRID_LINE_WIDTH, cellSize - 2*GRID_LINE_WIDTH, cellSize - 2*GRID_LINE_WIDTH);
+        }
+
+
+        function blinkLastMove() {
+            var piece = lastTurnResult.move.piece; // grab ref so it cannot change in the middle of play
+            var cell = lastTurnResult.move.cell; // grab ref so it cannot change in the middle of play
+            var numBlinks = 0;
+            var drawFunction;
+            if (piece === PIECES.X) {
+                drawFunction = drawCross;
+            }  else {
+                drawFunction = drawCircle;
+            }
+
+            blink();
+
+            function blink() {
+                return blinkOnce().then(function() {
+                    numBlinks++;
+                    if (numBlinks < 3) {
+                        return $timeout(blink, 300, false);
+                    }
+                });
+            }
+
+            function blinkOnce() {
+                clearCell(cell);
+                return $timeout(drawFunction, 300, false, cell);
+            }
+        }
 
         function onCanvasClick(e) {
             var cc = getCanvasCoordinates(e);
