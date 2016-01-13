@@ -185,7 +185,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
 
     function showErrorToast(message, additionalOptions) {
         return showToast(message, _.extend({
-            template: '<md-toast md-theme="error">{{vm.message}} <md-button ng-click="vm.hide()" class="md-action md-icon-button" aria-label="close"><md-icon md-svg-icon="close"></md-icon></md-button></md-toast>',
+            template: '<md-toast md-theme="error"><span flex>{{vm.message}}</span><md-button ng-click="vm.hide()" class="md-action md-icon-button" aria-label="close"><md-icon md-svg-icon="close"></md-icon></md-button></md-toast>',
             hideDelay: 0
         }, additionalOptions));
     }

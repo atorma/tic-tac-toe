@@ -6,7 +6,7 @@
     transform: translate(-50%, -50%);
 }
 
-md-toast[md-theme="error"] {
+md-toast[md-theme="error"] .md-toast-content {
     background-color: #F44336;
 }
 
