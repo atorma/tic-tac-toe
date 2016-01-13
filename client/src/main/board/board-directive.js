@@ -242,15 +242,24 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
 
 
         function blinkLastMove() {
-            var piece = lastTurnResult.move.piece; // grab ref so it cannot change in the middle of play
-            var cell = lastTurnResult.move.cell; // grab ref so it cannot change in the middle of play
+            // grab refs so they cannot change in the middle of play
+            var piece = lastTurnResult.move.piece;
+            var cell = lastTurnResult.move.cell;
+            var winningSequence = lastTurnResult.winningSequence;
+
             var numBlinks = 0;
-            var drawFunction;
+            var pieceDrawFunction;
             if (piece === PIECES.X) {
-                drawFunction = drawCross;
+                pieceDrawFunction = drawCross;
             }  else {
-                drawFunction = drawCircle;
+                pieceDrawFunction = drawCircle;
             }
+            var drawFunction = function() {
+                pieceDrawFunction(cell);
+                if (winningSequence) {
+                    drawLine(winningSequence.start, winningSequence.end);
+                }
+            };
 
             blink();
 
