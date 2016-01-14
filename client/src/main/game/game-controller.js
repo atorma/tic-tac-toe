@@ -178,7 +178,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
 
     function showProgressToast(message, additionalOptions) {
         return showToast(message, _.extend({
-            template: '<md-toast><spinner></spinner>&nbsp;{{vm.message}}</md-toast>',
+            template: '<md-toast><md-progress-circular md-mode="indeterminate" md-diameter="48px"></md-progress-circular>&nbsp;{{vm.message}}</md-toast>',
             hideDelay: 0
         }, additionalOptions));
     }

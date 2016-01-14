@@ -19,7 +19,7 @@ function spinnerOverlay($compile) {
     return create;
 
 
-    function create(elementId) {
+    function create(elementId, diameter) {
 
         var NO_OP = {
             show: function() {},
@@ -61,8 +61,10 @@ function spinnerOverlay($compile) {
         }
 
         function createOverlay() {
-            var spinnerTpl = angular.element('<spinner>');
-            spinnerTpl.attr("size", 48);
+            var spinnerTpl = angular.element('<md-progress-circular md-mode="indeterminate" md-diameter="100px">');
+            if (diameter !== undefined) {
+                spinnerTpl.attr("md-diameter", diameter);
+            }
             var overlayTpl = angular.element('<div class="centered">');
             overlayTpl.append(spinnerTpl);
 
