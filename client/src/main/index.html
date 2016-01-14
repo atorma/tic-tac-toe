@@ -150,7 +150,7 @@
 
 </section>
 
-<section ng-show="!vm.screenIsSmall" flex-order="3">
+<section ng-show="!vm.screenIsSmall">
 
     <div layout="row" layout-align="space-between" layout-padding class="md-caption">
         <span>Next: {{vm.currentGame.nextPlayer}}</span>
@@ -162,7 +162,7 @@
 
 </section>
 
-<section flex-order="4">
+<section>
 
     <div id="board-container" layout="row" layout-align="center center" style="position: relative">
         <board flex="100" num-rows="vm.gameConfig.board.rows" num-cols="vm.gameConfig.board.columns"></board>
