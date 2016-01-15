@@ -61,8 +61,8 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     }
 
     function startGame() {
-        return initRound()
-            .then(resetStats)
+        return resetStats()
+            .then(initRound)
             .then(function() {
                 if (isAiVsAiGame()) {
                     showProgressToast("Playing AI vs AI...");
@@ -85,6 +85,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                 vm.currentGame = gameService.currentGame;
                 vm.gameExists = true;
                 vm.paused = false;
+                vm.gameStats.currentRound++;
                 $scope.$broadcast(GAME_EVENTS.GAME_STARTED, gameService.currentGame);
             })
             .catch(handleError);
@@ -127,12 +128,12 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                 } else if (!result.gameEnded && !vm.paused) {
                     play();
                 } else if (result.gameEnded) {
-                    gameService.endCurrentGame(); // async, but we don't care whether it succeeds or fails
                     updateStats(result);
-                    if (vm.gameStats.roundsPlayed < vm.gameConfig.rounds) {
+                    gameService.endCurrentGame(); // async, but we don't care whether it succeeds or fails
+                    if (vm.gameStats.currentRound < vm.gameConfig.rounds) {
                         initRound().then(play);
                     } else {
-                        endGame();
+                        endGame(); // async, but don't care about result
                     }
                 }
             })
@@ -194,23 +195,25 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
 
     function resetStats() {
         vm.gameStats = {
-            roundsPlayed: 0,
+            currentRound: 0,
             ties: 0,
             wins: {}
         };
         vm.gameStats.wins[PIECES.X] = 0;
         vm.gameStats.wins[PIECES.O] = 0;
+
+        return $q.when();
     }
 
     function updateStats(result) {
         if (result.gameEnded) {
-            vm.gameStats.roundsPlayed++;
             if (result.winner) {
                 vm.gameStats.wins[result.winner]++;
             } else {
                 vm.gameStats.ties++;
             }
         }
+        return $q.when();
     }
 
     function setPaused(isPaused) {
@@ -225,14 +228,16 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
     }
 
     function endGame() {
-        if (gameService.currentGame) {
-            gameService.endCurrentGame(); // async, but we don't care whether it succeeds or fails
-        }
         vm.gameExists = false;
         vm.paused = false;
         vm.currentGame = undefined;
         deferredMove = undefined;
         $mdToast.hide();
+        if (gameService.currentGame) {
+            return gameService.endCurrentGame();
+        } else {
+            return $q.when();
+        }
     }
 
     function selectHumanPlayerMove(event, selectedCell) {

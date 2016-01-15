@@ -91,6 +91,8 @@ describe("GameController", function() {
             $scope: $scope
         });
 
+        vm.init();
+
         $scope.$digest();
     }));
 
@@ -159,12 +161,18 @@ describe("GameController", function() {
         });
 
         it("resets initial game stats", function() {
-            vm.gamStats = {roundsPlayed: 100};
+            vm.gameStats = {
+                currentRound: 100,
+                wins: {},
+                ties: 1
+            };
+            vm.gameStats.wins[PIECES.X] = 44;
+            vm.gameStats.wins[PIECES.O] = 65;
 
             vm.startGame();
             $scope.$digest();
 
-            expect(vm.gameStats.roundsPlayed).toBe(0);
+            expect(vm.gameStats.currentRound).toBe(1);
             expect(vm.gameStats.wins[PIECES.X]).toEqual(0);
             expect(vm.gameStats.wins[PIECES.O]).toEqual(0);
             expect(vm.gameStats.ties).toEqual(0);
@@ -201,12 +209,12 @@ describe("GameController", function() {
         });
 
         it("stops when the game ends and broadcasts the result to the game board", function() {
-            var endIteration = 5;
+            var endTurn = 5;
             var endResult = {
-                turnNumber: endIteration,
+                turnNumber: endTurn,
                 move: {
                     piece: PIECES.O,
-                    cell: {row: endIteration, column: 0}
+                    cell: {row: endTurn, column: 0}
                 },
                 gameEnded: true,
                 winner: PIECES.O,
@@ -216,17 +224,17 @@ describe("GameController", function() {
                 }
             };
 
-            for (var i = 1; i <= 10; i++) {
+            for (var turn = 1; turn <= 10; turn++) {
 
                 var turnResult;
-                if (i === endIteration) {
+                if (turn === endTurn) {
                     turnResult = endResult;
                 } else {
                     turnResult = {
-                        turnNumber: i,
+                        turnNumber: turn,
                         move: {
-                            piece: i%2 === 0 ? PIECES.O : PIECES.X,
-                            cell: {row: i, column: i}
+                            piece: turn%2 === 0 ? PIECES.O : PIECES.X,
+                            cell: {row: turn, column: turn}
                         },
                         gameEnded: false,
                         winner: null,
@@ -239,7 +247,7 @@ describe("GameController", function() {
             }
 
             expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, endResult);
-            expect($scope.$broadcast).not.toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, jasmine.objectContaining({turnNumber: endIteration + 1}));
+            expect($scope.$broadcast).not.toHaveBeenCalledWith(GAME_EVENTS.MOVE_COMPLETED, jasmine.objectContaining({turnNumber: endTurn + 1}));
         });
 
         it("requests game service to end game when game ends", function() {
@@ -410,24 +418,25 @@ describe("GameController", function() {
 
         it("starts new rounds automatically and updates game stats", function() {
 
-            for (var r = 1; r <= 6; r++) {
-                for (var i = 1; i <= 10; i++) {
+            // Play 6 rounds
+            for (var round = 1; round <= 6; round++) {
+                for (var turn = 1; turn <= 10; turn++) {
 
-                    var gameEnded = i === 10;
+                    var gameEnded = turn === 10;
                     var winner = null;
-                    if (gameEnded && r <= 3) {
+                    if (gameEnded && round <= 3) {
                         winner = PIECES.X;
-                    } else if (gameEnded && r <= 5) {
+                    } else if (gameEnded && round <= 5) {
                         winner = PIECES.O;
                     } else {
                         winner = null; // tie
                     }
 
                     var turnResult = {
-                        turnNumber: i,
+                        turnNumber: turn,
                         move: {
-                            piece: i%2 === 0 ? PIECES.O : PIECES.X,
-                            cell: {row: i, column: i}
+                            piece: turn%2 === 0 ? PIECES.O : PIECES.X,
+                            cell: {row: turn, column: turn}
                         },
                         gameEnded: gameEnded,
                         winner: winner,
@@ -439,7 +448,9 @@ describe("GameController", function() {
                 }
             }
 
-            expect(vm.gameStats.roundsPlayed).toBe(6);
+            // 7th round started
+            expect(vm.gameStats.currentRound).toBe(7);
+            // Stats from previous 6 rounds
             expect(vm.gameStats.wins[PIECES.X]).toBe(3);
             expect(vm.gameStats.wins[PIECES.O]).toBe(2);
             expect(vm.gameStats.ties).toBe(1);
