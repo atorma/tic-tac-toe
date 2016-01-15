@@ -233,6 +233,7 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
         vm.currentGame = undefined;
         deferredMove = undefined;
         $mdToast.hide();
+        boardSpinner.hide();
         if (gameService.currentGame) {
             return gameService.endCurrentGame();
         } else {
