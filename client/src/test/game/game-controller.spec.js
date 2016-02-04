@@ -542,6 +542,22 @@ describe("GameController", function() {
             expect(gameService.currentGame.playTurn).not.toHaveBeenCalledWith(selectedCell);
         });
 
+        it("broadcasts request to show last last move after AI move but not after human move", function() {
+            // AI
+            deferredTurn.resolve({gameEnded: false});
+            $scope.$digest();
+            expect($scope.$broadcast).toHaveBeenCalledWith(GAME_EVENTS.SHOW_LAST_MOVE);
+
+            $scope.$broadcast.calls.reset();
+
+            // Human
+            $scope.$emit(GAME_EVENTS.MOVE_SELECTED, {row: 0, column: 1});
+            gameService.currentGame.nextPlayer = PIECES.X;
+            deferredTurn.resolve({gameEnded: false});
+            $scope.$digest();
+            expect($scope.$broadcast).not.toHaveBeenCalledWith(GAME_EVENTS.SHOW_LAST_MOVE);
+        });
+
         it("broadcasts request to show last move on command", function() {
             vm.replayLastMove();
 

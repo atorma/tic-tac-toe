@@ -114,6 +114,9 @@ function GameController(GAME_EVENTS, PIECES, PLAYER_TYPES, gameService, $scope, 
                 boardSpinner.hide();
                 if (vm.gameExists && !vm.paused) {
                     $scope.$broadcast(GAME_EVENTS.MOVE_COMPLETED, result);
+                    if (nextPlayer.type === PLAYER_TYPES.AI && isHumanVsAiGame()) {
+                        $scope.$broadcast(GAME_EVENTS.SHOW_LAST_MOVE);
+                    }
                 } else if (vm.gameExists && vm.paused) {
                     vm.pausedResult = result;
                 }
