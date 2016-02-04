@@ -242,20 +242,21 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
 
 
         function blinkLastMove() {
-            // grab refs so they cannot change in the middle of play
-            var piece = lastTurnResult.move.piece;
+            // grab objects so they cannot change in the middle of play
+            var myResult = lastTurnResult;
             var cell = lastTurnResult.move.cell;
             var winningSequence = lastTurnResult.winningSequence;
-
             var numBlinks = 0;
-            var pieceDrawFunction;
-            if (piece === PIECES.X) {
-                pieceDrawFunction = drawCross;
-            }  else {
-                pieceDrawFunction = drawCircle;
-            }
+
             var drawFunction = function() {
-                pieceDrawFunction(cell);
+                var piece = board[cell.row][cell.column];
+                if (piece === PIECES.X) {
+                    drawCross(cell);
+                } else if (piece === PIECES.O) {
+                    drawCircle(cell);
+                } else {
+                    clearCell(cell);
+                }
                 if (winningSequence) {
                     drawLine(winningSequence.start, winningSequence.end);
                 }
@@ -266,7 +267,7 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
             function blink() {
                 return blinkOnce().then(function() {
                     numBlinks++;
-                    if (numBlinks < 3) {
+                    if (numBlinks < 3 && myResult === lastTurnResult) {
                         return $timeout(blink, 300, false);
                     }
                 });
