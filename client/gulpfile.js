@@ -10,18 +10,14 @@ var buffer = require('vinyl-buffer');
 var browserify = require('browserify');
 var watchify = require('watchify');
 var karma = require('karma');
-var _ = require('lodash');
 var uglify = require('gulp-uglify');
 var ngAnnotate = require('gulp-ng-annotate');
 var preprocess = require('gulp-preprocess');
 var gulpIf = require('gulp-if');
 
-
-
 var projectPaths = require('./project-paths');
 var browserifiers = require('./browserifiers');
 var packageJson = require('./package.json');
-
 
 var DEV = "development";
 var PROD = "production";
@@ -96,19 +92,18 @@ gulp.task('build', function (cb) {
 });
 
 function browserifyBuild(buildOpts) {
-    var browserifyOpts = {
+    var browserified = buildOpts.browserifier({
         debug: context.env === DEV
-    };
-    var browserified = buildOpts.browserifier(browserifyOpts);
+    });
 
     return browserified.bundle()
         .on('error', gutil.log.bind(gutil.log, "Browserify error:"))
         .pipe(source(buildOpts.outputFileName))
         .pipe(buffer())
-        .pipe(gulpIf(buildOpts.ngAnnotate, ngAnnotate()))
         .pipe(sourcemaps.init({loadMaps: true}))
+        .pipe(gulpIf(buildOpts.ngAnnotate, ngAnnotate()))
         .pipe(gulpIf(context.env === PROD, uglify()))
-        .pipe(sourcemaps.write('./'))
+        .pipe(sourcemaps.write('./', {sourceRoot: '../client'}))
         .pipe(gulp.dest(projectPaths.build));
 }
 
@@ -123,7 +118,7 @@ gulp.task('js-libs', function () {
 gulp.task('js-app', function() {
     return browserifyBuild({
         browserifier: browserifiers.forApp,
-        ngAnnotate: true,
+        ngAnnotate: context.env === PROD,
         outputFileName: projectPaths.appDestName
     });
 });
@@ -140,7 +135,7 @@ gulp.task('watch:js-app', function () {
     function build() {
         return browserifyBuild({
             browserifier: watchifier,
-            ngAnnotate: true,
+            ngAnnotate: context.env === PROD,
             outputFileName: projectPaths.appDestName
         });
     }
@@ -150,7 +145,7 @@ gulp.task('js-tests', function() {
     context.env = DEV;
     return browserifyBuild({
         browserifier: browserifiers.forTests,
-        ngAnnotate: true,
+        ngAnnotate: context.env === PROD,
         outputFileName: projectPaths.testDestName
     });
 });
@@ -167,7 +162,7 @@ gulp.task('watch:js-tests', function () {
     function build() {
         return browserifyBuild({
             browserifier: watchifier,
-            ngAnnotate: true,
+            ngAnnotate: context.env === PROD,
             outputFileName: projectPaths.testDestName
         });
     }

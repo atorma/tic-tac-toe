@@ -1,21 +1,23 @@
 "use strict";
 
-var toPath = require('join-path');
-
 var projectPaths = require('./project-paths');
-
-var libPath = toPath(projectPaths.build, projectPaths.libDestName);
-var appPath = toPath(projectPaths.build, projectPaths.appDestName);
-var testPath = toPath(projectPaths.build, projectPaths.testDestName);
 
 module.exports = function (config) {
     config.set({
-        basePath: '',
-        files: [libPath, appPath, testPath],
+        basePath: '../public',
+        files: [
+            projectPaths.libDestName,
+            projectPaths.appDestName,
+            projectPaths.testDestName,
+            {pattern: '**/*.js.map', included: false, served: true}
+        ],
         exclude: [],
-        frameworks: ['browserify', 'jasmine'],
+        frameworks: ['jasmine'],
         reporters: ['mocha'],
         browsers: ['PhantomJS'],
+        preprocessors: {
+            '**/*.js': ['sourcemap']
+        },
         port: 9876,
         colors: true,
         logLevel: config.LOG_DEBUG, // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
