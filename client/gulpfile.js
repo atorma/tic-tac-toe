@@ -9,7 +9,6 @@ var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var browserify = require('browserify');
 var watchify = require('watchify');
-var karma = require('karma');
 var uglify = require('gulp-uglify');
 var ngAnnotate = require('gulp-ng-annotate');
 var preprocess = require('gulp-preprocess');
@@ -195,6 +194,7 @@ gulp.task('lib-resources', function () {
 });
 
 gulp.task('start-karma', function(cb) {
+    var karma = require('karma');
     var server = new karma.Server(karmaConf, cb);
     server.start();
 });
