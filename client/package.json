@@ -41,10 +41,16 @@
     "vinyl-source-stream": "1.1.0",
     "watchify": "3.4.0"
   },
+  "overrides": {
+    "graceful-fs": "^4.2.11"
+  },
   "scripts": {
     "build": "gulp build-prod",
     "test": "gulp test"
   },
   "author": "Anssi Törmä",
-  "license": "ISC"
+  "license": "ISC",
+  "engines": {
+    "node": ">=v16.14.0"
+  }
 }
