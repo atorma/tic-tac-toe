@@ -66,6 +66,3 @@ Temporary Items
 
 # Environment files
 .env*
-
-# Kubernetes
-k8s/kustomization.yaml
