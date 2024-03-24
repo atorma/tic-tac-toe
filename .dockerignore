@@ -1,6 +1,0 @@
-client/node_modules
-client/*.log
-target
-*.log
-.idea
-.mvn
