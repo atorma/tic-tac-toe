@@ -2,7 +2,7 @@
 
 A tic-tac-toe game (server + front-end) where you can play against an AI or pit AIs against each other.
 
-You can play tic-tac-toe [here](https://gentle-atoll-1722.herokuapp.com/). Please note that as a free Heroku instance it may be initially slow to respond (restarts after sleep) and has limited memory and CPU resources.
+You can play tic-tac-toe [here](https://tic-tac-toe.atorma.fi/).
 
 Done
 * Game mechanics (state changes etc)
@@ -20,6 +20,3 @@ Done
   * Human vs AI
   * Human vs human at the same computer
 * Heroku deployment
-  
-Todo 
-  * Two human players against each other remotely using Websockets
