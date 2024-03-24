@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: default
+  name: tic-tac-toe
+  labels:
+    app: tic-tac-toe
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: tic-tac-toe.atorma.fi
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tic-tac-toe
+                port:
+                  number: 8080
+  tls:
+    - hosts:
+        - tic-tac-toe.atorma.fi
+      secretName: tic-tac-toe-certificate-secret

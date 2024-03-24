@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: tic-tac-toe
+  labels:
+    app: tic-tac-toe
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tic-tac-toe
+  template:
+    metadata:
+      name: tic-tac-toe
+      labels:
+        app: tic-tac-toe
+    spec:
+      containers:
+        - name: tic-tac-toe-server
+          image: tic-tac-toe-image
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: api
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: api
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 5
+            timeoutSeconds: 1
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: api
+              scheme: HTTP
+            initialDelaySeconds: 90
+            periodSeconds: 60
+            successThreshold: 1
+            failureThreshold: 3
+            timeoutSeconds: 5
+          resources:
+            requests:
+              cpu: 50m
+              memory: 50Mi
+      restartPolicy: Always
+      
