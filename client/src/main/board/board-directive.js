@@ -250,7 +250,7 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
         function removeResultHighlighting() {
             if (highlightedResult) {
                 ctx.beginPath()
-                const rect = getCellBackgroundRectParams(result.move.cell)
+                const rect = getCellBackgroundRectParams(highlightedResult.move.cell)
                 ctx.clearRect(rect.x, rect.y, rect.w, rect.h)
                 ctx.stroke()
                 drawResult(highlightedResult)
