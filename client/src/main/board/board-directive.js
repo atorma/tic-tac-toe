@@ -230,18 +230,19 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
         }
 
         function getCellBackgroundRectParams(cell) {
-            return [
-                cell.column*cellSize + GRID_LINE_WIDTH,
-                cell.row*cellSize + GRID_LINE_WIDTH,
-                cellSize - 2*GRID_LINE_WIDTH,
-                cellSize - 2*GRID_LINE_WIDTH
-            ]
+            return {
+                x: cell.column * cellSize + GRID_LINE_WIDTH,
+                y: cell.row * cellSize + GRID_LINE_WIDTH,
+                w: cellSize -2 * GRID_LINE_WIDTH,
+                h: cellSize -2 * GRID_LINE_WIDTH
+            }
         }
 
         function highlightResult(result) {
             ctx.beginPath()
             ctx.fillStyle = "yellow"
-            ctx.fillRect(...getCellBackgroundRectParams(result.move.cell))
+            const rect = getCellBackgroundRectParams(result.move.cell)
+            ctx.fillRect(rect.x, rect.y, rect.w, rect.h)
             ctx.stroke()
             highlightedResult = result
         }
@@ -249,7 +250,8 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
         function removeResultHighlighting() {
             if (highlightedResult) {
                 ctx.beginPath()
-                ctx.clearRect(...getCellBackgroundRectParams(highlightedResult.move.cell))
+                const rect = getCellBackgroundRectParams(result.move.cell)
+                ctx.clearRect(rect.x, rect.y, rect.w, rect.h)
                 ctx.stroke()
                 drawResult(highlightedResult)
                 highlightedResult = null
