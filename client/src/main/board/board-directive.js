@@ -39,6 +39,7 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
 
         var board;
         var lastTurnResult;
+        var highlightedResult;
 
 
         $scope.$watch("numRows", function(value) {
@@ -61,7 +62,7 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
         $scope.$on(GAME_EVENTS.RESIZE_BOARD, function() {
             resizeAndDrawCanvas(true);
         });
-        $scope.$on(GAME_EVENTS.SHOW_LAST_MOVE, blinkLastMove);
+        // $scope.$on(GAME_EVENTS.SHOW_LAST_MOVE, highlightLastMove);
 
         canvas.onclick = onCanvasClick;
 
@@ -88,11 +89,15 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
             if (!force && windowInnerWidth === window.innerWidth) {
                 return;
             }
-
+            var resultToReHighlight = highlightedResult
+            removeResultHighlighting()
             if (numRows && numCols) {
                 resizeCanvas();
                 drawGameBoard();
                 windowInnerWidth = window.innerWidth;
+            }
+            if (resultToReHighlight) {
+                highlightResult(resultToReHighlight)
             }
             if (board) {
                 drawPieces();
@@ -164,6 +169,9 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
         }
 
         function onGameStarted(event, game) {
+            lastTurnResult = null
+            highlightedResult = null
+
             numRows = game.board.length;
             numCols = game.board[0].length;
             board = _.cloneDeep(game.board);
@@ -172,12 +180,17 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
             drawGameBoard();
         }
 
-
         function onMoveCompleted(event, result) {
-            lastTurnResult = result;
-
             board[result.move.cell.row][result.move.cell.column] = result.move.piece;
+            if (result.highlight) {
+                removeResultHighlighting()
+                highlightResult(result)
+            }
+            drawResult(result)
+            lastTurnResult = result;
+        }
 
+        function drawResult(result) {
             if (result.move.piece === PIECES.O) {
                 drawCircle(result.move.cell);
             } else if (result.move.piece === PIECES.X) {
@@ -189,7 +202,6 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
             }
         }
 
-
         function drawCross(cell) {
             ctx.strokeStyle = PIECE_COLOR;
 
@@ -199,7 +211,7 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
             ctx.moveTo(cell.column*cellSize + 0.2*cellSize, cell.row*cellSize + 0.2*cellSize);
             ctx.lineTo((cell.column + 1)*cellSize - 0.2*cellSize, (cell.row + 1)*cellSize - 0.2*cellSize);
 
-            // Upper right to to lower left
+            // Upper right to lower left
             ctx.moveTo((cell.column + 1)*cellSize - 0.2*cellSize, cell.row*cellSize + 0.2*cellSize);
             ctx.lineTo(cell.column*cellSize + 0.2*cellSize, (cell.row + 1)*cellSize - 0.2*cellSize);
 
@@ -217,9 +229,35 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
             ctx.stroke();
         }
 
+        function getCellBackgroundRectParams(cell) {
+            return [
+                cell.column*cellSize + GRID_LINE_WIDTH,
+                cell.row*cellSize + GRID_LINE_WIDTH,
+                cellSize - 2*GRID_LINE_WIDTH,
+                cellSize - 2*GRID_LINE_WIDTH
+            ]
+        }
+
+        function highlightResult(result) {
+            ctx.beginPath()
+            ctx.fillStyle = "yellow"
+            ctx.fillRect(...getCellBackgroundRectParams(result.move.cell))
+            ctx.stroke()
+            highlightedResult = result
+        }
+
+        function removeResultHighlighting() {
+            if (highlightedResult) {
+                ctx.beginPath()
+                ctx.clearRect(...getCellBackgroundRectParams(highlightedResult.move.cell))
+                ctx.stroke()
+                drawResult(highlightedResult)
+                highlightedResult = null
+            }
+        }
+
 
         function drawLine(start, end) {
-
             var startX, startY, endX, endY;
 
             startX = (start.column + 1/2)*cellSize;
@@ -231,53 +269,11 @@ function board(GAME_EVENTS, PIECES, $window, $timeout, $log) {
             ctx.moveTo(startX, startY);
             ctx.lineTo(endX, endY);
 
-            ctx.strokeStyle = "yellow";
+            ctx.strokeStyle = "red";
             ctx.lineWidth = 4;
             ctx.stroke();
         }
 
-        function clearCell(cell) {
-            ctx.clearRect(cell.column*cellSize + GRID_LINE_WIDTH, cell.row*cellSize + GRID_LINE_WIDTH, cellSize - 2*GRID_LINE_WIDTH, cellSize - 2*GRID_LINE_WIDTH);
-        }
-
-
-        function blinkLastMove() {
-            // grab objects so they cannot change in the middle of play
-            var myResult = lastTurnResult;
-            var cell = lastTurnResult.move.cell;
-            var winningSequence = lastTurnResult.winningSequence;
-            var numBlinks = 0;
-
-            var drawFunction = function() {
-                var piece = board[cell.row][cell.column];
-                if (piece === PIECES.X) {
-                    drawCross(cell);
-                } else if (piece === PIECES.O) {
-                    drawCircle(cell);
-                } else {
-                    clearCell(cell);
-                }
-                if (winningSequence) {
-                    drawLine(winningSequence.start, winningSequence.end);
-                }
-            };
-
-            blink();
-
-            function blink() {
-                return blinkOnce().then(function() {
-                    numBlinks++;
-                    if (numBlinks < 3 && myResult === lastTurnResult) {
-                        return $timeout(blink, 300, false);
-                    }
-                });
-            }
-
-            function blinkOnce() {
-                clearCell(cell);
-                return $timeout(drawFunction, 300, false, cell);
-            }
-        }
 
         function onCanvasClick(e) {
             var cc = getCanvasCoordinates(e);

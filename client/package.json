@@ -48,7 +48,8 @@
   },
   "scripts": {
     "build": "gulp build-prod",
-    "test": "gulp test"
+    "test": "gulp test",
+    "watch": "gulp watch"
   },
   "author": "Anssi Törmä",
   "license": "ISC",

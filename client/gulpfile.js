@@ -134,7 +134,7 @@ gulp.task('watch:js-app', function () {
     function build() {
         return browserifyBuild({
             browserifier: watchifier,
-            ngAnnotate: context.env === PROD,
+            ngAnnotate: true,
             outputFileName: projectPaths.appDestName
         });
     }
