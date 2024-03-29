@@ -104,6 +104,10 @@ public class MCTSPlayer implements Player, Configurable {
             lastMove.pruneDescendantLevelsGreaterThan(params.pruneDescendantLevelsGreaterThan);
         }
 
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("MCTS tree size {}", MoveNode.getTreeSize(lastMove.getRoot()));
+        }
+
         return lastMove.getMove();
     }
 

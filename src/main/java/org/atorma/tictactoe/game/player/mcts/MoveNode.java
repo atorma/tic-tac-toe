@@ -501,6 +501,16 @@ public class MoveNode {
         return sb.toString();
     }
 
-
+    public static int getTreeSize(MoveNode node) {
+        int count = 0;
+        Queue<MoveNode> queue = new LinkedList<>();
+        queue.add(node);
+        while (!queue.isEmpty()) {
+            node = queue.remove();
+            count++;
+            queue.addAll(node.getChildren());
+        }
+        return count;
+    }
 
 }
