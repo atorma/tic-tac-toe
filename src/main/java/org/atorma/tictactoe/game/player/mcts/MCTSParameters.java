@@ -17,7 +17,7 @@ public class MCTSParameters {
     public SimulationStrategy simulationStrategy = SimulationStrategy.NAIVE;
 
     /** Number of planning threads */
-    public int numPlanningThreads = Runtime.getRuntime().availableProcessors();
+    public Integer numPlanningThreads;
 
     /** Maximum number of planning rollouts (iterations) to perform */
     public int maxRolloutsNum = Integer.MAX_VALUE;

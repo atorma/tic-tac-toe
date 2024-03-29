@@ -1,5 +1,12 @@
 package org.atorma.tictactoe.game.state;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.Objects;
+
 /**
  * Stores the game board as one array. This appears
  * to make its elements faster to access than with
@@ -66,4 +73,37 @@ public class DenseArrayBoard implements Board {
         return copy;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof DenseArrayBoard that)) return false;
+        return numRows == that.numRows && numCols == that.numCols && Objects.deepEquals(board, that.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(Arrays.hashCode(board), numRows, numCols);
+    }
+
+    @JsonValue
+    public DenseArrayBoardDTO toDTO() {
+        var occupiedCells = new LinkedList<OccupiedCell>();
+        for (int row = 0; row < numRows; row++) {
+            for (int col = 0; col < numCols; col++) {
+                var piece = board[getIndex(row, col)];
+                if (piece != null) {
+                    occupiedCells.add(new OccupiedCell(piece, new Cell(row, col)));
+                }
+            }
+        }
+        return new DenseArrayBoardDTO(this.numRows, this.numCols, occupiedCells.toArray(new OccupiedCell[0]));
+    }
+
+    @JsonCreator
+    public DenseArrayBoard(DenseArrayBoardDTO dto) {
+        this(dto.numRows(), dto.numCols());
+        for (OccupiedCell occupiedCell : dto.occupiedCells()) {
+            this.set(occupiedCell.cell(), occupiedCell.piece());
+        }
+    }
 }

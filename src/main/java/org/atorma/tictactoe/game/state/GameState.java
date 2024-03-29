@@ -1,5 +1,8 @@
 package org.atorma.tictactoe.game.state;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.*;
 
 /**
@@ -393,6 +396,20 @@ public class GameState {
             default:
                 throw new IllegalArgumentException("Invalid direction");
         }
+    }
+
+    @JsonValue
+    public GameStateDTO toDTO() {
+        return new GameStateDTO(this.connectHowMany, this.board, this.nextPlayer, this.updatedSequences);
+    }
+
+    @JsonCreator
+    public GameState(GameStateDTO gameStateDTO) {
+        this.connectHowMany = gameStateDTO.connectHowMany();
+        this.board = gameStateDTO.board();
+        this.nextPlayer = gameStateDTO.nextPlayer();
+        this.updatedSequences = gameStateDTO.updatedSequences();
+        this.findSequencesFromScratch();
     }
 
     private abstract static class IteratorBase implements ListIterator<Cell> {

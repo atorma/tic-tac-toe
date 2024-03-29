@@ -1,6 +1,8 @@
 package org.atorma.tictactoe.game.player.mcts;
 
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.atorma.tictactoe.game.Simulator;
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.player.Configurable;
@@ -19,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,10 +46,12 @@ public class MCTSPlayer implements Player, Configurable {
 
     private GameState currentState;
     private Cell opponentsLastMove;
-    private MoveNode lastMove; // Last move overall, may be my move or opponent's move, depending on algorithm progress
+    // Stores MCTS results. Last move overall, may be my move or opponent's move, depending on algorithm progress.
+    private MoveNode lastMove;
 
     private long planningStartTime;
     private final AtomicInteger planningRollouts = new AtomicInteger();
+    private int numPlanningThreads;
     private ExecutorService workerPool;
 
     private MandatoryMovePlayer mandatoryMovePlayer;
@@ -60,14 +65,29 @@ public class MCTSPlayer implements Player, Configurable {
         configure(params);
     }
 
+    @JsonCreator
+    public MCTSPlayer(MCTSPlayerDTO dto) {
+        this(dto.params());
+        this.mySide = dto.mySide();
+        this.lastMove = dto.lastMove();
+    }
+
+    @JsonValue
+    public MCTSPlayerDTO toDTO() {
+        return new MCTSPlayerDTO(this.params, this.mySide, this.lastMove);
+    }
+
     @Override
     public void configure(Object configuration) {
         MCTSParameters incoming = (MCTSParameters) configuration;
         if (incoming == null) throw new IllegalArgumentException("Parameters missing");
-        if (incoming.numPlanningThreads < 1) throw new IllegalArgumentException("Invalid planning thread number " + incoming.numPlanningThreads + ". Must be >= 1.");
+        if (incoming.numPlanningThreads != null && incoming.numPlanningThreads < 1)
+            throw new IllegalArgumentException("Invalid planning thread number " + incoming.numPlanningThreads + ". Must be >= 1.");
 
         this.params = incoming;
-        this.workerPool =  Executors.newFixedThreadPool(params.numPlanningThreads);
+        this.numPlanningThreads = Optional.ofNullable(incoming.numPlanningThreads)
+                .orElse(Runtime.getRuntime().availableProcessors());
+        this.workerPool = Executors.newFixedThreadPool(numPlanningThreads);
 
         this.mandatoryMovePlayer = new MandatoryMovePlayer(1) {
             protected Cell planMove() {
@@ -75,7 +95,8 @@ public class MCTSPlayer implements Player, Configurable {
             }
 
             @Override
-            public void setPiece(Piece p) {}
+            public void setPiece(Piece p) {
+            }
 
             @Override
             public Piece getPiece() {
@@ -100,12 +121,14 @@ public class MCTSPlayer implements Player, Configurable {
 
     @Override
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
-        if (currentState == null || updatedState.getNumPieces() <= currentState.getNumPieces()) {
+        if (lastMove == null) {
             lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
-            emptyCellTracker = new NearbyEmptyCellTracker(updatedState, params.searchRadius);
             LOGGER.debug("New game started! Simulation strategy {}.", params.simulationStrategy.toString().toLowerCase());
         } else {
             lastMove = lastMove.findMoveTo(opponentsLastMove);
+        }
+        if (emptyCellTracker == null) {
+            emptyCellTracker = new NearbyEmptyCellTracker(updatedState, params.searchRadius);
         }
         this.currentState = updatedState;
         this.opponentsLastMove = opponentsLastMove;
@@ -157,7 +180,7 @@ public class MCTSPlayer implements Player, Configurable {
 
         planningRollouts.set(0);
         List<Future> results = new ArrayList<>();
-        for (int i = 0; i < params.numPlanningThreads ; i++) {
+        for (int i = 0; i < numPlanningThreads; i++) {
             Runnable task = () -> {
                 while (isThinkTimeLeft() && planningRollouts.get() < params.maxRolloutsNum) {
                     planningRollouts.incrementAndGet();
@@ -214,7 +237,7 @@ public class MCTSPlayer implements Player, Configurable {
     private MoveNode selectMctsMoveThreadSafe(MoveNode startNode) {
         LOGGER.trace("{} starts selecting node", Thread.currentThread());
         MoveNode selected;
-        if (params.numPlanningThreads > 1) {
+        if (numPlanningThreads > 1) {
             synchronized (this) {
                 selected = selectMctsMove(startNode);
             }
@@ -228,7 +251,7 @@ public class MCTSPlayer implements Player, Configurable {
     /**
      * Selection: each side chooses the best move given earlier simulations,
      * trying to maximize her own expected reward (+ exploration bonus).
-     *
+     * <p>
      * Returns a promising move, or one that ends the game.
      */
     private MoveNode selectMctsMove(MoveNode startNode) {
@@ -286,14 +309,13 @@ public class MCTSPlayer implements Player, Configurable {
      * Simulates a game until it ends, or time runs out, or maximum number of simulated turns is exceeded.
      * This method could be used to simulate a game that is played "well", not just fully at random.
      *
-     * @return
-     *  state where the game ended
+     * @return state where the game ended
      */
     private GameState runSimulator(Simulator simulator) {
         long maxSimulationTime;
         if (params.maxThinkTimeIncludesSimulation) {
             long elapsedTime = System.currentTimeMillis() - planningStartTime;
-            maxSimulationTime =  params.maxThinkTimeMillis - elapsedTime;
+            maxSimulationTime = params.maxThinkTimeMillis - elapsedTime;
         } else {
             maxSimulationTime = Long.MAX_VALUE;
         }
@@ -303,7 +325,7 @@ public class MCTSPlayer implements Player, Configurable {
     private void propagateSimulationResult(MoveNode simulationStartNode, GameState simulatedEndState) {
         long startTime = System.currentTimeMillis();
 
-        if (params.numPlanningThreads > 1) {
+        if (numPlanningThreads > 1) {
             synchronized (this) {
                 simulationStartNode.propagateSimulatedResult(simulatedEndState);
             }
@@ -342,7 +364,7 @@ public class MCTSPlayer implements Player, Configurable {
         if (lastMove.getParent() != null && lastMove.getParent().getMove() != null) {
             target = lastMove.getParent().getMove();
         } else {
-            target = new Cell(currentState.getBoardRows()/2, currentState.getBoardCols()/2);
+            target = new Cell(currentState.getBoardRows() / 2, currentState.getBoardCols() / 2);
         }
         candidates = Utils.max(candidates, element -> Cell.getDistance(element.getMove(), target));
         return Utils.pickRandom(candidates);

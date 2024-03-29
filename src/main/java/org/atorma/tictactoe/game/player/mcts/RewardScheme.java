@@ -1,9 +1,15 @@
 package org.atorma.tictactoe.game.player.mcts;
 
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 
+
+@JsonTypeInfo(
+        use = JsonTypeInfo.Id.CLASS,
+        property = "@class"
+)
 public interface RewardScheme {
 
     /**

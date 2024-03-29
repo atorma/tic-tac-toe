@@ -1,5 +1,7 @@
 package org.atorma.tictactoe.game.player.mcts;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
@@ -23,8 +25,9 @@ import java.util.stream.Collectors;
  * </ul>
  */
 public class MoveNode {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(MoveNode.class);
+
+    private final String id;
 
     private Reference<GameState> stateRef;
     private final Cell cell;
@@ -34,7 +37,7 @@ public class MoveNode {
     private MoveNode parent;
 
     private final List<Cell> unexpandedMoves;
-    private final List<MoveNode> children = new ArrayList<>();
+    private final List<MoveNode> children;
 
     private final Map<Piece, Integer> wins = new EnumMap<>(Piece.class);
     private final Map<Piece, Double> rewardSums = new EnumMap<>(Piece.class);
@@ -53,7 +56,7 @@ public class MoveNode {
      * @param cell
      *  the move that lead to the starting state, or null if no move (empty board)
      * @param rewardScheme
-     *  the reward scheme to use for scoring moves
+     *  the reward scheme to use for scoring nodes
      */
     public MoveNode(GameState gameState, Cell cell, RewardScheme rewardScheme) {
         init();
@@ -63,9 +66,11 @@ public class MoveNode {
         this.parent = null;
         this.rootState = gameState.getCopy();
 
+        this.id = UUID.randomUUID().toString();
         this.cell = cell;
         this.isEndState = gameState.isAtEnd();
         this.nextPlayer = gameState.getNextPlayer();
+        this.children = new ArrayList<>();
         this.unexpandedMoves = new ArrayList<>(gameState.getAllowedMoves()); // sorted by rows then columns
     }
 
@@ -74,11 +79,82 @@ public class MoveNode {
         GameState myState = parent.getGameState().next(cell);
         this.parent = parent;
         this.root = parent.root;
+
+        this.id = UUID.randomUUID().toString();
         this.cell = cell;
         this.isEndState = myState.isAtEnd();
         this.nextPlayer = myState.getNextPlayer();
         this.stateRef = new SoftReference<>(myState);
+        this.children = new ArrayList<>();
         this.unexpandedMoves = new ArrayList<>(myState.getAllowedMoves()); // sorted by rows then columns
+    }
+
+    @JsonCreator
+    public MoveNode(MCTSTreeDTO dto) {
+        this(dto, dto.rootNodeId(), null, null);
+    }
+
+    private MoveNode(MCTSTreeDTO treeDTO, String nodeId, MoveNode parent, GameState parentState) {
+        var isRoot = parent == null;
+
+        var moveDTO = treeDTO.nodes().get(nodeId);
+
+        this.id = nodeId;
+        this.cell = moveDTO.cell();
+        this.nextPlayer = moveDTO.nextPlayer();
+        this.isEndState = moveDTO.isEndState();
+
+        this.wins.putAll(moveDTO.wins());
+        this.rewardSums.putAll(moveDTO.rewardSums());
+        this.numPlays = moveDTO.numPlays();
+
+        GameState myState;
+        if (isRoot) {
+            this.parent = null;
+            this.root = this;
+            this.rewardScheme = treeDTO.nodes().get(nodeId).rewardScheme();
+            this.rootState = treeDTO.nodes().get(nodeId).rootState();
+            myState = this.rootState;
+        } else {
+            this.parent = parent;
+            this.root = parent.root;
+            this.rewardScheme = null;
+            this.rootState = null;
+            myState = parentState.next(this.cell);
+            this.stateRef = new SoftReference<>(myState);
+        }
+
+        this.children = moveDTO.expandedChildren().stream()
+                .map(childId -> new MoveNode(treeDTO, childId, this, myState))
+                .toList();
+        this.unexpandedMoves = myState.getAllowedMoves().stream()
+                .filter(c -> this.children.stream().noneMatch(n -> n.cell.equals(c)))
+                .toList();
+    }
+
+    @JsonValue
+    public MCTSTreeDTO toDTO() {
+        var movesToProcess = new LinkedList<MoveNode>();
+        movesToProcess.add(this);
+        var moveNodeDTOs = new HashMap<String, MoveNodeDTO>();
+
+        while (!movesToProcess.isEmpty()) {
+            var moveNode = movesToProcess.poll();
+            moveNodeDTOs.put(moveNode.getId(), new MoveNodeDTO(
+                    moveNode.cell,
+                    moveNode.nextPlayer,
+                    moveNode.isEndState,
+                    moveNode.children.stream().map(c -> c.id).toList(),
+                    moveNode.wins,
+                    moveNode.rewardSums,
+                    moveNode.numPlays,
+                    moveNode.id.equals(this.id) ? this.root.rewardScheme : null,
+                    moveNode.id.equals(this.id) ? this.root.rootState : null
+            ));
+            movesToProcess.addAll(moveNode.children);
+        }
+
+        return new MCTSTreeDTO(this.id, moveNodeDTOs);
     }
 
     private void init() {
@@ -86,6 +162,10 @@ public class MoveNode {
         this.wins.put(Piece.O, 0);
         this.rewardSums.put(Piece.X, (double) 0);
         this.rewardSums.put(Piece.O, (double) 0);
+    }
+
+    public String getId() {
+        return id;
     }
 
     /**

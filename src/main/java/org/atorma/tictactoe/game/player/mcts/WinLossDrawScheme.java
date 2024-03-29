@@ -3,6 +3,8 @@ package org.atorma.tictactoe.game.player.mcts;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 
+import java.util.Objects;
+
 public class WinLossDrawScheme implements RewardScheme {
 
     private final double uctConstant;
@@ -27,5 +29,18 @@ public class WinLossDrawScheme implements RewardScheme {
 
     public double getExplorationBonus(Piece player, MoveNode candidate) {
         return UCT.getUCTBonus(candidate, uctConstant);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        WinLossDrawScheme that = (WinLossDrawScheme) o;
+        return Double.compare(uctConstant, that.uctConstant) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(uctConstant);
     }
 }
