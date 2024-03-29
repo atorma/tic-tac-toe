@@ -1,5 +1,7 @@
 package org.atorma.tictactoe.game.player.mcts;
 
+import java.util.StringJoiner;
+
 /**
  * Parameters of the MCTS algorithm.
  * <p/>
@@ -15,7 +17,7 @@ public class MCTSParameters {
     public SimulationStrategy simulationStrategy = SimulationStrategy.NAIVE;
 
     /** Number of planning threads */
-    public int numPlanningThreads = 3;
+    public int numPlanningThreads = Runtime.getRuntime().availableProcessors();
 
     /** Maximum number of planning rollouts (iterations) to perform */
     public int maxRolloutsNum = Integer.MAX_VALUE;
@@ -86,5 +88,21 @@ public class MCTSParameters {
      * @see #pruneSiblings
      */
     public int pruneDescendantLevelsGreaterThan = Integer.MAX_VALUE;
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", MCTSParameters.class.getSimpleName() + "[", "]")
+                .add("simulationStrategy=" + simulationStrategy)
+                .add("numPlanningThreads=" + numPlanningThreads)
+                .add("maxRolloutsNum=" + maxRolloutsNum)
+                .add("maxSimulatedGameTurns=" + maxSimulatedGameTurns)
+                .add("maxThinkTimeMillis=" + maxThinkTimeMillis)
+                .add("maxThinkTimeIncludesSimulation=" + maxThinkTimeIncludesSimulation)
+                .add("searchRadius=" + searchRadius)
+                .add("pruneSiblings=" + pruneSiblings)
+                .add("pruneParent=" + pruneParent)
+                .add("pruneDescendantLevelsGreaterThan=" + pruneDescendantLevelsGreaterThan)
+                .toString();
+    }
 }
 

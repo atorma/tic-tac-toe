@@ -59,6 +59,7 @@ public class MCTSPlayer implements Player, Configurable {
         if (params.numPlanningThreads < 1) throw new IllegalArgumentException("Invalid planning thread number " + params.numPlanningThreads + ". Must be >= 1.");
 
         this.params = params;
+        LOGGER.info(params.toString());
         this.workerPool =  Executors.newFixedThreadPool(params.numPlanningThreads);
     }
 
