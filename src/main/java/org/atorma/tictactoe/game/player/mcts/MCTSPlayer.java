@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -27,10 +28,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Monte Carlo Tree Search using a reinforcement learning
  * type of approach to score moves.
- *
+ * <br>
  * References
  * * Browne et al, A Survey of Monte Carlo Tree Search Methods, IEEE Transactions on Computational Intelligence and AI in Games, vol. 4, no. 1, March 2012
- * * https://en.wikipedia.org/wiki/Monte_Carlo_tree_search
+ * * <a href="https://en.wikipedia.org/wiki/Monte_Carlo_tree_search">Wikipedia</a>
  */
 public class MCTSPlayer implements Player, Configurable {
     private static final Logger LOGGER = LoggerFactory.getLogger(MCTSPlayer.class);
@@ -43,11 +44,11 @@ public class MCTSPlayer implements Player, Configurable {
     private GameState currentState;
     private Cell opponentsLastMove;
     private MoveNode lastMove; // Last move overall, may be my move or opponent's move, depending on algorithm progress
-    private List<Rectangle> searchAreas = new ArrayList<>();
+    private final List<Rectangle> searchAreas = new ArrayList<>();
 
     private long planningStartTime;
-    private AtomicInteger planningRollouts = new AtomicInteger();
-    private ExecutorService workerPool;
+    private final AtomicInteger planningRollouts = new AtomicInteger();
+    private final ExecutorService workerPool;
 
 
     public MCTSPlayer() {
@@ -211,30 +212,14 @@ public class MCTSPlayer implements Player, Configurable {
 
         // Simulation
         LOGGER.trace("{} starts simulating game...", Thread.currentThread());
-        Player player1, player2;
-        GameState endState;
-        if (params.simulationStrategy == MCTSParameters.SimulationStrategy.NAIVE) {
-            player1 = new NaivePlayer();
-            player2 = new NaivePlayer();
-        } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.RANDOM_ADJACENT) {
-            player1 = new RandomAdjacentPlayer();
-            player2 = new RandomAdjacentPlayer();
-        } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.UNIFORM_RANDOM) {
-            player1 = new RandomPlayer();
-            player2 = new RandomPlayer();
-        } else {
-            throw new IllegalArgumentException("Invalid simulation strategy " + params.simulationStrategy);
-        }
-        player1.setPiece(mySide);
-        player2.setPiece(mySide.other());
-        Simulator simulator = new Simulator(selected.getGameState(), player1, player2);
-        simulator.setCopyBoard(false);
-        endState = simulateGame(simulator);
-        LOGGER.trace("{} done simulating game", Thread.currentThread());
+        List<Player> players = initSimulationPlayers();
+        List<GameState> endStates = runSimulations(selected, players);
 
         // Back-propagation
         synchronized (this) {
-            selected.propagateSimulatedResult(endState);
+            for (GameState endState : endStates) {
+                selected.propagateSimulatedResult(endState);
+            }
             LOGGER.trace("{} done propagating results", Thread.currentThread());
         }
     }
@@ -260,7 +245,7 @@ public class MCTSPlayer implements Player, Configurable {
                 if (child != null) { // not yet fully expanded in searchAreas
                     return child;
                 } else { // all children visited at least once, now continue to searching in the most promising branch
-                    if (moveNode.getChildren().size() > 0) {
+                    if (!moveNode.getChildren().isEmpty()) {
                         moveNode = Utils.pickRandom(moveNode.getBestExploratoryMoves());
                     } else { // search area is fully occupied, pick one outside it
                         moveNode = moveNode.expandRandom();
@@ -270,6 +255,41 @@ public class MCTSPlayer implements Player, Configurable {
         }
 
         return moveNode;
+    }
+
+    private List<Player> initSimulationPlayers() {
+        Player player1, player2;
+        if (params.simulationStrategy == MCTSParameters.SimulationStrategy.NAIVE) {
+            player1 = new NaivePlayer();
+            player2 = new NaivePlayer();
+        } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.RANDOM_ADJACENT) {
+            player1 = new RandomAdjacentPlayer();
+            player2 = new RandomAdjacentPlayer();
+        } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.UNIFORM_RANDOM) {
+            player1 = new RandomPlayer();
+            player2 = new RandomPlayer();
+        } else {
+            throw new IllegalArgumentException("Invalid simulation strategy " + params.simulationStrategy);
+        }
+        player1.setPiece(mySide);
+        player2.setPiece(mySide.other());
+        return Arrays.asList(player1, player2);
+    }
+
+    private List<GameState> runSimulations(MoveNode start, List<Player> players) {
+        List<GameState> endStates = new ArrayList<>(params.gamesPerRollout);
+        for (int i = 0; i < params.gamesPerRollout; i++) {
+            if (!isThinkTimeLeft()) {
+                break;
+            }
+
+            Simulator simulator = new Simulator(start.getGameState(), players.get(0), players.get(1));
+            simulator.setCopyBoard(false);
+            GameState endState = simulateGame(simulator);
+            endStates.add(endState);
+            LOGGER.trace("{} done simulating game {}/{}", Thread.currentThread(), i, params.gamesPerRollout);
+        }
+        return endStates;
     }
 
     /**

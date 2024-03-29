@@ -22,6 +22,9 @@ public class MCTSParameters {
     /** Maximum number of planning rollouts (iterations) to perform */
     public int maxRolloutsNum = Integer.MAX_VALUE;
 
+    /** Number of games to play per rollout  */
+    public int gamesPerRollout = 25;
+
     /** Maximum number of game turns to simulate in one rollout */
     public int maxSimulatedGameTurns = Integer.MAX_VALUE;
 

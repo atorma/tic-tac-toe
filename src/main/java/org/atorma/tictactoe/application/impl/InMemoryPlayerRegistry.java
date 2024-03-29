@@ -31,15 +31,18 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
         addPlayerInfo("Human", PlayerInfo.Type.HUMAN, HumanPlayer.class);
 
         MCTSParameters naiveParams = new MCTSParameters();
+        naiveParams.gamesPerRollout = 50;
         naiveParams.simulationStrategy = MCTSParameters.SimulationStrategy.NAIVE;
         addPlayerInfo("MCTS naive heuristics", PlayerInfo.Type.AI, MCTSPlayer.class, naiveParams);
 
         MCTSParameters randomAdjacentParams = new MCTSParameters();
         randomAdjacentParams.simulationStrategy = MCTSParameters.SimulationStrategy.RANDOM_ADJACENT;
+        randomAdjacentParams.gamesPerRollout = 200;
         addPlayerInfo("MCTS random adjacent", PlayerInfo.Type.AI, MCTSPlayer.class, randomAdjacentParams);
 
         MCTSParameters uniformRandomParams = new MCTSParameters();
         uniformRandomParams.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
+        uniformRandomParams.gamesPerRollout = 700;
         addPlayerInfo("MCTS uniform random", PlayerInfo.Type.AI, MCTSPlayer.class, uniformRandomParams);
 
         addPlayerInfo("Naive heuristics", PlayerInfo.Type.AI, NaivePlayer.class);
