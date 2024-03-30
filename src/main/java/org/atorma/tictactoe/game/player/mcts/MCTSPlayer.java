@@ -50,7 +50,6 @@ public class MCTSPlayer implements Player, Configurable {
     private final AtomicInteger planningRollouts = new AtomicInteger();
     private final ExecutorService workerPool;
 
-
     public MCTSPlayer() {
         this(DEFAULT_PARAMS);
     }
@@ -96,6 +95,8 @@ public class MCTSPlayer implements Player, Configurable {
         /* Main work */
         lastMove = planMove();
 
+        LOGGER.debug("Best move selected out of {} expanded", lastMove.getParent().getChildren().size());
+
         if (params.pruneSiblings) {
             lastMove.pruneOtherBranchesOnPathToRoot();
         }
@@ -107,7 +108,7 @@ public class MCTSPlayer implements Player, Configurable {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("MCTS tree size {}", MoveNode.getTreeSize(lastMove.getRoot()));
+            LOGGER.debug("MCTS tree size after pruning: {}", MoveNode.getTreeSize(lastMove.getRoot()));
         }
 
         return lastMove.getMove();
@@ -125,8 +126,7 @@ public class MCTSPlayer implements Player, Configurable {
             }
 
             @Override
-            public void setPiece(Piece p) {
-            }
+            public void setPiece(Piece p) {}
 
             @Override
             public Piece getPiece() {
@@ -145,17 +145,20 @@ public class MCTSPlayer implements Player, Configurable {
         }
 
         updateSearchAreas();
+
         planningRollouts.set(0);
         List<Future> results = new ArrayList<>();
         for (int i = 0; i < params.numPlanningThreads ; i++) {
             Runnable task = () -> {
                 while (isThinkTimeLeft() && planningRollouts.get() < params.maxRolloutsNum) {
-                    performRollout(rolloutStartMove);
+                    planningRollouts.incrementAndGet();
+                    runMctsIteration(rolloutStartMove);
                 }
             };
             results.add(workerPool.submit(task));
         }
         LOGGER.trace("Created {} planning tasks", results.size());
+
         for (Future result : results) {
             try {
                 result.get();
@@ -199,29 +202,34 @@ public class MCTSPlayer implements Player, Configurable {
         }
     }
 
-    private void performRollout(MoveNode startNode) {
-        planningRollouts.incrementAndGet();
-
+    private void runMctsIteration(MoveNode startNode) {
         // Selection and expansion
+        MoveNode selected = selectMctsMoveThreadSafe(startNode);
+
+        // Simulation and back-propagation
+        LOGGER.trace("{} starts simulating games", Thread.currentThread());
+        List<Player> players = initSimulationPlayers();
+        for (int i = 0; i < params.gamesPerRollout; i++) {
+            if (!isThinkTimeLeft()) {
+                break;
+            }
+            GameState simulatedEndState = simulateGame(selected, players);
+            propagateSimulationResult(selected, simulatedEndState);
+        }
+    }
+
+    private MoveNode selectMctsMoveThreadSafe(MoveNode startNode) {
         LOGGER.trace("{} starts selecting node", Thread.currentThread());
         MoveNode selected;
-        synchronized (this) {
-            selected = selectMctsMove(startNode);
-            LOGGER.trace("{} selected node {}", Thread.currentThread(), selected);
-        }
-
-        // Simulation
-        LOGGER.trace("{} starts simulating game...", Thread.currentThread());
-        List<Player> players = initSimulationPlayers();
-        List<GameState> endStates = runSimulations(selected, players);
-
-        // Back-propagation
-        synchronized (this) {
-            for (GameState endState : endStates) {
-                selected.propagateSimulatedResult(endState);
+        if (params.numPlanningThreads > 1) {
+            synchronized (this) {
+                selected = selectMctsMove(startNode);
             }
-            LOGGER.trace("{} done propagating results", Thread.currentThread());
+        } else {
+            selected = selectMctsMove(startNode);
         }
+        LOGGER.trace("{} selected node {}", Thread.currentThread(), selected);
+        return selected;
     }
 
     /**
@@ -276,20 +284,17 @@ public class MCTSPlayer implements Player, Configurable {
         return Arrays.asList(player1, player2);
     }
 
-    private List<GameState> runSimulations(MoveNode start, List<Player> players) {
-        List<GameState> endStates = new ArrayList<>(params.gamesPerRollout);
-        for (int i = 0; i < params.gamesPerRollout; i++) {
-            if (!isThinkTimeLeft()) {
-                break;
-            }
+    private GameState simulateGame(MoveNode start, List<Player> players) {
+        LOGGER.trace("{} starts simulating game...", Thread.currentThread());
+        long startTime = System.currentTimeMillis();
 
-            Simulator simulator = new Simulator(start.getGameState(), players.get(0), players.get(1));
-            simulator.setCopyBoard(false);
-            GameState endState = simulateGame(simulator);
-            endStates.add(endState);
-            LOGGER.trace("{} done simulating game {}/{}", Thread.currentThread(), i, params.gamesPerRollout);
-        }
-        return endStates;
+        Simulator simulator = new Simulator(start.getGameState(), players.get(0), players.get(1));
+        simulator.setCopyBoard(false);
+
+        long duration = System.currentTimeMillis() - startTime;
+        LOGGER.trace("{} done simulating game in {} ms", Thread.currentThread(), duration);
+
+        return runSimulator(simulator);
     }
 
     /**
@@ -299,7 +304,7 @@ public class MCTSPlayer implements Player, Configurable {
      * @return
      *  state where the game ended
      */
-    private GameState simulateGame(Simulator simulator) {
+    private GameState runSimulator(Simulator simulator) {
         long maxSimulationTime;
         if (params.maxThinkTimeIncludesSimulation) {
             long elapsedTime = System.currentTimeMillis() - planningStartTime;
@@ -308,6 +313,22 @@ public class MCTSPlayer implements Player, Configurable {
             maxSimulationTime = Long.MAX_VALUE;
         }
         return simulator.run(maxSimulationTime, params.maxSimulatedGameTurns);
+    }
+
+    private void propagateSimulationResult(MoveNode simulationStartNode, GameState simulatedEndState) {
+        long startTime = System.currentTimeMillis();
+
+        if (params.numPlanningThreads > 1) {
+            synchronized (this) {
+                simulationStartNode.propagateSimulatedResult(simulatedEndState);
+            }
+        } else {
+            simulationStartNode.propagateSimulatedResult(simulatedEndState);
+        }
+
+
+        long duration = System.currentTimeMillis() - startTime;
+        LOGGER.trace("{} done propagating results of game in {} ms", Thread.currentThread(), duration);
     }
 
 
