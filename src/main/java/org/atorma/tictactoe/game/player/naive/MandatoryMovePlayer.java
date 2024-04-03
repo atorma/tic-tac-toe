@@ -1,6 +1,6 @@
 package org.atorma.tictactoe.game.player.naive;
 
-import org.atorma.tictactoe.game.player.random.AdjacentCellPlayer;
+import org.atorma.tictactoe.game.player.random.NearbyCellPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Sequence;
@@ -9,8 +9,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class MandatoryMovePlayer extends AdjacentCellPlayer {
+public abstract class MandatoryMovePlayer extends NearbyCellPlayer {
 
+    public MandatoryMovePlayer(int nearbyCellDistance) {
+        super(nearbyCellDistance);
+    }
 
     protected Optional<Cell> getMandatoryMove() {
         GameState fakeState = GameState.builder()
@@ -19,21 +22,21 @@ public abstract class MandatoryMovePlayer extends AdjacentCellPlayer {
                 .build();
 
         // Can I win with one move?
-        for (Cell move : adjacentToOccupied) {
+        for (Cell move : getCellsNearOccupied()) {
             if (currentState.next(move).getWinner() == getPiece()) {
                 return Optional.of(move);
             }
         }
 
         // Can my opponent win with one move? If yes, block the move.
-        for (Cell move : adjacentToOccupied) {
+        for (Cell move : getCellsNearOccupied()) {
             if (fakeState.next(move).getWinner() == getPiece().other()) {
                 return Optional.of(move);
             }
         }
 
         // Can I make a sequence that will yield a victory in my next turn?
-        for (Cell move : adjacentToOccupied) {
+        for (Cell move : getCellsNearOccupied()) {
             GameState nextState = currentState.next(move);
             if (nextState.getUpdatedSequences().stream()
                     .anyMatch(sequence -> sequence.getLength() >= currentState.getConnectHowMany() - 1 && getFreeSequenceEnds(nextState, sequence).size() >= 2)) {
@@ -42,7 +45,7 @@ public abstract class MandatoryMovePlayer extends AdjacentCellPlayer {
         }
 
         // Can my opponent make a sequence that would will a victory for her in her next turn? If yes, block the move.
-        for (Cell move : adjacentToOccupied) {
+        for (Cell move : getCellsNearOccupied()) {
             GameState fakeState2 = fakeState.next(move);
             if (fakeState2.getUpdatedSequences().stream()
                     .anyMatch(sequence -> sequence.getLength() >= currentState.getConnectHowMany() - 1 && getFreeSequenceEnds(fakeState2, sequence).size() >= 2)) {

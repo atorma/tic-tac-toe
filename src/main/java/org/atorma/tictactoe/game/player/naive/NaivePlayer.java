@@ -2,14 +2,11 @@ package org.atorma.tictactoe.game.player.naive;
 
 
 import org.atorma.tictactoe.game.player.Player;
-import org.atorma.tictactoe.game.player.random.AdjacentCellPlayer;
 import org.atorma.tictactoe.game.state.Cell;
-import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.state.Sequence;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -22,6 +19,10 @@ import java.util.stream.Stream;
  */
 public class NaivePlayer extends MandatoryMovePlayer implements Player {
     private Piece mySide;
+
+    public NaivePlayer() {
+        super(1);
+    }
 
     @Override
     protected Cell planMove() {

@@ -45,10 +45,8 @@ public class Cell {
         if (this == o) return true;
         if (!(o instanceof Cell)) return false;
 
-        Cell cell = (Cell) o;
-
-        if (row != cell.row) return false;
-        return column == cell.column;
+        Cell other = (Cell) o;
+        return row == other.row && column == other.column;
 
     }
 

@@ -9,7 +9,7 @@ import org.atorma.tictactoe.game.player.human.HumanPlayer;
 import org.atorma.tictactoe.game.player.mcts.MCTSParameters;
 import org.atorma.tictactoe.game.player.mcts.MCTSPlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
-import org.atorma.tictactoe.game.player.random.RandomAdjacentPlayer;
+import org.atorma.tictactoe.game.player.random.RandomNearbyPlayer;
 import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
 
         addPlayerInfo("Naive heuristics", PlayerInfo.Type.AI, NaivePlayer.class);
 
-        addPlayerInfo("Random adjacent", PlayerInfo.Type.AI, RandomAdjacentPlayer.class);
+        addPlayerInfo("Random adjacent", PlayerInfo.Type.AI, RandomNearbyPlayer.class);
 
         addPlayerInfo("Uniform random", PlayerInfo.Type.AI, RandomPlayer.class);
     }

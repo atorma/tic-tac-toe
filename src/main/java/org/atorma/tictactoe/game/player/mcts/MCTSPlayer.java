@@ -7,7 +7,7 @@ import org.atorma.tictactoe.game.player.Configurable;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.MandatoryMovePlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
-import org.atorma.tictactoe.game.player.random.RandomAdjacentPlayer;
+import org.atorma.tictactoe.game.player.random.RandomNearbyPlayer;
 import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
@@ -123,7 +123,7 @@ public class MCTSPlayer implements Player, Configurable {
 
         planningStartTime = System.currentTimeMillis();
 
-        MandatoryMovePlayer mandatoryMovePlayer = new MandatoryMovePlayer() {
+        MandatoryMovePlayer mandatoryMovePlayer = new MandatoryMovePlayer(1) {
             protected Cell planMove() {
                 return getMandatoryMove().orElse(null);
             }
@@ -274,8 +274,8 @@ public class MCTSPlayer implements Player, Configurable {
             player1 = new NaivePlayer();
             player2 = new NaivePlayer();
         } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.RANDOM_ADJACENT) {
-            player1 = new RandomAdjacentPlayer();
-            player2 = new RandomAdjacentPlayer();
+            player1 = new RandomNearbyPlayer(1);
+            player2 = new RandomNearbyPlayer(1);
         } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.UNIFORM_RANDOM) {
             player1 = new RandomPlayer();
             player2 = new RandomPlayer();

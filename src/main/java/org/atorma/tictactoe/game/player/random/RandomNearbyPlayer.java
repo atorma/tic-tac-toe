@@ -7,21 +7,28 @@ import org.atorma.tictactoe.game.state.Piece;
 
 import java.util.*;
 
-public class RandomAdjacentPlayer extends AdjacentCellPlayer implements Player {
+public class RandomNearbyPlayer extends NearbyCellPlayer implements Player {
     private Piece myPiece;
+
+    public RandomNearbyPlayer(int allowedDistance) {
+        super(allowedDistance);
+    }
 
     @Override
     protected Cell planMove() {
         List<Cell> candidates;
-        if (adjacentToOccupied.isEmpty()) {
+        if (getCellsNearOccupied().isEmpty()) {
             candidates = currentState.getAllowedMoves();
         } else {
-            candidates = new ArrayList<>(adjacentToOccupied);
+            candidates = new ArrayList<>(getCellsNearOccupied());
         }
 
-        Cell myMove = Utils.pickRandom(candidates);
-
-        return myMove;
+        if (candidates.isEmpty()) {
+            return null;
+        } else {
+            Cell myMove = Utils.pickRandom(candidates);
+            return myMove;
+        }
     }
 
 
