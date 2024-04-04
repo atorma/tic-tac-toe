@@ -324,6 +324,44 @@ public class MCTSPlayerTests {
     }
 
     @Test
+    public void takes_mandatory_move_and_expands_in_search_area() {
+        Piece[][] board = new Piece[18][18];
+        // X has 3 in sequence
+        board[10][8] = Piece.X;
+        board[11][8] = Piece.X;
+        board[12][8] = Piece.X;
+        // ... but O has 4 in sequence with one free end
+        board[0][0] = Piece.O;
+        board[1][0] = Piece.O;
+        board[2][0] = Piece.O;
+        board[3][0] = Piece.O;
+
+        GameState gameState = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(board)
+                .setNextPlayer(Piece.X)
+                .build();
+        gameState.print();
+
+        MCTSParameters params = new MCTSParameters();
+        params.searchRadius = 2;
+        params.gamesPerRollout = 1;
+        params.pruneSiblings = false;
+        params.pruneParent = false;
+        params.pruneDescendantLevelsGreaterThan = Integer.MAX_VALUE;
+        MCTSPlayer mctsPlayer = new MCTSPlayer(params);
+        mctsPlayer.setPiece(Piece.X);
+
+        Cell mctsPlayerMove = mctsPlayer.move(gameState, new Cell(3, 0));
+        gameState = gameState.next(mctsPlayerMove);
+        gameState.print();
+        assertEquals(new Cell(4, 0), mctsPlayerMove);
+
+        // See the board and count cells. Assumption: expands all states within one move.
+        assertEquals(15 + 28,  mctsPlayer.getLastMove().getChildren().size());
+    }
+
+    @Test
     public void when_opponent_has_started_then_search_expands_around_opponents_move() {
         MCTSParameters params = new MCTSParameters();
         params.maxRolloutsNum = 1;
