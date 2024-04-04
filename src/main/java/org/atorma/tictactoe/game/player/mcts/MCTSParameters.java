@@ -97,6 +97,7 @@ public class MCTSParameters {
         return new StringJoiner(", ", MCTSParameters.class.getSimpleName() + "[", "]")
                 .add("simulationStrategy=" + simulationStrategy)
                 .add("numPlanningThreads=" + numPlanningThreads)
+                .add("gamesPerRollout=" + gamesPerRollout)
                 .add("maxRolloutsNum=" + maxRolloutsNum)
                 .add("maxSimulatedGameTurns=" + maxSimulatedGameTurns)
                 .add("maxThinkTimeMillis=" + maxThinkTimeMillis)
