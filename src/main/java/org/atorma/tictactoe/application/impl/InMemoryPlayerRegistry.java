@@ -43,6 +43,7 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
         MCTSParameters uniformRandomParams = new MCTSParameters();
         uniformRandomParams.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         uniformRandomParams.gamesPerRollout = parseSystemPropertyAsInt("MCTS_UNIFORM_RANDOMN_GAMES_PER_ROLLOUT", 700);
+        uniformRandomParams.searchRadius = 2;
         addPlayerInfo("MCTS uniform random", PlayerInfo.Type.AI, MCTSPlayer.class, uniformRandomParams);
 
         addPlayerInfo("Naive heuristics", PlayerInfo.Type.AI, NaivePlayer.class);
