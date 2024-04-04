@@ -31,18 +31,18 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
         addPlayerInfo("Human", PlayerInfo.Type.HUMAN, HumanPlayer.class);
 
         MCTSParameters naiveParams = new MCTSParameters();
-        naiveParams.gamesPerRollout = parseSystemPropertyAsInt("MCTS_NAIVE_GAMES_PER_ROLLOUT", 50);
+        naiveParams.gamesPerRollout = parseEnvVarAsInt("MCTS_NAIVE_GAMES_PER_ROLLOUT", 50);
         naiveParams.simulationStrategy = MCTSParameters.SimulationStrategy.NAIVE;
         addPlayerInfo("MCTS naive heuristics", PlayerInfo.Type.AI, MCTSPlayer.class, naiveParams);
 
         MCTSParameters randomAdjacentParams = new MCTSParameters();
         randomAdjacentParams.simulationStrategy = MCTSParameters.SimulationStrategy.RANDOM_ADJACENT;
-        randomAdjacentParams.gamesPerRollout =  naiveParams.gamesPerRollout = parseSystemPropertyAsInt("MCTS_RANDOM_ADJACENT_GAMES_PER_ROLLOUT", 200);
+        randomAdjacentParams.gamesPerRollout =  naiveParams.gamesPerRollout = parseEnvVarAsInt("MCTS_RANDOM_ADJACENT_GAMES_PER_ROLLOUT", 200);
         addPlayerInfo("MCTS random adjacent", PlayerInfo.Type.AI, MCTSPlayer.class, randomAdjacentParams);
 
         MCTSParameters uniformRandomParams = new MCTSParameters();
         uniformRandomParams.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
-        uniformRandomParams.gamesPerRollout = parseSystemPropertyAsInt("MCTS_UNIFORM_RANDOMN_GAMES_PER_ROLLOUT", 700);
+        uniformRandomParams.gamesPerRollout = parseEnvVarAsInt("MCTS_UNIFORM_RANDOMN_GAMES_PER_ROLLOUT", 700);
         uniformRandomParams.searchRadius = 2;
         addPlayerInfo("MCTS uniform random", PlayerInfo.Type.AI, MCTSPlayer.class, uniformRandomParams);
 
@@ -53,10 +53,10 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
         addPlayerInfo("Uniform random", PlayerInfo.Type.AI, RandomPlayer.class);
     }
 
-    private int parseSystemPropertyAsInt(String property, int defaultValue) {
+    private int parseEnvVarAsInt(String property, int defaultValue) {
         return Integer.parseInt(
                 Optional.
-                        ofNullable(System.getProperty(property))
+                        ofNullable(System.getenv(property))
                         .orElse(String.valueOf(defaultValue))
         );
     }
