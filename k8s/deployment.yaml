@@ -52,7 +52,7 @@ spec:
               value: "20"
             - name: MCTS_RANDOM_ADJACENT_GAMES_PER_ROLLOUT
               value: "80"
-            - name: MCTS_UNIFORM_RANDOMN_GAMES_PER_ROLLOUT
+            - name: MCTS_UNIFORM_RANDOM_GAMES_PER_ROLLOUT
               value: "280"
       restartPolicy: Always
       
