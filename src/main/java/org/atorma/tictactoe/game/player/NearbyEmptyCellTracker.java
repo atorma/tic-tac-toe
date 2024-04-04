@@ -1,20 +1,25 @@
 package org.atorma.tictactoe.game.player;
 
+import org.atorma.tictactoe.game.player.mcts.MCTSPlayer;
 import org.atorma.tictactoe.game.state.Board;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.Piece;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public class NearbyEmptyCellTracker {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MCTSPlayer.class);
+
     private final int allowedDistance;
     private final Set<Cell> emptyCellsNearOccupied = new HashSet<>();
     private final Board board;
 
     public NearbyEmptyCellTracker(Board board, int allowedDistance) {
-        this.board = board.copy();
+        this.board = board;
         if (allowedDistance <= 0) {
             throw new IllegalArgumentException("Allowed distance " + allowedDistance + " invalid, must be >= 1");
         }
@@ -32,6 +37,7 @@ public class NearbyEmptyCellTracker {
     }
 
     private void init() {
+        long startTime = System.currentTimeMillis();
         emptyCellsNearOccupied.clear();
         for (int i = 0; i < board.getNumRows(); i++) {
             for (int j = 0; j < board.getNumCols(); j++) {
@@ -41,6 +47,7 @@ public class NearbyEmptyCellTracker {
                 }
             }
         }
+        LOGGER.trace("NearbyEmptyCellTracker initialised in {} ms", System.currentTimeMillis() - startTime);
     }
 
     public void addOccupiedCell(Cell cell) {
@@ -56,6 +63,8 @@ public class NearbyEmptyCellTracker {
     }
 
     private void updateNearbyEmptyCellsAroundCell(Cell occupied) {
+        long startTime = System.nanoTime();
+
         int startRow = Math.max(0, occupied.getRow() - allowedDistance);
         int endRow = Math.min(board.getNumRows(), occupied.getRow() + allowedDistance);
         int startCol = Math.max(0, occupied.getColumn() - allowedDistance);
@@ -74,6 +83,8 @@ public class NearbyEmptyCellTracker {
                 }
             }
         }
+
+        LOGGER.trace("Updated empty cells near {} in {} ns", occupied, System.nanoTime() - startTime);
     }
 
     private boolean isWithinBoard(Cell cell) {
