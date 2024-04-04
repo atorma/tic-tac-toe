@@ -10,7 +10,7 @@ import java.util.StringJoiner;
  */
 public class MCTSParameters {
 
-    public enum SimulationStrategy {UNIFORM_RANDOM, RANDOM_ADJACENT, NAIVE}
+    public enum SimulationStrategy {UNIFORM_RANDOM, RANDOM_NEARBY, NAIVE}
 
 
     /** How to simulate games */

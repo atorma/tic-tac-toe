@@ -60,7 +60,7 @@ public class AiPlayTests {
     @Test
     public void mcts_nearby_cells_vs_mcts_uniform_random() {
         MCTSParameters randomNearby = new MCTSParameters();
-        randomNearby.simulationStrategy = MCTSParameters.SimulationStrategy.RANDOM_ADJACENT;
+        randomNearby.simulationStrategy = MCTSParameters.SimulationStrategy.RANDOM_NEARBY;
         randomNearby.searchRadius = 1;
         randomNearby.gamesPerRollout = 1;
         MCTSPlayer randomNearbyMctsPlayer = new MCTSPlayer(randomNearby);
