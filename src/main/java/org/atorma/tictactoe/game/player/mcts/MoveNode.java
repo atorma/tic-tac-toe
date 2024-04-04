@@ -1,7 +1,9 @@
 package org.atorma.tictactoe.game.player.mcts;
 
 import org.atorma.tictactoe.game.Utils;
-import org.atorma.tictactoe.game.state.*;
+import org.atorma.tictactoe.game.state.Cell;
+import org.atorma.tictactoe.game.state.GameState;
+import org.atorma.tictactoe.game.state.Piece;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +11,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 /**
  * Node in Monte Carlo Tree Search.
@@ -30,11 +33,11 @@ public class MoveNode {
 
     private MoveNode parent;
 
-    private List<Cell> unexpandedMoves;
-    private List<MoveNode> children = new ArrayList<>();
+    private final List<Cell> unexpandedMoves;
+    private final List<MoveNode> children = new ArrayList<>();
 
-    private Map<Piece, Integer> wins = new EnumMap<>(Piece.class);
-    private Map<Piece, Double> rewardSums = new EnumMap<>(Piece.class);
+    private final Map<Piece, Integer> wins = new EnumMap<>(Piece.class);
+    private final Map<Piece, Double> rewardSums = new EnumMap<>(Piece.class);
     private int numPlays = 0;
 
     private MoveNode root;
@@ -151,7 +154,7 @@ public class MoveNode {
      *
      * @see #expandAll()
      * @see #expandRandom()
-     * @see #expandRandomIn(Collection)
+     * @see #expandRandomIn(Set)
      */
     public List<MoveNode> getChildren() {
         return Collections.unmodifiableList(children);
@@ -161,25 +164,12 @@ public class MoveNode {
         return unexpandedMoves.isEmpty();
     }
 
-    public boolean isFullyExpandedIn(Rectangle... rectangles) {
-        return isFullyExpandedIn(Arrays.asList(rectangles));
-    }
 
-    public boolean isFullyExpandedIn(Collection<Rectangle> rectangles) {
+    public boolean isFullyExpandedIn(Set<Cell> allowedCells) {
         if (isFullyExpanded()) {
             return true;
         }
-
-        for (Rectangle rectangle : rectangles) {
-            for (int i = rectangle.getUpperLeftCorner().getRow(); i <= rectangle.getLowerRightCorner().getRow(); i++) {
-                int first = indexOfEqualOrNext(new Cell(i, rectangle.getUpperLeftCorner().getColumn()), unexpandedMoves);
-                int last = indexOfEqualOrPrev(new Cell(i, rectangle.getLowerRightCorner().getColumn()), unexpandedMoves);
-                if (first <= last) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return unexpandedMoves.stream().noneMatch(allowedCells::contains);
     }
 
     /**
@@ -206,78 +196,19 @@ public class MoveNode {
     }
 
     /**
-     * @see #expandRandomIn(Collection)
-     */
-    public MoveNode expandRandomIn(Rectangle... rectangles) {
-        return expandRandomIn(Arrays.asList(rectangles));
-    }
-
-    /**
-     * Expands this node by one random move within the given rectangles
-     * and adds it as a child node.
+     * Expands this node by one random move in the given allowed set.
      *
      * @return
      *  child node representing the added move,
-     *  or null if no more moves to expand in the rectangles
+     *  or null if no allowed moves to expand
      */
-    public MoveNode expandRandomIn(Collection<Rectangle> rectangles) {
-        if (isFullyExpanded()) {
-            return null;
-        }
-
-        List<Integer> candidates = new ArrayList<>();
-        for (Rectangle rectangle : rectangles) {
-            for (int i = rectangle.getUpperLeftCorner().getRow(); i <= rectangle.getLowerRightCorner().getRow(); i++) {
-                int first = indexOfEqualOrNext(new Cell(i, rectangle.getUpperLeftCorner().getColumn()), unexpandedMoves);
-                int last = indexOfEqualOrPrev(new Cell(i, rectangle.getLowerRightCorner().getColumn()), unexpandedMoves);
-                for (int nodeIndex = first; nodeIndex <= last; nodeIndex++) {
-                    candidates.add(nodeIndex);
-                }
-            }
-        }
+    public MoveNode expandRandomIn(Set<Cell> allowedCells) {
+        List<Cell> candidates = unexpandedMoves.stream().filter(allowedCells::contains).collect(Collectors.toList());
         if (candidates.isEmpty()) {
             return null;
-        }
-        return expand(Utils.pickRandom(candidates));
-    }
-
-    /**
-     * Finds the index of position equal to the key or the next one if equal key does not exist.
-     *
-     * @param key
-     *  The key
-     * @param positionList
-     *  The list to search. Must be sorted first by rows, then by columns.
-     * @return
-     *  The index, or positionList.size() if no equal nor next position in positionList
-     */
-    private int indexOfEqualOrNext(Cell key, List<Cell> positionList) {
-        int result = Collections.binarySearch(positionList, key, new CellRowOrderComparator());
-        if (result >= 0) {
-            return result; // equal
-        } else { // result = -(insertion point) - 1, where insertion point is index of first element _greater_ than key
-            int ins = -result - 1;
-            return ins; // next actual element, or positionList.size()
-        }
-    }
-
-    /**
-     * Finds the index of position equal to the key or the previous one if equal key does not exist.
-     *
-     * @param key
-     *  The key
-     * @param positionList
-     *  The list to search. Must be sorted first by rows, then by columns.
-     * @return
-     *  The index, or -1 if no equal nor previous position in positionList
-     */
-    private int indexOfEqualOrPrev(Cell key, List<Cell> positionList) {
-        int result = Collections.binarySearch(positionList, key, new CellRowOrderComparator());
-        if (result >= 0) {
-            return result; // equal
-        } else { // result = -(insertion point) - 1, where insertion point is index of first element _greater_ than key
-            int ins = -result - 1;
-            return ins - 1; // previous actual element, or -1
+        } else {
+            Cell cellToExpandTo = Utils.pickRandom(candidates);
+            return expand(cellToExpandTo);
         }
     }
 
@@ -285,6 +216,16 @@ public class MoveNode {
         Cell position = unexpandedMoves.get(unexpandedIndex);
         unexpandedMoves.remove(unexpandedIndex);
         MoveNode child = new MoveNode(this, position);
+        this.children.add(child);
+        return child;
+    }
+
+    private MoveNode expand(Cell cellToExpandTo) {
+        boolean removed = unexpandedMoves.remove(cellToExpandTo);
+        if (!removed) {
+            throw new IllegalArgumentException("Not allowed to expand to cell " + cellToExpandTo);
+        }
+        MoveNode child = new MoveNode(this, cellToExpandTo);
         this.children.add(child);
         return child;
     }
@@ -310,9 +251,9 @@ public class MoveNode {
     /**
      * Selects next moves that have the highest expected reward for the player
      * whose turn it is at this node.
-     *
+     * <p>
      * Only considers the current children of this node, not unexpanded moves.
-     *
+     * <p>
      * Use this after searching using {@link #getBestExploratoryMoves()} and running
      * simulations from them.
      *
@@ -332,9 +273,9 @@ public class MoveNode {
     /**
      * Selects the best moves to explore for the player whose turn it
      * is at this node.
-     *
+     * <p>
      * Only considers the current children of this node, not unexpanded moves.
-     *
+     * <p>
      * Ties are broken randomly.
      *
      * @return

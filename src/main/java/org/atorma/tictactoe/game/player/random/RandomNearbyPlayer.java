@@ -17,10 +17,10 @@ public class RandomNearbyPlayer extends NearbyCellPlayer implements Player {
     @Override
     protected Cell planMove() {
         List<Cell> candidates;
-        if (getCellsNearOccupied().isEmpty()) {
+        if (getEmptyCellsNearOccupied().isEmpty()) {
             candidates = currentState.getAllowedMoves();
         } else {
-            candidates = new ArrayList<>(getCellsNearOccupied());
+            candidates = new ArrayList<>(getEmptyCellsNearOccupied());
         }
 
         if (candidates.isEmpty()) {

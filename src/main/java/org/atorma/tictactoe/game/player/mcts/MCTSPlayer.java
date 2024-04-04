@@ -4,6 +4,7 @@ package org.atorma.tictactoe.game.player.mcts;
 import org.atorma.tictactoe.game.Simulator;
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.player.Configurable;
+import org.atorma.tictactoe.game.player.NearbyEmptyCellTracker;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.MandatoryMovePlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
@@ -12,7 +13,6 @@ import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.atorma.tictactoe.game.state.Rectangle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,11 +44,13 @@ public class MCTSPlayer implements Player, Configurable {
     private GameState currentState;
     private Cell opponentsLastMove;
     private MoveNode lastMove; // Last move overall, may be my move or opponent's move, depending on algorithm progress
-    private final List<Rectangle> searchAreas = new ArrayList<>();
 
     private long planningStartTime;
     private final AtomicInteger planningRollouts = new AtomicInteger();
     private ExecutorService workerPool;
+
+    private MandatoryMovePlayer mandatoryMovePlayer;
+    private NearbyEmptyCellTracker emptyCellTracker;
 
     public MCTSPlayer() {
         this(DEFAULT_PARAMS);
@@ -66,6 +68,20 @@ public class MCTSPlayer implements Player, Configurable {
 
         this.params = incoming;
         this.workerPool =  Executors.newFixedThreadPool(params.numPlanningThreads);
+
+        this.mandatoryMovePlayer = new MandatoryMovePlayer(1) {
+            protected Cell planMove() {
+                return getMandatoryMove().orElse(null);
+            }
+
+            @Override
+            public void setPiece(Piece p) {}
+
+            @Override
+            public Piece getPiece() {
+                return MCTSPlayer.this.getPiece();
+            }
+        };
 
         LOGGER.info("Configuration: {}", params);
     }
@@ -86,6 +102,7 @@ public class MCTSPlayer implements Player, Configurable {
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
         if (currentState == null || updatedState.getNumPieces() <= currentState.getNumPieces()) {
             lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
+            emptyCellTracker = new NearbyEmptyCellTracker(updatedState.copyBoard(), params.searchRadius);
             LOGGER.debug("New game started! Simulation strategy {}.", params.simulationStrategy.toString().toLowerCase());
         } else {
             lastMove = lastMove.findMoveTo(opponentsLastMove);
@@ -119,35 +136,24 @@ public class MCTSPlayer implements Player, Configurable {
 
 
     private MoveNode planMove() {
-        MoveNode bestMove = null;
-
         planningStartTime = System.currentTimeMillis();
 
-        MandatoryMovePlayer mandatoryMovePlayer = new MandatoryMovePlayer(1) {
-            protected Cell planMove() {
-                return getMandatoryMove().orElse(null);
-            }
+        emptyCellTracker.addOccupiedCell(opponentsLastMove);
 
-            @Override
-            public void setPiece(Piece p) {}
+        MoveNode bestMove = null;
+        MoveNode rolloutStartMove;
 
-            @Override
-            public Piece getPiece() {
-                return MCTSPlayer.this.getPiece();
-            }
-        };
         Cell mandatoryMove = mandatoryMovePlayer.move(currentState, opponentsLastMove);
         boolean isMandatoryMove = mandatoryMove != null;
 
-        MoveNode rolloutStartMove;
-        if (isMandatoryMove) { // If we have a mandatory move, use the time to plan ahead from that
+        if (isMandatoryMove) {
             bestMove = lastMove.findMoveTo(mandatoryMove);
+            // If we have a mandatory move, use the time to plan ahead from that state
             rolloutStartMove = bestMove;
+            emptyCellTracker.addOccupiedCell(bestMove.getMove());
         } else {
             rolloutStartMove = lastMove;
         }
-
-        updateSearchAreas();
 
         planningRollouts.set(0);
         List<Future> results = new ArrayList<>();
@@ -175,6 +181,7 @@ public class MCTSPlayer implements Player, Configurable {
 
         if (!isMandatoryMove) {
             bestMove = selectNextMoveBasedOnExpectedReward();
+            emptyCellTracker.addOccupiedCell(bestMove.getMove());
         }
 
         LOGGER.debug("{} rollouts in {} ms", planningRollouts, System.currentTimeMillis() - planningStartTime);
@@ -186,23 +193,6 @@ public class MCTSPlayer implements Player, Configurable {
 
     private boolean isThinkTimeLeft() {
         return (System.currentTimeMillis() - planningStartTime) < params.maxThinkTimeMillis;
-    }
-
-
-    private void updateSearchAreas() {
-        searchAreas.clear();
-        if (params.searchRadius < Integer.MAX_VALUE) {
-            for (int row = 0; row < currentState.getBoardRows(); row++) {
-                for (int col = 0; col < currentState.getBoardCols(); col++) {
-                    if (currentState.getPiece(row, col) != null) {
-                        Rectangle rectangle = new Rectangle(
-                                row - params.searchRadius, col - params.searchRadius,
-                                row + params.searchRadius, col + params.searchRadius);
-                        searchAreas.add(rectangle);
-                    }
-                }
-            }
-        }
     }
 
     private void runMctsIteration(MoveNode startNode) {
@@ -245,22 +235,14 @@ public class MCTSPlayer implements Player, Configurable {
         MoveNode moveNode = startNode;
 
         while (!moveNode.isEndState()) {
-            if (searchAreas.isEmpty()) {
-                if (!moveNode.isFullyExpanded()) {
-                    return moveNode.expandRandom();
-                } else {
+            MoveNode child = moveNode.expandRandomIn(emptyCellTracker.getEmptyCellsNearOccupied());
+            if (child != null) { // not yet fully expanded in nearby cells
+                return child;
+            } else { // all children visited at least once, now continue to searching in the most promising branch
+                if (!moveNode.getChildren().isEmpty()) {
                     moveNode = Utils.pickRandom(moveNode.getBestExploratoryMoves());
-                }
-            } else {
-                MoveNode child = moveNode.expandRandomIn(searchAreas);
-                if (child != null) { // not yet fully expanded in searchAreas
-                    return child;
-                } else { // all children visited at least once, now continue to searching in the most promising branch
-                    if (!moveNode.getChildren().isEmpty()) {
-                        moveNode = Utils.pickRandom(moveNode.getBestExploratoryMoves());
-                    } else { // search area is fully occupied, pick one outside it
-                        moveNode = moveNode.expandRandom();
-                    }
+                } else { // search area is fully occupied, pick one outside it
+                    moveNode = moveNode.expandRandom();
                 }
             }
         }
@@ -273,9 +255,9 @@ public class MCTSPlayer implements Player, Configurable {
         if (params.simulationStrategy == MCTSParameters.SimulationStrategy.NAIVE) {
             player1 = new NaivePlayer();
             player2 = new NaivePlayer();
-        } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.RANDOM_ADJACENT) {
-            player1 = new RandomNearbyPlayer(1);
-            player2 = new RandomNearbyPlayer(1);
+        } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.RANDOM_NEARBY) {
+            player1 = new RandomNearbyPlayer(params.searchRadius);
+            player2 = new RandomNearbyPlayer(params.searchRadius);
         } else if (params.simulationStrategy == MCTSParameters.SimulationStrategy.UNIFORM_RANDOM) {
             player1 = new RandomPlayer();
             player2 = new RandomPlayer();
@@ -339,6 +321,10 @@ public class MCTSPlayer implements Player, Configurable {
         // These have the highest expected reward for me
         List<MoveNode> candidates = lastMove.getBestMoves();
 
+        if (candidates.size() == 1) {
+            return candidates.get(0);
+        }
+
         // NaivePlayer always tries to elongate its longest sequence, so among equally well
         // rewarding moves, a naive move may be a good choice
         NaivePlayer naivePlayer = new NaivePlayer();
@@ -370,5 +356,4 @@ public class MCTSPlayer implements Player, Configurable {
     public String toString() {
         return "MCTS (" + params.simulationStrategy.toString().toLowerCase() + ")";
     }
-
 }

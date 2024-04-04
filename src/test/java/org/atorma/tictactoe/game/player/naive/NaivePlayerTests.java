@@ -5,16 +5,13 @@ import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.atorma.tictactoe.game.player.Player;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @Category(FastTests.class)
 public class NaivePlayerTests {
@@ -303,5 +300,4 @@ public class NaivePlayerTests {
 
         assertEquals(new Cell(3, 3), move);
     }
-
 }

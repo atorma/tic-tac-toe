@@ -69,7 +69,7 @@ public class GameState {
         return nextState;
     }
 
-    private Board copyBoard() {
+    public Board copyBoard() {
         return this.board.copy();
     }
 

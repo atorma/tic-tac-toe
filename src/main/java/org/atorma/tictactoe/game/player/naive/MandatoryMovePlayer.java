@@ -22,21 +22,21 @@ public abstract class MandatoryMovePlayer extends NearbyCellPlayer {
                 .build();
 
         // Can I win with one move?
-        for (Cell move : getCellsNearOccupied()) {
+        for (Cell move : getEmptyCellsNearOccupied()) {
             if (currentState.next(move).getWinner() == getPiece()) {
                 return Optional.of(move);
             }
         }
 
         // Can my opponent win with one move? If yes, block the move.
-        for (Cell move : getCellsNearOccupied()) {
+        for (Cell move : getEmptyCellsNearOccupied()) {
             if (fakeState.next(move).getWinner() == getPiece().other()) {
                 return Optional.of(move);
             }
         }
 
         // Can I make a sequence that will yield a victory in my next turn?
-        for (Cell move : getCellsNearOccupied()) {
+        for (Cell move : getEmptyCellsNearOccupied()) {
             GameState nextState = currentState.next(move);
             if (nextState.getUpdatedSequences().stream()
                     .anyMatch(sequence -> sequence.getLength() >= currentState.getConnectHowMany() - 1 && getFreeSequenceEnds(nextState, sequence).size() >= 2)) {
@@ -45,7 +45,7 @@ public abstract class MandatoryMovePlayer extends NearbyCellPlayer {
         }
 
         // Can my opponent make a sequence that would will a victory for her in her next turn? If yes, block the move.
-        for (Cell move : getCellsNearOccupied()) {
+        for (Cell move : getEmptyCellsNearOccupied()) {
             GameState fakeState2 = fakeState.next(move);
             if (fakeState2.getUpdatedSequences().stream()
                     .anyMatch(sequence -> sequence.getLength() >= currentState.getConnectHowMany() - 1 && getFreeSequenceEnds(fakeState2, sequence).size() >= 2)) {

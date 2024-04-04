@@ -1,11 +1,11 @@
 package org.atorma.tictactoe.game.player.random;
 
+import org.atorma.tictactoe.game.player.NearbyEmptyCellTracker;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -13,8 +13,8 @@ import java.util.Set;
  */
 public abstract class NearbyCellPlayer implements Player {
     private final int allowedDistance;
-    private final Set<Cell> cellsNearOccupied = new HashSet<>();
     protected GameState currentState;
+    private NearbyEmptyCellTracker nearbyEmptyCellTracker;
 
     public NearbyCellPlayer(int allowedDistance) {
         if (allowedDistance <= 0) {
@@ -27,8 +27,8 @@ public abstract class NearbyCellPlayer implements Player {
         return allowedDistance;
     }
 
-    public Set<Cell> getCellsNearOccupied() {
-        return Collections.unmodifiableSet(this.cellsNearOccupied);
+    public Set<Cell> getEmptyCellsNearOccupied() {
+        return nearbyEmptyCellTracker == null ? Collections.emptySet() : nearbyEmptyCellTracker.getEmptyCellsNearOccupied();
     }
 
     @Override
@@ -41,48 +41,20 @@ public abstract class NearbyCellPlayer implements Player {
         }
 
         if (opponentsLastMove != null) {
-            cellsNearOccupied.remove(opponentsLastMove);
-            updateAllowedCellsAfterCellOccupied(opponentsLastMove);
+           nearbyEmptyCellTracker.addOccupiedCell(opponentsLastMove);
         }
 
         Cell myMove = planMove();
 
         if (myMove != null) {
-            updateAllowedCellsAfterCellOccupied(myMove);
-            cellsNearOccupied.remove(myMove);
+            nearbyEmptyCellTracker.addOccupiedCell(myMove);
         }
 
         return myMove;
     }
 
     private void startNewGame() {
-        cellsNearOccupied.clear();
-        for (int i = 0; i < currentState.getBoardRows(); i++) {
-            for (int j = 0; j < currentState.getBoardCols(); j++) {
-                Cell c = new Cell(i, j);
-                if (!currentState.isAllowed(c)) {
-                    updateAllowedCellsAfterCellOccupied(c);
-                }
-            }
-        }
-    }
-
-    private void updateAllowedCellsAfterCellOccupied(Cell occupied) {
-        int startRow = Math.max(0, occupied.getRow() - allowedDistance);
-        int endRow = Math.min(currentState.getBoardRows(), occupied.getRow() + allowedDistance);
-        int startCol = Math.max(0, occupied.getColumn() - allowedDistance);
-        int endCol = Math.min(currentState.getBoardCols(), occupied.getColumn() + allowedDistance);
-
-        for (int row = startRow; row <= endRow; row++) {
-            for (int col = startCol; col <= endCol; col++) {
-                Cell cell = new Cell(row, col);
-                // Use distance to filter out cells that are misaligned. This becomes an issue when allowedDistance > 1.
-                int distance = Cell.getDistance(occupied, cell);
-                if (currentState.isAllowed(cell) && distance <= allowedDistance) {
-                    cellsNearOccupied.add(cell);
-                }
-            }
-        }
+        nearbyEmptyCellTracker = new NearbyEmptyCellTracker(currentState.copyBoard(), this.allowedDistance);
     }
 
     protected abstract Cell planMove();

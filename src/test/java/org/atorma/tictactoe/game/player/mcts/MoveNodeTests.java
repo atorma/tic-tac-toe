@@ -2,12 +2,15 @@ package org.atorma.tictactoe.game.player.mcts;
 
 import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.game.Utils;
-import org.atorma.tictactoe.game.state.*;
+import org.atorma.tictactoe.game.state.Cell;
+import org.atorma.tictactoe.game.state.GameState;
+import org.atorma.tictactoe.game.state.Piece;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.Assert.*;
 
@@ -22,7 +25,7 @@ public class MoveNodeTests {
 
         Cell position = new Cell(0, 0);
         MoveNode child = root.findMoveTo(position);
-        assertTrue(position.equals(child.getMove()));
+        assertEquals(position, child.getMove());
     }
 
     @Test
@@ -65,78 +68,40 @@ public class MoveNodeTests {
     }
 
     @Test
-    public void expand_random_in_rectangle_returns_allowed_move_in_rectangle_and_adds_it_as_child_node() {
-        Rectangle rectangle = new Rectangle(5, 5, 6, 6); // 2 x 2 rectangle
+    public void expand_random_in_allowed_set_returns_allowed_move_in_set_and_adds_it_as_child_node() {
+        Set<Cell> allowed = new HashSet<>(Arrays.asList(
+                new Cell(5, 5),
+                new Cell(5, 6),
+                new Cell(6, 5),
+                new Cell(6, 6)
+        ));
 
         GameState state = GameState.builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
         MoveNode root = new MoveNode(state, null, new WinLossDrawScheme());
         assertTrue(root.getChildren().isEmpty());
-        assertFalse(root.isFullyExpandedIn(rectangle));
+        assertFalse(root.isFullyExpandedIn(allowed));
 
-        MoveNode child1 = root.expandRandomIn(rectangle);
+        MoveNode child1 = root.expandRandomIn(allowed);
         assertTrue(root.getChildren().contains(child1));
-        assertTrue(rectangle.contains(child1.getMove()));
-        assertFalse(root.isFullyExpandedIn(rectangle));
+        assertTrue(allowed.contains(child1.getMove()));
+        assertFalse(root.isFullyExpandedIn(allowed));
 
-        MoveNode child2 = root.expandRandomIn(rectangle);
+        MoveNode child2 = root.expandRandomIn(allowed);
         assertTrue(root.getChildren().contains(child2));
-        assertTrue(rectangle.contains(child2.getMove()));
-        assertFalse(root.isFullyExpandedIn(rectangle));
+        assertTrue(allowed.contains(child2.getMove()));
+        assertFalse(root.isFullyExpandedIn(allowed));
 
-        MoveNode child3 = root.expandRandomIn(rectangle);
+        MoveNode child3 = root.expandRandomIn(allowed);
         assertTrue(root.getChildren().contains(child3));
-        assertTrue(rectangle.contains(child3.getMove()));
-        assertFalse(root.isFullyExpandedIn(rectangle));
+        assertTrue(allowed.contains(child3.getMove()));
+        assertFalse(root.isFullyExpandedIn(allowed));
 
-        MoveNode child4 = root.expandRandomIn(rectangle);
+        MoveNode child4 = root.expandRandomIn(allowed);
         assertTrue(root.getChildren().contains(child4));
-        assertTrue(rectangle.contains(child4.getMove()));
-        assertTrue(root.isFullyExpandedIn(rectangle));
+        assertTrue(allowed.contains(child4.getMove()));
+        assertTrue(root.isFullyExpandedIn(allowed));
 
-        assertNull(root.expandRandomIn(rectangle));
-    }
-
-    @Test
-    public void expand_random_in_list_of_rectangles() {
-        Rectangle rectangle1 = new Rectangle(5, 5, 5, 5); // 1 x 1 rectangle
-        Rectangle rectangle2 = new Rectangle(6, 6, 6, 6); // 1 x 1 rectangle
-
-        GameState state = GameState.builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
-        MoveNode root = new MoveNode(state, null, new WinLossDrawScheme());
-        assertTrue(root.getChildren().isEmpty());
-        assertFalse(root.isFullyExpandedIn(rectangle1, rectangle2));
-
-        MoveNode child1 = root.expandRandomIn(rectangle1, rectangle2);
-        assertTrue(root.getChildren().contains(child1));
-        assertTrue(rectangle1.contains(child1.getMove()) || rectangle2.contains(child1.getMove()));
-        assertFalse(root.isFullyExpandedIn(rectangle1, rectangle2));
-
-        MoveNode child2 = root.expandRandomIn(rectangle1, rectangle2);
-        assertTrue(root.getChildren().contains(child2));
-        assertTrue(rectangle1.contains(child2.getMove()) || rectangle2.contains(child2.getMove()));
-        assertTrue(root.isFullyExpandedIn(rectangle1, rectangle2));
-
-        assertNull(root.expandRandomIn(rectangle1, rectangle2));
-    }
-
-    @Test
-    public void expand_random_when_area_is_entire_board() {
-        Rectangle rectangle = new Rectangle(0, 0, 2, 2);
-
-        GameState state = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
-        MoveNode root = new MoveNode(state, null, new WinLossDrawScheme());
-
-        MoveNode expanded;
-        do {
-            expanded = root.expandRandomIn(rectangle);
-            if (expanded != null) {
-                assertTrue(rectangle.contains(expanded.getMove()));
-            }
-        } while (expanded != null);
-
-        assertEquals(3*3, root.getChildren().size());
-        assertTrue(root.isFullyExpandedIn(rectangle));
-        assertTrue(root.isFullyExpanded());
+        assertNull(root.expandRandomIn(allowed));
     }
 
     @Test
