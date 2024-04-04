@@ -48,19 +48,26 @@ public class MCTSPlayer implements Player, Configurable {
 
     private long planningStartTime;
     private final AtomicInteger planningRollouts = new AtomicInteger();
-    private final ExecutorService workerPool;
+    private ExecutorService workerPool;
 
     public MCTSPlayer() {
         this(DEFAULT_PARAMS);
     }
 
     public MCTSPlayer(MCTSParameters params) {
-        if (params == null) throw new IllegalArgumentException("Parameters missing");
-        if (params.numPlanningThreads < 1) throw new IllegalArgumentException("Invalid planning thread number " + params.numPlanningThreads + ". Must be >= 1.");
+        configure(params);
+    }
 
-        this.params = params;
-        LOGGER.info(params.toString());
+    @Override
+    public void configure(Object configuration) {
+        MCTSParameters incoming = (MCTSParameters) configuration;
+        if (incoming == null) throw new IllegalArgumentException("Parameters missing");
+        if (incoming.numPlanningThreads < 1) throw new IllegalArgumentException("Invalid planning thread number " + incoming.numPlanningThreads + ". Must be >= 1.");
+
+        this.params = incoming;
         this.workerPool =  Executors.newFixedThreadPool(params.numPlanningThreads);
+
+        LOGGER.info("Configuration: {}", params);
     }
 
 
@@ -74,10 +81,6 @@ public class MCTSPlayer implements Player, Configurable {
         this.mySide = p;
     }
 
-    @Override
-    public void configure(Object configuration) {
-        this.params = (MCTSParameters) configuration;
-    }
 
     @Override
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
