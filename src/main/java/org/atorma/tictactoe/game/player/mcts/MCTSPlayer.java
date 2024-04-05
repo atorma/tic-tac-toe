@@ -102,7 +102,7 @@ public class MCTSPlayer implements Player, Configurable {
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
         if (currentState == null || updatedState.getNumPieces() <= currentState.getNumPieces()) {
             lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
-            emptyCellTracker = new NearbyEmptyCellTracker(updatedState.copyBoard(), params.searchRadius);
+            emptyCellTracker = new NearbyEmptyCellTracker(updatedState, params.searchRadius);
             LOGGER.debug("New game started! Simulation strategy {}.", params.simulationStrategy.toString().toLowerCase());
         } else {
             lastMove = lastMove.findMoveTo(opponentsLastMove);
@@ -138,7 +138,7 @@ public class MCTSPlayer implements Player, Configurable {
     private MoveNode planMove() {
         planningStartTime = System.currentTimeMillis();
 
-        emptyCellTracker.addOccupiedCell(opponentsLastMove);
+        emptyCellTracker.addOccupiedCell(currentState, opponentsLastMove);
 
         MoveNode bestMove = null;
         MoveNode rolloutStartMove;
@@ -150,7 +150,7 @@ public class MCTSPlayer implements Player, Configurable {
             bestMove = lastMove.findMoveTo(mandatoryMove);
             // If we have a mandatory move, use the time to plan ahead from that state
             rolloutStartMove = bestMove;
-            emptyCellTracker.addOccupiedCell(bestMove.getMove());
+            emptyCellTracker.addOccupiedCell(currentState, bestMove.getMove());
         } else {
             rolloutStartMove = lastMove;
         }
@@ -181,7 +181,7 @@ public class MCTSPlayer implements Player, Configurable {
 
         if (!isMandatoryMove) {
             bestMove = selectNextMoveBasedOnExpectedReward();
-            emptyCellTracker.addOccupiedCell(bestMove.getMove());
+            emptyCellTracker.addOccupiedCell(currentState, bestMove.getMove());
         }
 
         LOGGER.debug("{} rollouts in {} ms", planningRollouts, System.currentTimeMillis() - planningStartTime);

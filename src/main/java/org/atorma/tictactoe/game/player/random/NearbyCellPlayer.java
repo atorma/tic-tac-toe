@@ -41,20 +41,20 @@ public abstract class NearbyCellPlayer implements Player {
         }
 
         if (opponentsLastMove != null) {
-           nearbyEmptyCellTracker.addOccupiedCell(opponentsLastMove);
+           nearbyEmptyCellTracker.addOccupiedCell(updatedState, opponentsLastMove);
         }
 
         Cell myMove = planMove();
 
         if (myMove != null) {
-            nearbyEmptyCellTracker.addOccupiedCell(myMove);
+            nearbyEmptyCellTracker.addOccupiedCell(updatedState, myMove);
         }
 
         return myMove;
     }
 
     private void startNewGame() {
-        nearbyEmptyCellTracker = new NearbyEmptyCellTracker(currentState.copyBoard(), this.allowedDistance);
+        nearbyEmptyCellTracker = new NearbyEmptyCellTracker(currentState, this.allowedDistance);
     }
 
     protected abstract Cell planMove();
