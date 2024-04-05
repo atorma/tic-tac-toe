@@ -7,9 +7,7 @@ import org.atorma.tictactoe.game.state.Piece;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class NearbyEmptyCellTracker {
     private static final Logger LOGGER = LoggerFactory.getLogger(MCTSPlayer.class);
@@ -39,9 +37,9 @@ public class NearbyEmptyCellTracker {
     private void init() {
         long startTime = System.currentTimeMillis();
         emptyCellsNearOccupied.clear();
-        for (int i = 0; i < board.getNumRows(); i++) {
-            for (int j = 0; j < board.getNumCols(); j++) {
-                Cell c = new Cell(i, j);
+        for (int row = 0; row < board.getNumRows(); row++) {
+            for (int col = 0; col < board.getNumCols(); col++) {
+                Cell c = new Cell(row, col);
                 if (isOccupied(c)) {
                     updateNearbyEmptyCellsAroundCell(c);
                 }
@@ -55,43 +53,51 @@ public class NearbyEmptyCellTracker {
             return;
         }
         if (!isWithinBoard(cell)) {
-            throw new IllegalArgumentException("Cell " + cell + " is not within board");
+            throw new IllegalArgumentException(cell + " is not within board");
         }
         emptyCellsNearOccupied.remove(cell);
         board.set(cell, Piece.X); // Piece type is irrelevant
         updateNearbyEmptyCellsAroundCell(cell);
     }
 
-    private void updateNearbyEmptyCellsAroundCell(Cell occupied) {
+    private void updateNearbyEmptyCellsAroundCell(Cell cell) {
         long startTime = System.nanoTime();
 
-        int startRow = Math.max(0, occupied.getRow() - allowedDistance);
-        int endRow = Math.min(board.getNumRows(), occupied.getRow() + allowedDistance);
-        int startCol = Math.max(0, occupied.getColumn() - allowedDistance);
-        int endCol = Math.min(board.getNumCols(), occupied.getColumn() + allowedDistance);
+        for (int d = 1; d <= allowedDistance; d++) {
+            Cell[] cells = {
+                    new Cell(cell.row - d, cell.column - d),
+                    new Cell(cell.row - d, cell.column),
+                    new Cell(cell.row - d, cell.column + d),
+                    new Cell(cell.row, cell.column - d),
+                    new Cell(cell.row, cell.column + d),
+                    new Cell(cell.row + d, cell.column - d),
+                    new Cell(cell.row + d, cell.column),
+                    new Cell(cell.row + d, cell.column + d)
+            };
 
-        for (int row = startRow; row <= endRow; row++) {
-            for (int col = startCol; col <= endCol; col++) {
-                Cell cell = new Cell(row, col);
-                if (!isWithinBoard(cell) || isOccupied(cell)) {
-                    continue;
-                }
-                // Use distance to filter out cells that are misaligned. This becomes an issue when allowedDistance > 1.
-                int distance = Cell.getDistance(occupied, cell);
-                if (distance <= allowedDistance) {
-                    emptyCellsNearOccupied.add(cell);
+            for (Cell c : cells) {
+                if (isAllowed(c)) {
+                    emptyCellsNearOccupied.add(c);
                 }
             }
         }
 
-        LOGGER.trace("Updated empty cells near {} in {} ns", occupied, System.nanoTime() - startTime);
+        LOGGER.trace("Updated empty cells near {} in {} ns", cell, System.nanoTime() - startTime);
+    }
+
+    private boolean isAllowed(Cell cell) {
+        return isWithinBoard(cell) && isFree(cell);
     }
 
     private boolean isWithinBoard(Cell cell) {
-        return cell.getRow() >= 0
-                && cell.getRow() < board.getNumRows()
-                && cell.getColumn() >= 0
-                && cell.getColumn() < board.getNumCols();
+        return cell.row >= 0
+                && cell.row < board.getNumRows()
+                && cell.column >= 0
+                && cell.column < board.getNumCols();
+    }
+
+    private boolean isFree(Cell cell) {
+        return board.get(cell) == null;
     }
 
     private boolean isOccupied(Cell cell) {
