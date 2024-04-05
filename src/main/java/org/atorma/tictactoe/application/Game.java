@@ -103,7 +103,7 @@ public class Game {
             ((HumanPlayer) nextPlayer).setNextMove(turnParams.getMove());
         }
 
-        Cell moveCell = players.get(nextPlayerPiece).move(state, lastMove != null ? lastMove.getCell() : null);
+        Cell moveCell = players.get(nextPlayerPiece).move(state.getCopy(), lastMove != null ? lastMove.getCell() : null);
         this.state.set(state.next(moveCell));
         this.lastMove.set(new Move(nextPlayerPiece, moveCell));
         LOGGER.debug("Turn {}: {} to {}", turnNumber, nextPlayerPiece, moveCell);
