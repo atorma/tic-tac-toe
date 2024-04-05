@@ -35,8 +35,10 @@ public class Cell {
 
         if (hDist == vDist) { // diagonally aligned
             return hDist;
+        } else if (hDist == 0 || vDist == 0) {
+            return hDist + vDist; // horizontally or vertically aligned
         } else {
-            return hDist + vDist;
+            return Integer.MAX_VALUE; // misaligned
         }
     }
 

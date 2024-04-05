@@ -11,10 +11,10 @@ public class CellTests {
 
     @Test
     public void cells_are_equal_if_their_row_and_column_indices_are_the_same() {
-        assertTrue(new Cell(1, 2).equals(new Cell(1, 2)));
-        assertFalse(new Cell(1, 2).equals(new Cell(1, 3)));
-        assertFalse(new Cell(1, 2).equals(new Cell(2, 1)));
-        assertFalse(new Cell(1, 2).equals(null));
+        assertEquals(new Cell(1, 2), new Cell(1, 2));
+        assertNotEquals(new Cell(1, 2), new Cell(1, 3));
+        assertNotEquals(new Cell(1, 2), new Cell(2, 1));
+        assertNotEquals(null, new Cell(1, 2));
     }
 
     @Test
@@ -35,11 +35,11 @@ public class CellTests {
     }
 
     @Test
-    public void distance_when_cells_are_not_aligned_is_row_plus_column_distance() {
-        assertEquals(3, Cell.getDistance(new Cell(1, 2), new Cell(0, 0)));
-        assertEquals(3, Cell.getDistance(new Cell(1, 2), new Cell(2, 4)));
-        assertEquals(5, Cell.getDistance(new Cell(1, 2), new Cell(4, 4)));
-        assertEquals(5, Cell.getDistance(new Cell(1, 2), new Cell(4, 0)));
+    public void distance_when_cells_are_not_aligned_distance_is_int_max_value() {
+        assertEquals(Integer.MAX_VALUE, Cell.getDistance(new Cell(1, 2), new Cell(0, 0)));
+        assertEquals(Integer.MAX_VALUE, Cell.getDistance(new Cell(1, 2), new Cell(2, 4)));
+        assertEquals(Integer.MAX_VALUE, Cell.getDistance(new Cell(1, 2), new Cell(4, 4)));
+        assertEquals(Integer.MAX_VALUE, Cell.getDistance(new Cell(1, 2), new Cell(4, 0)));
     }
 
 }
