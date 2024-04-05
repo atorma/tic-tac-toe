@@ -51,7 +51,7 @@ spec:
             - name: MCTS_NAIVE_GAMES_PER_ROLLOUT
               value: "20"
             - name: MCTS_RANDOM_NEARBY_GAMES_PER_ROLLOUT
-              value: "80"
+              value: "40"
             - name: MCTS_UNIFORM_RANDOM_GAMES_PER_ROLLOUT
               value: "280"
       restartPolicy: Always
