@@ -51,6 +51,7 @@ public class GameTests extends UnitTests {
     public void play_turns() {
         GameState initialState = state;
         when(initialState.getNextPlayer()).thenReturn(Piece.X);
+        when(initialState.getCopy()).thenReturn(initialState);
         Game game = new Game(xPlayer, oPlayer, initialState);
 
         Cell xPlayerMove = new Cell(5, 5);
@@ -58,6 +59,7 @@ public class GameTests extends UnitTests {
         GameState afterXPlayerMove = mock(GameState.class);
         when(initialState.next(xPlayerMove)).thenReturn(afterXPlayerMove);
         when(afterXPlayerMove.getNextPlayer()).thenReturn(Piece.O);
+        when(afterXPlayerMove.getCopy()).thenReturn(afterXPlayerMove);
 
         game.playTurn(new TurnParams(1, new Cell(1, 1)));
 
@@ -70,6 +72,7 @@ public class GameTests extends UnitTests {
         GameState afterOPlayerMove = mock(GameState.class);
         when(afterXPlayerMove.next(oPlayerMove)).thenReturn(afterOPlayerMove);
         when(afterOPlayerMove.getNextPlayer()).thenReturn(Piece.X);
+        when(afterOPlayerMove.getCopy()).thenReturn(afterOPlayerMove);
 
         game.playTurn(new TurnParams(2, new Cell(0, 0)));
 
