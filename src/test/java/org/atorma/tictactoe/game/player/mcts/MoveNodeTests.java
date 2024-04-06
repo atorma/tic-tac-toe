@@ -1,20 +1,19 @@
 package org.atorma.tictactoe.game.player.mcts;
 
-import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@Category(FastTests.class)
+@Tag("FastTests")
 public class MoveNodeTests {
 
     @Test
@@ -286,7 +285,7 @@ public class MoveNodeTests {
         root.expandAll();
         root.getChildren().forEach(c -> {
             c.expandAll();
-            c.getChildren().forEach(gc -> gc.expandAll());
+            c.getChildren().forEach(MoveNode::expandAll);
         });
 
         MoveNode someChild = Utils.pickRandom(root.getChildren());

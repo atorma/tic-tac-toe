@@ -1,7 +1,6 @@
 package org.atorma.tictactoe.game.player.mcts;
 
 
-import org.atorma.tictactoe.SlowTests;
 import org.atorma.tictactoe.game.Simulator;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
@@ -9,8 +8,8 @@ import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +17,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@Category(SlowTests.class)
+@Tag("SlowTests")
 public class MCTSPlayerTests {
     private static final Logger LOGGER = LoggerFactory.getLogger(MCTSPlayerTests.class);
 

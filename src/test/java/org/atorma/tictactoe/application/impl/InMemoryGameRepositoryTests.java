@@ -1,33 +1,34 @@
 package org.atorma.tictactoe.application.impl;
 
-import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.UnitTests;
-import org.atorma.tictactoe.application.GameTests;
-import org.atorma.tictactoe.exception.NotFoundException;import org.atorma.tictactoe.exception.GameDeletedException;
 import org.atorma.tictactoe.application.Game;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.atorma.tictactoe.application.GameTests;
+import org.atorma.tictactoe.exception.GameDeletedException;
+import org.atorma.tictactoe.exception.NotFoundException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@Category(FastTests.class)
+@Tag("FastTests")
 public class InMemoryGameRepositoryTests extends UnitTests {
 
     InMemoryGameRepository repository;
     @Mock Game game;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
         repository = new InMemoryGameRepository();
-        when(game.getId()).thenReturn(UUID.randomUUID().toString());
+        lenient().when(game.getId()).thenReturn(UUID.randomUUID().toString());
     }
 
     @Test
@@ -41,18 +42,18 @@ public class InMemoryGameRepositoryTests extends UnitTests {
         assertThat(foundGame, is(game));
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void exception_when_no_game_with_given_id() {
-        repository.findById("aargh");
+        assertThrows(NotFoundException.class, () -> repository.findById("aargh"));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test()
     public void exception_when_saving_null_game() {
-        repository.save(null);
+        assertThrows(IllegalArgumentException.class, () -> repository.save(null));
     }
 
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void after_deleting_saved_game_not_found_by_id() {
         Game game = mock(Game.class);
         when(game.getId()).thenReturn(UUID.randomUUID().toString());
@@ -61,7 +62,7 @@ public class InMemoryGameRepositoryTests extends UnitTests {
 
         repository.delete(savedGame);
 
-        repository.findById(game.getId());
+        assertThrows(NotFoundException.class, () -> repository.findById(game.getId()));
     }
 
     // Due to concurrency a game in memory may be saved after deleting from repository.
@@ -74,11 +75,10 @@ public class InMemoryGameRepositoryTests extends UnitTests {
         verify(game).setDeleted(true);
     }
 
-    @Test(expected = GameDeletedException.class)
+    @Test()
     public void when_game_is_flagged_as_deleted_then_it_will_not_be_saved() {
         when(game.isDeleted()).thenReturn(true);
-
-        repository.save(game);
+        assertThrows(GameDeletedException.class, () -> repository.save(game));
     }
 
 

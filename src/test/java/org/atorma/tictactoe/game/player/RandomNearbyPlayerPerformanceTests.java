@@ -1,17 +1,16 @@
 package org.atorma.tictactoe.game.player;
 
-import org.atorma.tictactoe.SlowTests;
 import org.atorma.tictactoe.UnitTests;
 import org.atorma.tictactoe.game.Simulator;
 import org.atorma.tictactoe.game.player.random.RandomNearbyPlayer;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Category(SlowTests.class)
+@Tag("SlowTests")
 public class RandomNearbyPlayerPerformanceTests extends UnitTests {
     private static final Logger LOGGER = LoggerFactory.getLogger(RandomNearbyPlayerPerformanceTests.class);
 

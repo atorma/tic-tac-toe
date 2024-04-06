@@ -1,27 +1,26 @@
 package org.atorma.tictactoe.game.player;
 
-import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.UnitTests;
 import org.atorma.tictactoe.game.player.human.HumanPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@Category(FastTests.class)
+@Tag("FastTests")
 public class HumanPlayerTests extends UnitTests {
 
     HumanPlayer humanPlayer;
     @Mock GameState state;
     @Mock Cell opponentsLastMove;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         humanPlayer = new HumanPlayer();
     }
@@ -33,17 +32,17 @@ public class HumanPlayerTests extends UnitTests {
         assertThat(humanPlayer.move(state, opponentsLastMove), equalTo(nextMove));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void when_move_attempted_without_setting_next_move_then_exception() {
-        humanPlayer.move(state, opponentsLastMove);
+        assertThrows(IllegalStateException.class, () -> humanPlayer.move(state, opponentsLastMove));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void when_next_move_reset_after_move_completed() {
         Cell nextMove = new Cell(1, 2);
         humanPlayer.setNextMove(nextMove);
         humanPlayer.move(state, opponentsLastMove);
 
-        humanPlayer.move(state, opponentsLastMove);
+        assertThrows(IllegalStateException.class, () -> humanPlayer.move(state, opponentsLastMove));
     }
 }

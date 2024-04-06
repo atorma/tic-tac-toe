@@ -1,15 +1,12 @@
 package org.atorma.tictactoe.game.state;
 
-import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.UnitTests;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-@Category(FastTests.class)
+@Tag("FastTests")
 public class SequenceTests extends UnitTests {
 
     @Test

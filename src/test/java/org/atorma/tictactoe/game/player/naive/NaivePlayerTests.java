@@ -1,24 +1,23 @@
 package org.atorma.tictactoe.game.player.naive;
 
 
-import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@Category(FastTests.class)
+@Tag("FastTests")
 public class NaivePlayerTests {
 
     private NaivePlayer player;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         player = new NaivePlayer();
         player.setPiece(Piece.X);

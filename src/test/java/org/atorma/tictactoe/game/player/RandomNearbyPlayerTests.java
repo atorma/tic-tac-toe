@@ -1,21 +1,20 @@
 package org.atorma.tictactoe.game.player;
 
-import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.UnitTests;
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.player.random.RandomNearbyPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Category(FastTests.class)
+@Tag("FastTests")
 public class RandomNearbyPlayerTests extends UnitTests {
     RandomNearbyPlayer player;
     GameState state;

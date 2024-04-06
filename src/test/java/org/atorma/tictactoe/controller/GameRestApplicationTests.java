@@ -2,35 +2,33 @@ package org.atorma.tictactoe.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import org.atorma.tictactoe.ApplicationMvcTests;
-import org.atorma.tictactoe.FastTests;
+import org.atorma.tictactoe.application.Game;
+import org.atorma.tictactoe.application.GameRepository;
 import org.atorma.tictactoe.application.PlayerRegistry;
 import org.atorma.tictactoe.exception.NotFoundException;
-import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.human.HumanPlayer;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.atorma.tictactoe.application.GameRepository;
 import org.jglue.fluentjson.JsonBuilderFactory;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Category(FastTests.class)
+@Tag("FastTests")
 public class GameRestApplicationTests extends ApplicationMvcTests {
 
     @Autowired GameRepository gameRepository;
@@ -39,7 +37,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
     Game aiVsAiGame;
     Game humanVsAiGame;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         setUpAiVsAiGame();
         setUpHumanVsAiGame();
@@ -308,11 +306,11 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test
     public void delete_game() throws Exception {
         mockMvc.perform(delete("/games/{id}", aiVsAiGame.getId()))
                 .andExpect(status().isNoContent());
 
-        gameRepository.findById(aiVsAiGame.getId());
+        assertThrows(NotFoundException.class, () -> gameRepository.findById(aiVsAiGame.getId()));
     }
 }

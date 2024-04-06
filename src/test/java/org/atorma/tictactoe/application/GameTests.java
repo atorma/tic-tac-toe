@@ -1,6 +1,5 @@
 package org.atorma.tictactoe.application;
 
-import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.UnitTests;
 import org.atorma.tictactoe.controller.TurnParams;
 import org.atorma.tictactoe.exception.TicTacToeException;
@@ -9,17 +8,17 @@ import org.atorma.tictactoe.game.player.human.HumanPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.time.ZonedDateTime;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@Category(FastTests.class)
+@Tag("FastTests")
 public class GameTests extends UnitTests {
 
     @Mock private Player xPlayer;
@@ -27,12 +26,12 @@ public class GameTests extends UnitTests {
     @Mock private GameState state;
 
 
-    @Before
+    @BeforeEach
     public void setUp() {
-        when(xPlayer.getPiece()).thenReturn(Piece.X);
-        when(oPlayer.getPiece()).thenReturn(Piece.O);
+        lenient().when(xPlayer.getPiece()).thenReturn(Piece.X);
+        lenient().when(oPlayer.getPiece()).thenReturn(Piece.O);
 
-        when(state.getCopy()).thenReturn(state);
+        lenient().when(state.getCopy()).thenReturn(state);
     }
 
     @Test
@@ -71,8 +70,6 @@ public class GameTests extends UnitTests {
         when(oPlayer.move(afterXPlayerMove, xPlayerMove)).thenReturn(oPlayerMove);
         GameState afterOPlayerMove = mock(GameState.class);
         when(afterXPlayerMove.next(oPlayerMove)).thenReturn(afterOPlayerMove);
-        when(afterOPlayerMove.getNextPlayer()).thenReturn(Piece.X);
-        when(afterOPlayerMove.getCopy()).thenReturn(afterOPlayerMove);
 
         game.playTurn(new TurnParams(2, new Cell(0, 0)));
 
@@ -94,27 +91,25 @@ public class GameTests extends UnitTests {
         when(humanPlayer.move(initialState, null)).thenReturn(humanPlayerMove);
         GameState nextState = mock(GameState.class);
         when(initialState.next(humanPlayerMove)).thenReturn(nextState);
-        when(nextState.getNextPlayer()).thenReturn(Piece.O);
 
         game.playTurn(new TurnParams(1, humanPlayerMove));
 
         verify(humanPlayer).setNextMove(humanPlayerMove);
     }
 
-    @Test(expected = TicTacToeException.class)
+    @Test
     public void when_trying_to_play_turn_with_wrong_turn_number_then_exception() {
         GameState initialState = state;
-        when(initialState.getNextPlayer()).thenReturn(Piece.X);
         Game game = new Game(xPlayer, oPlayer, initialState);
 
-        game.playTurn(new TurnParams(10, null));
+        assertThrows(TicTacToeException.class, () -> game.playTurn(new TurnParams(10, null)));
     }
 
     @Test
     public void when_turn_played_then_last_played_timestamp_updated() {
         Game game = new Game(xPlayer, oPlayer, state);
         when(state.getNextPlayer()).thenReturn(Piece.X);
-        when(xPlayer.move(any(GameState.class), any(Cell.class))).thenReturn(new Cell(2, 2));
+        when(xPlayer.move(any(GameState.class), any())).thenReturn(new Cell(2, 2));
 
         ZonedDateTime beforePlay = game.getTimeLastPlayed();
 

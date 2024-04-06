@@ -1,21 +1,20 @@
 package org.atorma.tictactoe.game.player.mcts;
 
 
-import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Category(FastTests.class)
+@Tag("FastTests")
 public class UCTBonusTests {
 
     private GameState someState;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         Piece[][] board = new Piece[3][3];
         board[1][1] = Piece.X;

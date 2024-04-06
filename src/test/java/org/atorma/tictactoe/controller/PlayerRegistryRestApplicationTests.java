@@ -1,20 +1,20 @@
 package org.atorma.tictactoe.controller;
 
 import org.atorma.tictactoe.ApplicationMvcTests;
-import org.atorma.tictactoe.FastTests;
 import org.atorma.tictactoe.application.PlayerInfo;
 import org.atorma.tictactoe.application.PlayerRegistry;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Category(FastTests.class)
+@Tag("FastTests")
 public class PlayerRegistryRestApplicationTests extends ApplicationMvcTests {
 
     @Autowired PlayerRegistry playerRegistry;
