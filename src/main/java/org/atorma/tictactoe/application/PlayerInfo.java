@@ -16,9 +16,9 @@ public class PlayerInfo {
     private final Type type;
 
     public PlayerInfo(String id, String name, Type type) {
-        Assert.hasText(id);
-        Assert.hasText(name);
-        Assert.notNull(type);
+        Assert.hasText(id, "id cannot be empty");
+        Assert.hasText(name, "name cannot be empty");
+        Assert.notNull(type, "type cannot be null");
         this.id = id;
         this.name = name;
         this.type = type;

@@ -1,13 +1,14 @@
 package org.atorma.tictactoe.controller;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import jakarta.servlet.http.HttpServletResponse;
+import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.application.GameFactory;
 import org.atorma.tictactoe.application.GameParams;
 import org.atorma.tictactoe.application.GameRepository;
 import org.atorma.tictactoe.exception.GameDeletedException;
 import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.exception.TicTacToeException;
-import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.game.state.Piece;
 import org.atorma.tictactoe.game.state.Sequence;
 import org.slf4j.Logger;
@@ -17,8 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletResponse;
 
 @RestController
 @RequestMapping(value = "/games")

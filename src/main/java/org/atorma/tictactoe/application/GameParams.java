@@ -1,16 +1,19 @@
 package org.atorma.tictactoe.application;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import org.atorma.tictactoe.game.state.Piece;
 
-import javax.validation.Valid;
-import javax.validation.constraints.*;
 import java.util.EnumMap;
 import java.util.Map;
 
 public class GameParams {
 
     @Min(3) public int connectHowMany = 5;
-    @NotNull public Piece firstPlayer = Piece.X;
+    @NotNull
+    public Piece firstPlayer = Piece.X;
     @NotNull @Valid public BoardParams board = new BoardParams();
     public Map<Piece, PlayerInfo> players = new EnumMap<>(Piece.class);
 

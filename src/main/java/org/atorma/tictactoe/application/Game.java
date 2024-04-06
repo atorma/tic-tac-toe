@@ -38,8 +38,8 @@ public class Game {
     private AtomicReference<ZonedDateTime> timeLastPlayed = new AtomicReference<>();
 
     public Game(Player player1, Player player2, GameState initialState) {
-        Assert.isTrue(player1 != player2);
-        Assert.notNull(initialState);
+        Assert.isTrue(player1 != player2, "Players are the same object");
+        Assert.notNull(initialState, "Initial state is null");
 
         assignPieces(player1, player2);
 

@@ -35,8 +35,8 @@ public class InMemoryGameRepository implements GameRepository {
 
     @Override
     public Game save(Game game) {
-        Assert.notNull(game);
-        Assert.notNull(game.getId());
+        Assert.notNull(game, "Game must not be null");
+        Assert.notNull(game.getId(), "Game id must not be null");
         if (game.isDeleted()) {
             throw new GameDeletedException("Game " + game.getId() + " is deleted");
         }

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:11-alpine
+FROM eclipse-temurin:21-alpine
 WORKDIR /app
 COPY ./target/tic-tac-toe.jar .
 COPY ./public ./public/
