@@ -1,4 +1,4 @@
-FROM maven:3.9.6-amazoncorretto-8 AS server-build
+FROM maven:3.9.6-temurin-11 AS server-build
 WORKDIR /app
 COPY pom.xml .
 COPY src ./src

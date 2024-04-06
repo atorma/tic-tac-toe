@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 . utils.sh
 . .env-build
 
-java_version=1.8
+java_version=$(cat .java-version)
 java_home=$(/usr/libexec/java_home -v"$java_version")
 echo "JAVA_HOME=$java_home"
 JAVA_HOME="$java_home" mvn clean package -DskipTests

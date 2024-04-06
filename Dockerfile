@@ -1,4 +1,4 @@
-FROM amazoncorretto:8-alpine
+FROM eclipse-temurin:11-alpine
 WORKDIR /app
 COPY ./target/tic-tac-toe.jar .
 COPY ./public ./public/
