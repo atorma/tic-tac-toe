@@ -46,7 +46,7 @@ spec:
           resources:
             requests:
               cpu: 50m
-              memory: 50Mi
+              memory: 200Mi
           env:
             - name: MCTS_NAIVE_GAMES_PER_ROLLOUT
               value: "10"
