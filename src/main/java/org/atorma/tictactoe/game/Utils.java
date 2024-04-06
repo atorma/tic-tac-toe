@@ -4,6 +4,7 @@ package org.atorma.tictactoe.game;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Utils {
@@ -39,6 +40,55 @@ public class Utils {
             }
         }
         return candidates;
+    }
+
+    public static <E> ListIterator<E> reverse(ListIterator<E> listIterator) {
+        return new ListIterator<E>() {
+            @Override
+            public boolean hasNext() {
+                return listIterator.hasPrevious();
+            }
+
+            @Override
+            public E next() {
+                return listIterator.previous();
+            }
+
+            @Override
+            public boolean hasPrevious() {
+                return listIterator.hasNext();
+            }
+
+            @Override
+            public E previous() {
+                return listIterator.next();
+            }
+
+            @Override
+            public int nextIndex() {
+                return listIterator.previousIndex();
+            }
+
+            @Override
+            public int previousIndex() {
+                return listIterator.nextIndex();
+            }
+
+            @Override
+            public void remove() {
+                listIterator.remove();
+            }
+
+            @Override
+            public void set(E e) {
+                listIterator.set(e);
+            }
+
+            @Override
+            public void add(E e) {
+                listIterator.add(e);
+            }
+        };
     }
 
     public interface ScoringFunction<T> {

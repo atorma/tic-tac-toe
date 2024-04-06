@@ -326,27 +326,8 @@ public class GameState {
     }
 
     private void findSequencesThatCrossCell(Cell lastMove, Sequence.Direction direction) {
-        ListIterator<Cell> iter1, iter2;
-        switch (direction) {
-            case HORIZONTAL:
-                iter1 = new HorizontalIterator(lastMove);
-                iter2 = new HorizontalIterator(lastMove);
-                break;
-            case VERTICAL:
-                iter1 = new VerticalIterator(lastMove);
-                iter2 = new VerticalIterator(lastMove);
-                break;
-            case LEFT_RIGHT_DIAGONAL:
-                iter1 = new LeftRightDiagonalIterator(lastMove);
-                iter2 = new LeftRightDiagonalIterator(lastMove);
-                break;
-            case RIGHT_LEFT_DIAGONAL:
-                iter1 = new RightLeftDiagonalIterator(lastMove);
-                iter2 = new RightLeftDiagonalIterator(lastMove);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid direction");
-        }
+        ListIterator<Cell> iter1 = getIterator(lastMove, direction);
+        ListIterator<Cell> iter2 = getIterator(lastMove, direction);
 
         Piece piece = board.get(lastMove);
 
@@ -399,8 +380,22 @@ public class GameState {
         System.out.println(getStringRepresentation());
     }
 
+    public ListIterator<Cell> getIterator(Cell cell, Sequence.Direction direction) {
+        switch (direction) {
+            case HORIZONTAL:
+                return new HorizontalIterator(cell);
+            case VERTICAL:
+                return new VerticalIterator(cell);
+            case LEFT_RIGHT_DIAGONAL:
+                return new LeftRightDiagonalIterator(cell);
+            case RIGHT_LEFT_DIAGONAL:
+                return new RightLeftDiagonalIterator(cell);
+            default:
+                throw new IllegalArgumentException("Invalid direction");
+        }
+    }
 
-    private abstract class IteratorBase implements ListIterator<Cell> {
+    private abstract static class IteratorBase implements ListIterator<Cell> {
         protected int row;
         protected int col;
 
