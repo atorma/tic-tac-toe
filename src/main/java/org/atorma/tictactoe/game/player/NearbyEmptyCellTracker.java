@@ -56,7 +56,11 @@ public class NearbyEmptyCellTracker {
     }
 
     private void updateNearbyEmptyCellsAroundCell(GameState state, Cell cell) {
-        for (int d = 1; d <= allowedDistance; d++) {
+        int maxDistance = Math.min(
+                Math.max(state.getBoardRows() -1, state.getBoardCols() - 1),
+                allowedDistance
+        );
+        for (int d = 1; d <= maxDistance; d++) {
             Cell[] cells = {
                     new Cell(cell.row - d, cell.column - d),
                     new Cell(cell.row - d, cell.column),
