@@ -13,7 +13,7 @@ public class GameState {
     private int connectHowMany;
     private Board board;
     private Piece nextPlayer;
-    private Optional<List<Cell>> allowedMoves = Optional.empty();
+    private List<Cell> allowedMoves;
     private Sequence longestSequenceX;
     private Sequence longestSequenceO;
     private Set<Sequence> updatedSequences = new HashSet<>(4);
@@ -56,9 +56,9 @@ public class GameState {
 
         findSequencesThatCrossCell(position);
 
-        if (allowedMoves.isPresent()) {
-            int positionIndex = Collections.binarySearch(allowedMoves.get(), position, new CellRowOrderComparator());
-            allowedMoves.get().remove(positionIndex);
+        if (allowedMoves != null) {
+            int positionIndex = Collections.binarySearch(allowedMoves, position, new CellRowOrderComparator());
+            allowedMoves.remove(positionIndex);
         }
     }
 
@@ -136,14 +136,14 @@ public class GameState {
         if (isAtEnd()) {
             return Collections.emptyList();
         }
-        if (!allowedMoves.isPresent()) {
+        if (allowedMoves == null) {
             checkAllowedMoves();
         }
-        return Collections.unmodifiableList(allowedMoves.get());
+        return Collections.unmodifiableList(allowedMoves);
     }
 
     private void checkAllowedMoves() {
-        allowedMoves = Optional.of(new ArrayList<>(getBoardRows()*getBoardCols() - getNumPieces()));
+        allowedMoves = new ArrayList<>(getBoardRows()*getBoardCols() - getNumPieces());
 
         if (getWinner() != null) {
             return;
@@ -153,7 +153,7 @@ public class GameState {
             for (int j = 0; j <getBoardCols(); j++) {
                 Cell cell = new Cell(i, j);
                 if (board.get(cell) == null) {
-                    allowedMoves.get().add(cell);
+                    allowedMoves.add(cell);
                 }
             }
         }
