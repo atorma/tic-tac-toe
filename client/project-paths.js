@@ -7,7 +7,7 @@ var paths = {
     resources: ['src/main/resources/**'],
     libResources: ['node_modules/angular-material/angular-material.css'],
     tests: 'src/test/**/*.spec.js',
-    build: '../public',
+    build: '../server/public',
     appDestName: 'tic-tac-toe.js',
     libDestName: 'libs.js',
     testDestName: 'tic-tac-toe.spec.js'

@@ -1,0 +1,97 @@
+package org.atorma.tictactoe.game.player;
+
+import org.atorma.tictactoe.game.Utils;
+import org.atorma.tictactoe.game.player.random.RandomNearbyPlayer;
+import org.atorma.tictactoe.game.state.Cell;
+import org.atorma.tictactoe.game.state.GameState;
+import org.atorma.tictactoe.game.state.Piece;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+@Tag("FastTests")
+public class RandomNearbyPlayerTests {
+    RandomNearbyPlayer player;
+    GameState state;
+
+
+    @Test
+    public void when_first_move_on_empty_board_then_chooses_some_cell_and_afterwards_starts_placing_pieces_near_existing_ones() {
+        player = new RandomNearbyPlayer(1);
+        player.setPiece(Piece.X);
+
+        state = GameState.builder()
+                .setBoard(new Piece[18][18])
+                .setConnectHowMany(5)
+                .setNextPlayer(player.getPiece())
+                .build();
+
+        Cell myMove = player.move(state, null);
+
+        assertTrue(myMove.getRow() >= 0 && myMove.getRow() < state.getBoardRows());
+        assertTrue(myMove.getColumn() >= 0 && myMove.getColumn() < state.getBoardCols());
+
+        state = state.next(myMove);
+        state.print();
+
+        Cell opponentsMove = Utils.pickRandom(state.getAllowedMoves());
+        state = state.next(opponentsMove);
+
+        myMove = player.move(state, opponentsMove);
+        state = state.next(myMove);
+        state.print();
+        assertHasNearbyOccupiedCell(myMove, player.getAllowedDistance());
+    }
+
+    @Test
+    public void when_game_starts_with_pieces_on_board_then_places_piece_near_existing_piece() {
+        player = new RandomNearbyPlayer(2);
+        player.setPiece(Piece.X);
+
+        state = GameState.builder()
+                .setBoard(new Piece[18][18])
+                .setConnectHowMany(5)
+                .setNextPlayer(player.getPiece().other())
+                .build();
+
+        Cell opponentsMove = Utils.pickRandom(state.getAllowedMoves());
+        state = state.next(opponentsMove);
+
+        Cell myMove = player.move(state, opponentsMove);
+        state = state.next(myMove);
+        state.print();
+        assertHasNearbyOccupiedCell(myMove, player.getAllowedDistance());
+
+        opponentsMove = Utils.pickRandom(state.getAllowedMoves());
+        state = state.next(opponentsMove);
+
+        myMove = player.move(state, opponentsMove);
+        state = state.next(myMove);
+        state.print();
+        assertHasNearbyOccupiedCell(myMove, player.getAllowedDistance());
+    }
+
+    private void assertHasNearbyOccupiedCell(Cell move, int allowedDistance) {
+        Set<Cell> occupiedCells = new HashSet<>();
+        for (int i = 0; i < state.getBoardRows(); i++) {
+            for (int j = 0; j < state.getBoardCols(); j++) {
+                occupiedCells.add(new Cell(i, j));
+            }
+        }
+        occupiedCells.removeAll(state.getAllowedMoves());
+
+        boolean nearOccupied = false;
+        for (Cell occupied : occupiedCells) {
+            int d = Cell.getDistance(occupied, move);
+            if (d > 0 && d <= allowedDistance) {
+                nearOccupied = true;
+                break;
+            }
+        }
+        assertTrue(nearOccupied);
+    }
+}

@@ -1,8 +1,9 @@
-FROM maven:3.9.6-temurin-21 AS server-build
+FROM maven:3.9.6-eclipse-temurin-21 AS server-build
 WORKDIR /app
 COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
+COPY game ./game
+COPY server ./server
+RUN mvn clean package --projects server --also-make --batch-mode -D skipTests
 
 FROM node:16-alpine AS client-build
 WORKDIR /app/client
@@ -10,9 +11,9 @@ COPY client .
 RUN npm ci --omit=optional
 RUN npm run build
 
-FROM amazoncorretto:8-alpine
+FROM eclipse-temurin:21-alpine
 WORKDIR /app
-COPY --from=server-build /app/target/tic-tac-toe.jar ./
-COPY --from=client-build /app/public ./public/
-CMD ["java", "-jar", "tic-tac-toe.jar"]
+COPY --from=server-build /app/server/target/tic-tac-toe-server.jar ./
+COPY --from=client-build /app/server/public ./public/
+CMD ["java", "-jar", "tic-tac-toe-server.jar"]
 EXPOSE 8080/tcp

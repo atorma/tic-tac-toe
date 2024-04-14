@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 java_version=$(cat .java-version)
 java_home=$(/usr/libexec/java_home -v"$java_version")
 echo "JAVA_HOME=$java_home"
-JAVA_HOME="$java_home" mvn clean package -DskipTests
+JAVA_HOME="$java_home" mvn clean package --projects server --also-make --batch-mode -D skipTests
 
 cd client
 npm run build
