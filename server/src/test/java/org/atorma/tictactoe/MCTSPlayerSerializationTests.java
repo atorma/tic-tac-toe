@@ -172,12 +172,12 @@ public class MCTSPlayerSerializationTests extends ApplicationTests {
         var opponentsLastMove = gameState.getAllowedMoves().getFirst();
         gameState = gameState.next(opponentsLastMove);
 
-        var mctsGameDto = new MCTSGameDTO(player, gameState, opponentsLastMove);
+        var mctsGameDto = new MCTSGameInputDTO(opponentsLastMove, gameState, player);
 
         var json = objectMapper.writeValueAsString(mctsGameDto);
         LOGGER.info(json);
-        var deserialized = objectMapper.readValue(json, MCTSGameDTO.class);
+        var deserialized = objectMapper.readValue(json, MCTSGameInputDTO.class);
 
-        assertEquals(opponentsLastMove, deserialized.opponentsLastMove());
+        assertEquals(opponentsLastMove, deserialized.lastMove());
     }
 }
