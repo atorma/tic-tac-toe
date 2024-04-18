@@ -2,9 +2,11 @@ package org.atorma.tictactoe.controller;
 
 import com.jayway.jsonpath.JsonPath;
 import org.atorma.tictactoe.ApplicationMvcTests;
+import org.atorma.tictactoe.application.ComputationService;
 import org.atorma.tictactoe.application.Game;
 import org.atorma.tictactoe.application.GameRepository;
 import org.atorma.tictactoe.application.PlayerRegistry;
+import org.atorma.tictactoe.application.impl.LocalComputationService;
 import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.human.HumanPlayer;
@@ -33,6 +35,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
 
     @Autowired GameRepository gameRepository;
     @Autowired PlayerRegistry playerRegistry;
+    ComputationService computationService = new LocalComputationService();
 
     Game aiVsAiGame;
     Game humanVsAiGame;
@@ -211,23 +214,23 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
     @Test
     public void get_game_state() throws Exception {
 
-        aiVsAiGame.playTurn(new TurnParams(aiVsAiGame.getTurnNumber(), null));
+        aiVsAiGame.playTurn(new TurnParams(aiVsAiGame.getTurnNumber(), null), computationService);
         Game.Move lastMove = aiVsAiGame.getLastMove();
         Piece winner = aiVsAiGame.getState().getWinner();
 
         mockMvc.perform(get("/games/{id}", aiVsAiGame.getId()))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.move.piece").value(lastMove.getPiece().toString()))
-                .andExpect(jsonPath("$.move.cell.row").value(lastMove.getCell().getRow()))
-                .andExpect(jsonPath("$.move.cell.column").value(lastMove.getCell().getColumn()))
+                .andExpect(jsonPath("$.move.piece").value(lastMove.piece().toString()))
+                .andExpect(jsonPath("$.move.cell.row").value(lastMove.cell().getRow()))
+                .andExpect(jsonPath("$.move.cell.column").value(lastMove.cell().getColumn()))
                 .andExpect(jsonPath("$.turnNumber").value(aiVsAiGame.getTurnNumber()))
                 .andExpect(jsonPath("$.nextPlayer").value(aiVsAiGame.getState().getNextPlayer().toString()))
                 .andExpect(jsonPath("$.gameEnded").value(aiVsAiGame.getState().isAtEnd()))
                 .andExpect(jsonPath("$.winner").value(winner != null ? winner.toString() : null))
                 .andExpect(jsonPath("$.winningSequence").value(winner != null ? notNullValue() : nullValue()))
                 .andExpect(jsonPath("$.connectHowMany").value(aiVsAiGame.getState().getConnectHowMany()))
-                .andExpect(jsonPath("$.board[" + lastMove.getCell().getRow() + "][" + lastMove.getCell().getColumn() + "]").value(lastMove.getPiece().toString()))
+                .andExpect(jsonPath("$.board[" + lastMove.cell().getRow() + "][" + lastMove.cell().getColumn() + "]").value(lastMove.piece().toString()))
         ;
     }
 
@@ -243,9 +246,9 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .content(turnJson))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.move.piece").value(aiVsAiGame.getLastMove().getPiece().toString()))
-                .andExpect(jsonPath("$.move.cell.row").value(aiVsAiGame.getLastMove().getCell().getRow()))
-                .andExpect(jsonPath("$.move.cell.column").value(aiVsAiGame.getLastMove().getCell().getColumn()))
+                .andExpect(jsonPath("$.move.piece").value(aiVsAiGame.getLastMove().piece().toString()))
+                .andExpect(jsonPath("$.move.cell.row").value(aiVsAiGame.getLastMove().cell().getRow()))
+                .andExpect(jsonPath("$.move.cell.column").value(aiVsAiGame.getLastMove().cell().getColumn()))
                 .andExpect(jsonPath("$.turnNumber").value(aiVsAiGame.getTurnNumber()))
                 .andExpect(jsonPath("$.nextPlayer").value(aiVsAiGame.getState().getNextPlayer().toString()))
                 .andExpect(jsonPath("$.gameEnded").value(aiVsAiGame.getState().isAtEnd()))
@@ -270,7 +273,7 @@ public class GameRestApplicationTests extends ApplicationMvcTests {
                 .content(turnJson))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.move.piece").value(humanVsAiGame.getLastMove().getPiece().toString()))
+                .andExpect(jsonPath("$.move.piece").value(humanVsAiGame.getLastMove().piece().toString()))
                 .andExpect(jsonPath("$.move.cell.row").value(humanPlayerMove.getRow()))
                 .andExpect(jsonPath("$.move.cell.column").value(humanPlayerMove.getColumn()))
                 .andExpect(jsonPath("$.turnNumber").value(humanVsAiGame.getTurnNumber()))

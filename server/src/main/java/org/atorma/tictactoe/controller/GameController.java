@@ -2,10 +2,7 @@ package org.atorma.tictactoe.controller;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import jakarta.servlet.http.HttpServletResponse;
-import org.atorma.tictactoe.application.Game;
-import org.atorma.tictactoe.application.GameFactory;
-import org.atorma.tictactoe.application.GameParams;
-import org.atorma.tictactoe.application.GameRepository;
+import org.atorma.tictactoe.application.*;
 import org.atorma.tictactoe.exception.GameDeletedException;
 import org.atorma.tictactoe.exception.NotFoundException;
 import org.atorma.tictactoe.exception.TicTacToeException;
@@ -26,6 +23,7 @@ public class GameController {
 
     private GameRepository gameRepository;
     private GameFactory gameFactory;
+    private ComputationService computationService;
 
 
     @RequestMapping(method = RequestMethod.POST)
@@ -46,7 +44,7 @@ public class GameController {
                             @RequestBody TurnParams turnParams,
                             HttpServletResponse response) {
         Game game = gameRepository.findById(gameId);
-        game.playTurn(turnParams);
+        game.playTurn(turnParams, computationService);
 
         try {
             game = gameRepository.save(game);
@@ -93,7 +91,10 @@ public class GameController {
         this.gameFactory = gameFactory;
     }
 
-
+    @Autowired
+    public void setComputationService(ComputationService computationService) {
+        this.computationService = computationService;
+    }
 
     @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.NONE)
     public static class GameDTO {

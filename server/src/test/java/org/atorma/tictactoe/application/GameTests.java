@@ -1,6 +1,7 @@
 package org.atorma.tictactoe.application;
 
 import org.atorma.tictactoe.UnitTests;
+import org.atorma.tictactoe.application.impl.LocalComputationService;
 import org.atorma.tictactoe.controller.TurnParams;
 import org.atorma.tictactoe.exception.TicTacToeException;
 import org.atorma.tictactoe.game.player.Player;
@@ -24,6 +25,7 @@ public class GameTests extends UnitTests {
     @Mock private Player xPlayer;
     @Mock private Player oPlayer;
     @Mock private GameState state;
+    private final ComputationService computationService = new LocalComputationService();
 
 
     @BeforeEach
@@ -60,10 +62,10 @@ public class GameTests extends UnitTests {
         when(afterXPlayerMove.getNextPlayer()).thenReturn(Piece.O);
         when(afterXPlayerMove.getCopy()).thenReturn(afterXPlayerMove);
 
-        game.playTurn(new TurnParams(1, new Cell(1, 1)));
+        game.playTurn(new TurnParams(1, new Cell(1, 1)), computationService);
 
         assertEquals(afterXPlayerMove, game.getState());
-        assertEquals(xPlayerMove, game.getLastMove().getCell());
+        assertEquals(xPlayerMove, game.getLastMove().cell());
         assertEquals(2, game.getTurnNumber());
 
         Cell oPlayerMove = new Cell(6, 6);
@@ -71,10 +73,10 @@ public class GameTests extends UnitTests {
         GameState afterOPlayerMove = mock(GameState.class);
         when(afterXPlayerMove.next(oPlayerMove)).thenReturn(afterOPlayerMove);
 
-        game.playTurn(new TurnParams(2, new Cell(0, 0)));
+        game.playTurn(new TurnParams(2, new Cell(0, 0)), computationService);
 
         assertEquals(afterOPlayerMove, game.getState());
-        assertEquals(oPlayerMove, game.getLastMove().getCell());
+        assertEquals(oPlayerMove, game.getLastMove().cell());
         assertEquals(3, game.getTurnNumber());
     }
 
@@ -92,7 +94,7 @@ public class GameTests extends UnitTests {
         GameState nextState = mock(GameState.class);
         when(initialState.next(humanPlayerMove)).thenReturn(nextState);
 
-        game.playTurn(new TurnParams(1, humanPlayerMove));
+        game.playTurn(new TurnParams(1, humanPlayerMove), computationService);
 
         verify(humanPlayer).setNextMove(humanPlayerMove);
     }
@@ -102,7 +104,7 @@ public class GameTests extends UnitTests {
         GameState initialState = state;
         Game game = new Game(xPlayer, oPlayer, initialState);
 
-        assertThrows(TicTacToeException.class, () -> game.playTurn(new TurnParams(10, null)));
+        assertThrows(TicTacToeException.class, () -> game.playTurn(new TurnParams(10, null), computationService));
     }
 
     @Test
@@ -113,7 +115,7 @@ public class GameTests extends UnitTests {
 
         ZonedDateTime beforePlay = game.getTimeLastPlayed();
 
-        game.playTurn(new TurnParams(1, new Cell(1, 1)));
+        game.playTurn(new TurnParams(1, new Cell(1, 1)), computationService);
 
         ZonedDateTime afterPlay = game.getTimeLastPlayed();
 

@@ -1,22 +1,22 @@
-package org.atorma.tictactoe;
+package org.atorma.tictactoe.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.atorma.tictactoe.game.application.ComputationInput;
 import org.atorma.tictactoe.game.player.mcts.*;
 import org.atorma.tictactoe.game.state.*;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("FastTests")
-public class MCTSPlayerSerializationTests extends ApplicationTests {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MCTSPlayerSerializationTests.class);
+public class JSONSerializationTests {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JSONSerializationTests.class);
 
-    @Autowired private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     public void serializes_and_deserializes_MCTSParameters() throws JsonProcessingException {
@@ -172,11 +172,11 @@ public class MCTSPlayerSerializationTests extends ApplicationTests {
         var opponentsLastMove = gameState.getAllowedMoves().getFirst();
         gameState = gameState.next(opponentsLastMove);
 
-        var mctsGameDto = new MCTSGameInputDTO(opponentsLastMove, gameState, player);
+        var computationInput = new ComputationInput(player, gameState, opponentsLastMove);
 
-        var json = objectMapper.writeValueAsString(mctsGameDto);
+        var json = objectMapper.writeValueAsString(computationInput);
         LOGGER.info(json);
-        var deserialized = objectMapper.readValue(json, MCTSGameInputDTO.class);
+        var deserialized = objectMapper.readValue(json, ComputationInput.class);
 
         assertEquals(opponentsLastMove, deserialized.lastMove());
     }

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.functions.HttpFunction;
 import com.google.cloud.functions.HttpRequest;
 import com.google.cloud.functions.HttpResponse;
-import org.atorma.tictactoe.game.player.mcts.MCTSGameInputDTO;
-import org.atorma.tictactoe.game.player.mcts.MCTSGameOutputDTO;
+import org.atorma.tictactoe.game.application.ComputationInput;
+import org.atorma.tictactoe.game.application.ComputationOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,9 +29,9 @@ public class MCTSFunction implements HttpFunction {
             return;
         }
 
-        MCTSGameInputDTO game;
+        ComputationInput input;
         try {
-            game = objectMapper.readValue(request.getReader(), MCTSGameInputDTO.class);
+            input = objectMapper.readValue(request.getReader(), ComputationInput.class);
         } catch (Exception e) {
             LOGGER.warn("Invalid JSON: {}", e.getMessage());
             response.setStatusCode(400);
@@ -39,9 +39,8 @@ public class MCTSFunction implements HttpFunction {
         }
 
         try {
-            var move = game.player().move(game.gameState(), game.lastMove());
-            // Output does not include game state to save on network IO
-            var output = new MCTSGameOutputDTO(move, game.player());
+            var move = input.player().move(input.state(), input.lastMove());
+            var output = new ComputationOutput(input.player(), move);
 
             response.setStatusCode(200);
             response.setContentType("application/json");
