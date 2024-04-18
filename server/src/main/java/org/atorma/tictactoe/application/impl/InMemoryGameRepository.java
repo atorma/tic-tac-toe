@@ -66,6 +66,6 @@ public class InMemoryGameRepository implements GameRepository {
 
     @Value("${game.autoDeletePeriodMinutes}")
     public void setAutoDeletePeriodMinutes(int autoDeletePeriodMinutes) {
-        this.autoDeletePeriodSeconds = autoDeletePeriodMinutes*60;
+        this.autoDeletePeriodSeconds = autoDeletePeriodMinutes*60L;
     }
 }

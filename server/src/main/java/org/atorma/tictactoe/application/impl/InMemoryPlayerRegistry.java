@@ -85,11 +85,11 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
 
     @Override
     public PlayerInfo getPlayerInfoById(String id) {
-        PlayerInfo playerInfo = playerInfoList.stream()
+        var playerInfo = playerInfoList.stream()
                 .filter(x -> x.getId().equals(id))
-                .findFirst().get();
-        if (playerInfo != null) {
-            return playerInfo;
+                .findFirst();
+        if (playerInfo.isPresent()) {
+            return playerInfo.get();
         } else {
             throw new NotFoundException("Could not find player info with id = " + id);
         }
