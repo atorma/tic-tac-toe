@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.atorma</groupId>
-        <artifactId>tic-tac-toe</artifactId>
+        <groupId>org.atorma.tictactoe</groupId>
+        <artifactId>project</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>tic-tac-toe-mcts</artifactId>
+    <artifactId>move-function</artifactId>
     <packaging>jar</packaging>
 
     <name>Tic-tac-toe cloud function</name>
@@ -36,8 +36,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.atorma</groupId>
-            <artifactId>tic-tac-toe-game</artifactId>
+            <groupId>org.atorma.tictactoe</groupId>
+            <artifactId>game</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -61,6 +61,7 @@
     </dependencies>
 
     <build>
+        <finalName>tic-tac-toe-function</finalName>
         <plugins>
             <plugin>
                 <!--

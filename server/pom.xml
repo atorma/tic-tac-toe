@@ -3,16 +3,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>tic-tac-toe-server</artifactId>
+    <parent>
+        <groupId>org.atorma.tictactoe</groupId>
+        <artifactId>project</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>server</artifactId>
     <packaging>jar</packaging>
 
     <name>Tic-tac-toe server</name>
-
-    <parent>
-        <groupId>org.atorma</groupId>
-        <artifactId>tic-tac-toe</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-    </parent>
 
     <properties>
         <spring-boot.version>3.2.4</spring-boot.version>
@@ -32,8 +32,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.atorma</groupId>
-            <artifactId>tic-tac-toe-game</artifactId>
+            <groupId>org.atorma.tictactoe</groupId>
+            <artifactId>game</artifactId>
             <version>${project.version}</version>
         </dependency>
 

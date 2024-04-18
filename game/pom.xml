@@ -4,12 +4,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.atorma</groupId>
-        <artifactId>tic-tac-toe</artifactId>
+        <groupId>org.atorma.tictactoe</groupId>
+        <artifactId>project</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>tic-tac-toe-game</artifactId>
+    <artifactId>game</artifactId>
     <packaging>jar</packaging>
 
     <name>Tic-tac-toe game library</name>
