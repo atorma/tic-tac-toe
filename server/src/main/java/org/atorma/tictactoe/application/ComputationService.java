@@ -5,7 +5,7 @@ import org.atorma.tictactoe.game.application.ComputationOutput;
 
 public interface ComputationService {
 
-    ComputationOutput playTurn(ComputationInput input);
+    ComputationOutput computeMove(ComputationInput input);
 
 }
 

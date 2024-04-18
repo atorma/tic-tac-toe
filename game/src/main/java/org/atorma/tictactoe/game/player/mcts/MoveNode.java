@@ -126,10 +126,10 @@ public class MoveNode {
 
         this.children = moveDTO.expandedChildren().stream()
                 .map(childId -> new MoveNode(treeDTO, childId, this, myState))
-                .toList();
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
         this.unexpandedMoves = myState.getAllowedMoves().stream()
                 .filter(c -> this.children.stream().noneMatch(n -> n.cell.equals(c)))
-                .toList();
+                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
 
     @JsonValue

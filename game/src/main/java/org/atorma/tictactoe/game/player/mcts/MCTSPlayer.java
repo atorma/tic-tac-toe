@@ -107,6 +107,10 @@ public class MCTSPlayer implements Player, Configurable {
         LOGGER.info("Configuration: {}", params);
     }
 
+    @Override
+    public boolean moveIsHeavyComputation() {
+        return true;
+    }
 
     @Override
     public Piece getPiece() {

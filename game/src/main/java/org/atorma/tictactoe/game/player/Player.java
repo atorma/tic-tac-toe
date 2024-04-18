@@ -6,10 +6,7 @@ import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
 
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.CLASS,
-        property = "@class"
-)
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
 public interface Player {
 
     /**
@@ -28,6 +25,13 @@ public interface Player {
      *  The board cell where this player's next move should be placed
      */
     Cell move(GameState currentState, Cell opponentsLastMove);
+
+    /**
+     * Tells if move method requires heavy computation.
+     */
+    default boolean moveIsHeavyComputation() {
+        return false;
+    }
 
     /**
      * Sets piece this player has.

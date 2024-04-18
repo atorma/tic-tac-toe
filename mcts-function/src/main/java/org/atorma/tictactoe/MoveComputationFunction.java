@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-public class MCTSFunction implements HttpFunction {
-    private static final Logger LOGGER = LoggerFactory.getLogger(MCTSFunction.class);
+public class MoveComputationFunction implements HttpFunction {
+    private static final Logger LOGGER = LoggerFactory.getLogger(MoveComputationFunction.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override

@@ -76,7 +76,7 @@
                 <artifactId>function-maven-plugin</artifactId>
                 <version>0.11.0</version>
                 <configuration>
-                    <functionTarget>org.atorma.tictactoe.MCTSFunction</functionTarget>
+                    <functionTarget>org.atorma.tictactoe.MoveComputationFunction</functionTarget>
                     <port>8081</port>
                 </configuration>
             </plugin>

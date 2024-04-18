@@ -103,7 +103,7 @@ public class Game {
         }
 
         var computationInput = new ComputationInput(player, state.getCopy(), lastMove != null ? lastMove.cell() : null);
-        var result = computationService.playTurn(computationInput);
+        var result = computationService.computeMove(computationInput);
 
         this.state.set(state.next(result.move()));
         this.lastMove.set(new Move(piece, result.move()));
