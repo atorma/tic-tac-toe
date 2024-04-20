@@ -1,6 +1,8 @@
 #! /bin/sh
 set -e
 
+cd "$(dirname "$0")"
+
 gcloud functions deploy tic-tac-toe-move \
     --gen2 \
     --region=europe-west1 \
