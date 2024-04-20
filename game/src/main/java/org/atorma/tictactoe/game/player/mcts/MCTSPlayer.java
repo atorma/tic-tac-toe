@@ -127,7 +127,7 @@ public class MCTSPlayer implements Player, Configurable {
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
         if (lastMove == null) {
             lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
-            LOGGER.debug("New game started! Simulation strategy {}.", params.simulationStrategy.toString().toLowerCase());
+            LOGGER.info("New game started! Simulation strategy {}.", params.simulationStrategy.toString().toLowerCase());
         } else {
             lastMove = lastMove.findMoveTo(opponentsLastMove);
         }
@@ -142,7 +142,7 @@ public class MCTSPlayer implements Player, Configurable {
         /* Main work */
         lastMove = planMove();
 
-        LOGGER.debug("Best move selected out of {} expanded", lastMove.getParent().getChildren().size());
+        LOGGER.info("Best move selected out of {} expanded", lastMove.getParent().getChildren().size());
 
         if (params.pruneSiblings) {
             lastMove.pruneOtherBranchesOnPathToRoot();
@@ -154,8 +154,8 @@ public class MCTSPlayer implements Player, Configurable {
             lastMove.pruneDescendantLevelsGreaterThan(params.pruneDescendantLevelsGreaterThan);
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("MCTS tree size after pruning: {}", MoveNode.getTreeSize(lastMove.getRoot()));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("MCTS tree size after pruning: {}", MoveNode.getTreeSize(lastMove.getRoot()));
         }
 
         return lastMove.getMove();
@@ -211,8 +211,8 @@ public class MCTSPlayer implements Player, Configurable {
             emptyCellTracker.addOccupiedCell(currentState, bestMove.getMove());
         }
 
-        LOGGER.debug("{} rollouts in {} ms", planningRollouts, System.currentTimeMillis() - planningStartTime);
-        LOGGER.debug("Chose {} {}", isMandatoryMove ? "mandatory" : "MCTS", bestMove.printStatsFor(mySide));
+        LOGGER.info("{} rollouts in {} ms", planningRollouts, System.currentTimeMillis() - planningStartTime);
+        LOGGER.info("Chose {} {}", isMandatoryMove ? "mandatory" : "MCTS", bestMove.printStatsFor(mySide));
 
         return bestMove;
     }
