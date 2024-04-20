@@ -105,6 +105,7 @@ public class MCTSPlayer implements Player, Configurable {
         };
 
         LOGGER.info("Configuration: {}", params);
+        LOGGER.info("Planning threads: {}", numPlanningThreads);
     }
 
     @Override
