@@ -58,5 +58,13 @@ spec:
               value: "https://europe-west1-decent-micron-196515.cloudfunctions.net/tic-tac-toe-move"
             - name: SPRING_PROFILES_ACTIVE
               value: "cloud"
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /var/secrets/google/key.json
+          volumeMounts:
+            - name: google-cloud-key
+              mountPath: /var/secrets/google
       restartPolicy: Always
-      
+      volumes:
+        - name: google-cloud-key
+          secret:
+            secretName: tic-tac-toe-sa-key
