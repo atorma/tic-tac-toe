@@ -33,19 +33,23 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
 
         MCTSParameters naiveParams = new MCTSParameters();
         naiveParams.gamesPerRollout = parseEnvVarAsInt("MCTS_NAIVE_GAMES_PER_ROLLOUT", 50);
+        naiveParams.pruneDescendantLevelsGreaterThan = parseEnvVarAsInt("MCTS_MAX_DESCENDANT_LEVEL", Integer.MAX_VALUE);
         naiveParams.simulationStrategy = MCTSParameters.SimulationStrategy.NAIVE;
+
         addPlayerInfo("MCTS naive heuristics", PlayerInfo.Type.AI, MCTSPlayer.class, naiveParams);
 
         MCTSParameters randomNearbyParams = new MCTSParameters();
         randomNearbyParams.simulationStrategy = MCTSParameters.SimulationStrategy.RANDOM_NEARBY;
         randomNearbyParams.gamesPerRollout =  naiveParams.gamesPerRollout = parseEnvVarAsInt("MCTS_RANDOM_NEARBY_GAMES_PER_ROLLOUT", 200);
         randomNearbyParams.searchRadius = 2;
+        randomNearbyParams.pruneDescendantLevelsGreaterThan = parseEnvVarAsInt("MCTS_MAX_DESCENDANT_LEVEL", Integer.MAX_VALUE);
         addPlayerInfo("MCTS random nearby", PlayerInfo.Type.AI, MCTSPlayer.class, randomNearbyParams);
 
         MCTSParameters uniformRandomParams = new MCTSParameters();
         uniformRandomParams.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         uniformRandomParams.gamesPerRollout = parseEnvVarAsInt("MCTS_UNIFORM_RANDOM_GAMES_PER_ROLLOUT", 700);
         uniformRandomParams.searchRadius = 2;
+        uniformRandomParams.pruneDescendantLevelsGreaterThan = parseEnvVarAsInt("MCTS_MAX_DESCENDANT_LEVEL", Integer.MAX_VALUE);
         addPlayerInfo("MCTS uniform random", PlayerInfo.Type.AI, MCTSPlayer.class, uniformRandomParams);
 
         addPlayerInfo("Naive heuristics", PlayerInfo.Type.AI, NaivePlayer.class);

@@ -54,6 +54,8 @@ spec:
               value: "50"
             - name: MCTS_UNIFORM_RANDOM_GAMES_PER_ROLLOUT
               value: "1000"
+            - name: MCTS_MAX_DESCENDANT_LEVEL
+              value: "1"
             - name: MOVE_FUNCTION_URL
               value: "https://europe-west1-decent-micron-196515.cloudfunctions.net/tic-tac-toe-move"
             - name: SPRING_PROFILES_ACTIVE

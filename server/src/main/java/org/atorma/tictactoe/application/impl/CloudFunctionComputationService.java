@@ -1,8 +1,9 @@
 package org.atorma.tictactoe.application.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.http.AbstractHttpContent;
 import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpContent;
+import com.google.api.client.http.HttpMediaType;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -80,22 +81,14 @@ public class CloudFunctionComputationService implements ComputationService {
         }
     }
 
-    private class JsonHttpContent implements HttpContent {
+    private class JsonHttpContent extends AbstractHttpContent {
         private final Object object;
 
         JsonHttpContent(Object object) {
+            super(new HttpMediaType("application", "json"));
             this.object = object;
         }
 
-        @Override
-        public long getLength() {
-            return -1L;
-        }
-
-        @Override
-        public String getType() {
-            return "application/json; charset=UTF-8";
-        }
 
         @Override
         public boolean retrySupported() {
