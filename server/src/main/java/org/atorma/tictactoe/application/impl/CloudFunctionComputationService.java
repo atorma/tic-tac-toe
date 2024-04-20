@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.http.AbstractHttpContent;
 import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpMediaType;
+import com.google.api.client.http.HttpRequestFactory;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
@@ -38,18 +39,21 @@ public class CloudFunctionComputationService implements ComputationService {
         this.moveFunctionUrl = moveFunctionUrl;
         this.objectMapper = objectMapper;
 
+        IdTokenCredentials.Builder tempBuilder;
         try {
             var googleCredentials = GoogleCredentials.getApplicationDefault();
             if (googleCredentials instanceof IdTokenProvider) {
-                idTokenBuilder = IdTokenCredentials.newBuilder()
+                tempBuilder = IdTokenCredentials.newBuilder()
                         .setIdTokenProvider((IdTokenProvider) googleCredentials)
                         .setTargetAudience(moveFunctionUrl);
             } else {
                 throw new IllegalArgumentException("Credentials are not an instance of IdTokenProvider.");
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            tempBuilder = null;
+            LOGGER.info("Google application credentials not found. Calls will be unauthenticated");
         }
+        idTokenBuilder = tempBuilder;
     }
 
     @Override
@@ -66,11 +70,9 @@ public class CloudFunctionComputationService implements ComputationService {
     private ComputationOutput sendMoveToCloudFunction(ComputationInput input) {
         LOGGER.info("Sending move computation to cloud function...");
         var startTime = System.currentTimeMillis();
+        var requestFactory = getRequestFactory();
         try {
-            var tokenCredential = idTokenBuilder.build();
-            var adapter = new HttpCredentialsAdapter(tokenCredential);
-            var transport = new NetHttpTransport();
-            var request = transport.createRequestFactory(adapter)
+            var request = requestFactory
                     .buildPostRequest(new GenericUrl(moveFunctionUrl), new JsonHttpContent(input));
             var response = request.execute();
             var output = objectMapper.readValue(response.getContent(), ComputationOutput.class);
@@ -78,6 +80,17 @@ public class CloudFunctionComputationService implements ComputationService {
             return output;
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private HttpRequestFactory getRequestFactory() {
+        var transport = new NetHttpTransport();
+        if (idTokenBuilder != null) {
+            var tokenCredential = idTokenBuilder.build();
+            var adapter = new HttpCredentialsAdapter(tokenCredential);
+            return transport.createRequestFactory(adapter);
+        } else {
+            return transport.createRequestFactory();
         }
     }
 
