@@ -49,10 +49,14 @@ spec:
               memory: 200Mi
           env:
             - name: MCTS_NAIVE_GAMES_PER_ROLLOUT
-              value: "10"
+              value: "50"
             - name: MCTS_RANDOM_NEARBY_GAMES_PER_ROLLOUT
-              value: "10"
+              value: "50"
             - name: MCTS_UNIFORM_RANDOM_GAMES_PER_ROLLOUT
-              value: "280"
+              value: "1000"
+            - name: MOVE_FUNCTION_URL
+              value: "https://europe-west1-decent-micron-196515.cloudfunctions.net/tic-tac-toe-move"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "cloud"
       restartPolicy: Always
       
