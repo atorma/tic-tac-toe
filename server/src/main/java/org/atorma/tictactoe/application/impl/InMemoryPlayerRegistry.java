@@ -24,15 +24,15 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
 
     private int playerInfoIdSequence = 1;
 
-    private List<PlayerInfo> playerInfoList = new ArrayList<>();
-    private Map<String, Class<? extends Player>> playerClasses = new HashMap<>();
-    private Map<String, Object> playerConfigs = new HashMap<>();
+    private final List<PlayerInfo> playerInfoList = new ArrayList<>();
+    private final Map<String, Class<? extends Player>> playerClasses = new HashMap<>();
+    private final Map<String, Object> playerConfigs = new HashMap<>();
 
     public InMemoryPlayerRegistry() {
         addPlayerInfo("Human", PlayerInfo.Type.HUMAN, HumanPlayer.class);
 
         MCTSParameters naiveParams = new MCTSParameters();
-        naiveParams.gamesPerRollout = parseEnvVarAsInt("MCTS_NAIVE_GAMES_PER_ROLLOUT", 50);
+        naiveParams.gamesPerRollout = parseEnvVarAsInt("MCTS_NAIVE_GAMES_PER_ROLLOUT", 5);
         naiveParams.pruneDescendantLevelsGreaterThan = parseEnvVarAsInt("MCTS_MAX_DESCENDANT_LEVEL", Integer.MAX_VALUE);
         naiveParams.simulationStrategy = MCTSParameters.SimulationStrategy.NAIVE;
 
