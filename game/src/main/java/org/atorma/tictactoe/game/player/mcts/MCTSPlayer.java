@@ -138,6 +138,9 @@ public class MCTSPlayer implements Player, Configurable {
         this.currentState = updatedState;
         this.opponentsLastMove = opponentsLastMove;
 
+        LOGGER.info("Starting move {}", lastMove);
+        LOGGER.info("Starting tree size {}", MoveNode.getTreeSize(lastMove));
+
         // Don't prune here. Seems it can cause so much GC activity that it steals CPU resources for simulation.
 
         /* Main work */
