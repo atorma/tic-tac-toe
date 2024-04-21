@@ -14,4 +14,5 @@ gcloud functions deploy tic-tac-toe-move \
     --max-instances=2 \
     --memory=4Gi \
     --cpu=8 \
-    --no-allow-unauthenticated
+    --no-allow-unauthenticated \
+    --ingress-settings=internal-only
