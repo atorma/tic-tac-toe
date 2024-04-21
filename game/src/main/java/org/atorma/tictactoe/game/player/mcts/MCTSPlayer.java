@@ -130,7 +130,7 @@ public class MCTSPlayer implements Player, Configurable {
             lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
             LOGGER.info("New game started! Simulation strategy {}.", params.simulationStrategy.toString().toLowerCase());
         } else {
-            LOGGER.info("Own last move: {}", lastMove);
+            LOGGER.info("Own last move: {}", lastMove.printStatsFor(mySide));
             LOGGER.info("Tree size before opponent's move: {}", MoveNode.getTreeSize(lastMove));
             lastMove = lastMove.findMoveTo(opponentsLastMove);
         }
@@ -140,7 +140,8 @@ public class MCTSPlayer implements Player, Configurable {
         this.currentState = updatedState;
         this.opponentsLastMove = opponentsLastMove;
 
-        LOGGER.info("Starting planning from move {}", lastMove);
+        LOGGER.info("Opponent's last move: {}", opponentsLastMove);
+        LOGGER.info("Starting planning from move {}", lastMove.printStatsFor(mySide));
 
         // Don't prune here. Seems it can cause so much GC activity that it steals CPU resources for simulation.
 
@@ -148,6 +149,10 @@ public class MCTSPlayer implements Player, Configurable {
         lastMove = planMove();
 
         LOGGER.info("Best move selected out of {} expanded", lastMove.getParent().getChildren().size());
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("MCTS tree size before pruning: {}", MoveNode.getTreeSize(lastMove.getRoot()));
+        }
 
         if (params.pruneSiblings) {
             lastMove.pruneOtherBranchesOnPathToRoot();
