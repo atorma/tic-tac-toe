@@ -13,6 +13,7 @@ import com.google.auth.oauth2.IdTokenProvider;
 import org.atorma.tictactoe.application.ComputationService;
 import org.atorma.tictactoe.game.application.ComputationInput;
 import org.atorma.tictactoe.game.application.ComputationOutput;
+import org.atorma.tictactoe.game.player.mcts.MCTSPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,7 +61,14 @@ public class CloudFunctionComputationService implements ComputationService {
     public ComputationOutput computeMove(ComputationInput input) {
         var player = input.player();
         if (player.moveIsHeavyComputation()) {
-            return sendMoveToCloudFunction(input);
+            if (player instanceof MCTSPlayer mctsPlayer) {
+                LOGGER.info("MCTS tree before computation: {}", mctsPlayer.getLastMove());
+            }
+            var output = sendMoveToCloudFunction(input);
+            if (player instanceof MCTSPlayer mctsPlayer) {
+                LOGGER.info("MCTS tree after computation: {}", mctsPlayer.getLastMove());
+            }
+            return output;
         } else {
             LOGGER.info("Computing move locally");
             return localComputationService.computeMove(input);

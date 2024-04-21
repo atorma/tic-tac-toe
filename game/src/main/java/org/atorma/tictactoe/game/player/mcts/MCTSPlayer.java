@@ -130,6 +130,8 @@ public class MCTSPlayer implements Player, Configurable {
             lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
             LOGGER.info("New game started! Simulation strategy {}.", params.simulationStrategy.toString().toLowerCase());
         } else {
+            LOGGER.info("Own last move: {}", lastMove);
+            LOGGER.info("Tree size before opponent's move: {}", MoveNode.getTreeSize(lastMove));
             lastMove = lastMove.findMoveTo(opponentsLastMove);
         }
         if (emptyCellTracker == null) {
@@ -138,8 +140,7 @@ public class MCTSPlayer implements Player, Configurable {
         this.currentState = updatedState;
         this.opponentsLastMove = opponentsLastMove;
 
-        LOGGER.info("Starting move {}", lastMove);
-        LOGGER.info("Starting tree size {}", MoveNode.getTreeSize(lastMove));
+        LOGGER.info("Starting planning from move {}", lastMove);
 
         // Don't prune here. Seems it can cause so much GC activity that it steals CPU resources for simulation.
 
