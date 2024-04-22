@@ -267,6 +267,12 @@ public class MCTSPlayer implements Player, Configurable {
      * trying to maximize her own expected reward (+ exploration bonus).
      * <p>
      * Returns a promising move, or one that ends the game.
+     * <p>
+     * <a href="https://en.wikipedia.org/wiki/Monte_Carlo_tree_search">Wikipedia</a>:
+     * This [in backpropagation, crediting with a win only those nodes where the current player is the one who won
+     * but incrementing total number of plays in all nodes on the path] ensures that during selection,
+     * each player's choices expand towards the most promising moves for that player,
+     * which mirrors the goal of each player to maximize the value of their move.
      */
     private MoveNode selectMctsMove(MoveNode startNode) {
         MoveNode moveNode = startNode;
@@ -358,7 +364,7 @@ public class MCTSPlayer implements Player, Configurable {
         List<MoveNode> candidates = lastMove.getBestMoves();
 
         if (candidates.size() == 1) {
-            return candidates.get(0);
+            return candidates.getFirst();
         }
 
         // NaivePlayer always tries to elongate its longest sequence, so among equally well
