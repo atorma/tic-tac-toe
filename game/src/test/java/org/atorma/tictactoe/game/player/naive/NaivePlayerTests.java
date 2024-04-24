@@ -1,7 +1,7 @@
 package org.atorma.tictactoe.game.player.naive;
 
 
-import org.atorma.tictactoe.game.player.naive.NaivePlayer;
+import org.atorma.tictactoe.game.Simulator;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
@@ -299,5 +299,47 @@ public class NaivePlayerTests {
         state.print();
 
         assertEquals(new Cell(3, 3), move);
+    }
+
+    @Test
+    public void takes_move_that_will_yield_winning_move_in_three_players_turns_or_more() {
+        Piece[][] board = new Piece[11][11];
+        board[2][4] = Piece.X;
+        board[2][6] = Piece.X;
+        board[3][4] = Piece.O;
+        board[3][5] = Piece.X;
+        board[3][6] = Piece.O;
+        board[3][7] = Piece.X;
+        board[4][4] = Piece.O;
+        board[4][5] = Piece.X;
+        board[4][6] = Piece.O;
+        board[5][3] = Piece.O;
+        board[5][4] = Piece.X;
+        board[5][6] = Piece.O;
+        board[6][3] = Piece.X;
+        board[6][4] = Piece.O;
+        board[6][5] = Piece.O;
+
+        GameState state = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(board)
+                .setNextPlayer(Piece.X)
+                .build();
+        state.print();
+
+        player.setPiece(Piece.X);
+        Cell move = player.move(state, new Cell(5, 6));
+
+        state.update(move);
+        state.print();
+
+        assertEquals(new Cell(2, 5), move);
+
+        var otherPlayer = new NaivePlayer();
+        otherPlayer.setPiece(Piece.O);
+        var simulator = new Simulator(state, player, otherPlayer);
+        var endState = simulator.run();
+        endState.print();
+        assertEquals(player.getPiece(), endState.getWinner());
     }
 }
