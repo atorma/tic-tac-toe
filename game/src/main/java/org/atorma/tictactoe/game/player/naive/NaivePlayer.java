@@ -37,6 +37,15 @@ public class NaivePlayer extends MandatoryMovePlayer implements Player {
                 .orElseGet(this::getRandomAllowedMove);
     }
 
+    private Optional<Cell> getMandatoryMove() {
+        var moves = this.getMandatoryMoves();
+        if (!moves.isEmpty()) {
+            return Optional.of(moves.iterator().next());
+        } else {
+            return Optional.empty();
+        }
+    }
+
     private Optional<Cell> getMoveElongatingLongestSequence() {
         Sequence myLongestSequence = currentState.getLongestSequence(mySide);
         List<Cell> candidates = getFreeSequenceEnds(currentState, myLongestSequence);

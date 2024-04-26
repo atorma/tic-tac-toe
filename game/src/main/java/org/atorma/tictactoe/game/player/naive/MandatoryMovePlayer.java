@@ -1,13 +1,11 @@
 package org.atorma.tictactoe.game.player.naive;
 
+import org.atorma.tictactoe.game.player.random.NearbyCellPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Sequence;
-import org.atorma.tictactoe.game.player.random.NearbyCellPlayer;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public abstract class MandatoryMovePlayer extends NearbyCellPlayer {
 
@@ -15,16 +13,19 @@ public abstract class MandatoryMovePlayer extends NearbyCellPlayer {
         super(nearbyCellDistance);
     }
 
-    protected Optional<Cell> getMandatoryMove() {
-        GameState fakeState = GameState.builder()
+    protected Set<Cell> getMandatoryMoves() {
+        var mandatoryMoves = new HashSet<Cell>();
+
+        var fakeState = GameState.builder()
                 .setTemplate(currentState)
                 .setNextPlayer(getPiece().other())
                 .build();
 
         // Can I win with one move?
-        for (Cell move : getEmptyCellsNearOccupied()) {
+        for (var move : getEmptyCellsNearOccupied()) {
             if (currentState.next(move).getWinner() == getPiece()) {
-                return Optional.of(move);
+                mandatoryMoves.add(move);
+                return mandatoryMoves; // No point in looking further if victory is guaranteed
             }
         }
 
@@ -32,41 +33,51 @@ public abstract class MandatoryMovePlayer extends NearbyCellPlayer {
         // Can my opponent win with one move? If yes, block the move.
         for (Cell move : getEmptyCellsNearOccupied()) {
             if (fakeState.next(move).getWinner() == getPiece().other()) {
-                return Optional.of(move);
+                mandatoryMoves.add(move);
             }
+        }
+        // One of these blocking moves must be taken but their value may be different for the current player
+        if (!mandatoryMoves.isEmpty()) {
+            return mandatoryMoves;
         }
 
         // Can I make a sequence that will yield a victory on my next turn?
         for (Cell move : getEmptyCellsNearOccupied()) {
             if (isVictoryInTwoTurns(move, currentState)) {
-                return Optional.of(move);
+                mandatoryMoves.add(move);
+                return mandatoryMoves; // No point in looking further if victory is guaranteed
             }
         }
 
         // Can my opponent make a sequence that will yield a victory in her next turn? If yes, block it.
         for (Cell move : getEmptyCellsNearOccupied()) {
             if (isVictoryInTwoTurns(move, fakeState)) {
-                return Optional.of(move);
+                mandatoryMoves.add(move);
             }
+        }
+        if (!mandatoryMoves.isEmpty()) {
+            return mandatoryMoves;
         }
 
         // Can I make two sequences that can yield a victory on my third move
         // (e.g. two sequences of three cells with free ends in connect 5)?
-        // Note that the victory may be delayed by creating more urgent moves to block.
+        // Note that the victory may be delayed, but not prevented, by
+        // the opponent creating more urgent moves to block.
         for (Cell move : getEmptyCellsNearOccupied()) {
             if (isVictoryInThreeTurns(move, currentState)) {
-                return Optional.of(move);
+                mandatoryMoves.add(move);
+                return mandatoryMoves;
             }
         }
 
         // Same as above but for the opponent.
         for (Cell move : getEmptyCellsNearOccupied()) {
             if (isVictoryInThreeTurns(move, fakeState)) {
-                return Optional.of(move);
+                mandatoryMoves.add(move);
             }
         }
 
-        return Optional.empty();
+        return mandatoryMoves;
     }
 
     private boolean isVictoryInTwoTurns(Cell move, GameState state) {

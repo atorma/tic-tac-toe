@@ -91,7 +91,22 @@ public class MCTSPlayer implements Player, Configurable {
 
         this.mandatoryMovePlayer = new MandatoryMovePlayer(1) {
             protected Cell planMove() {
-                return getMandatoryMove().orElse(null);
+                var mandatoryMoves = getMandatoryMoves();
+                Cell bestMandatoryMove = null;
+                double maxReward = Double.NEGATIVE_INFINITY;
+                for (var cell : mandatoryMoves) {
+                    var moveNode = lastMove.findMoveTo(cell);
+                    if (moveNode != null && moveNode.getExpectedReward(mySide) > maxReward) {
+                        bestMandatoryMove = cell;
+                    }
+                }
+                if (bestMandatoryMove != null) {
+                    return bestMandatoryMove;
+                } else if (!mandatoryMoves.isEmpty()) {
+                    return mandatoryMoves.iterator().next();
+                } else {
+                    return null;
+                }
             }
 
             @Override
