@@ -94,7 +94,7 @@ public class JSONSerializationTests {
     @Test
     public void serializes_and_deserializes_MoveNode() throws JsonProcessingException {
         GameState startState = GameState.builder().setConnectHowMany(3).setBoard(new Piece[3][3]).setNextPlayer(Piece.X).build();
-        MoveNode root = new MoveNode(startState, null, new WinLossDrawScheme());
+        MoveNode root = new MoveNode(startState, null, new WinLossDrawScheme(), new NearbyMovesFilter(2));
         MoveNode child = root.expandRandom();
         MoveNode grandChild = child.expandRandom();
 
@@ -123,6 +123,7 @@ public class JSONSerializationTests {
         assertEquals(root.getWins(Piece.X), deserializedRoot.getWins(Piece.X));
         assertEquals(root.getExpectedReward(Piece.X), deserializedRoot.getExpectedReward(Piece.X));
         assertEquals(root.getNumPlays(), deserializedRoot.getNumPlays());
+        assertTrue(deserializedRoot.getMoveFilter() instanceof NearbyMovesFilter);
 
         var deserializedChild = deserializedRoot.getChildren().stream()
                 .filter(n -> n.getId().equals(child.getId()))

@@ -1,8 +1,6 @@
 package org.atorma.tictactoe.game.player.mcts;
 
 import org.atorma.tictactoe.game.Utils;
-import org.atorma.tictactoe.game.player.mcts.MoveNode;
-import org.atorma.tictactoe.game.player.mcts.WinLossDrawScheme;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
@@ -70,39 +68,66 @@ public class MoveNodeTests {
 
     @Test
     public void expand_random_in_allowed_set_returns_allowed_move_in_set_and_adds_it_as_child_node() {
-        Set<Cell> allowed = new HashSet<>(Arrays.asList(
-                new Cell(5, 5),
-                new Cell(5, 6),
-                new Cell(6, 5),
-                new Cell(6, 6)
+        var board = new Piece[][] {
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, Piece.X, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, Piece.O, null, null, null},
+                {null, null, null, null, null, null, null},
+        };
+
+        Set<Cell> allowedNextMoves = new HashSet<>(Arrays.asList(
+                new Cell(2, 2),
+                new Cell(2, 3),
+                new Cell(2, 4),
+                new Cell(3, 2),
+                new Cell(3, 4),
+                new Cell(4, 2),
+                new Cell(4, 3),
+                new Cell(4, 4),
+                new Cell(5, 2),
+                new Cell(5, 4),
+                new Cell(6, 2),
+                new Cell(6, 3),
+                new Cell(6, 4)
         ));
 
-        GameState state = GameState.builder().setConnectHowMany(5).setBoard(new Piece[18][18]).setNextPlayer(Piece.X).build();
-        MoveNode root = new MoveNode(state, null, new WinLossDrawScheme());
+        GameState state = GameState.builder()
+                .setConnectHowMany(3)
+                .setBoard(board)
+                .setNextPlayer(Piece.X)
+                .build();
+        MoveNode root = new MoveNode(state, new Cell(5, 3), new WinLossDrawScheme(), new NearbyMovesFilter(1));
         assertTrue(root.getChildren().isEmpty());
-        assertFalse(root.isFullyExpandedIn(allowed));
+        assertFalse(root.isFullyExpanded());
 
-        MoveNode child1 = root.expandRandomIn(allowed);
-        assertTrue(root.getChildren().contains(child1));
-        assertTrue(allowed.contains(child1.getMove()));
-        assertFalse(root.isFullyExpandedIn(allowed));
+        for (var i = 1; i <= allowedNextMoves.size(); i++) {
+            var child = root.expandRandom();
+            assertTrue(allowedNextMoves.contains(child.getMove()));
+            assertTrue(root.getChildren().contains(child));
+            assertEquals(i == allowedNextMoves.size(), root.isFullyExpanded());
+        }
 
-        MoveNode child2 = root.expandRandomIn(allowed);
-        assertTrue(root.getChildren().contains(child2));
-        assertTrue(allowed.contains(child2.getMove()));
-        assertFalse(root.isFullyExpandedIn(allowed));
+        var child = root.getBestExploratoryMoves().getFirst();
+        var grandChild = child.expandRandom();
+        assertTrue(Cell.getDistance(grandChild.getMove(), child.getMove()) == 1 ||
+                Cell.getDistance(grandChild.getMove(), new Cell(3, 3)) == 1 ||
+                Cell.getDistance(grandChild.getMove(), new Cell(5, 3)) == 1);
+    }
 
-        MoveNode child3 = root.expandRandomIn(allowed);
-        assertTrue(root.getChildren().contains(child3));
-        assertTrue(allowed.contains(child3.getMove()));
-        assertFalse(root.isFullyExpandedIn(allowed));
-
-        MoveNode child4 = root.expandRandomIn(allowed);
-        assertTrue(root.getChildren().contains(child4));
-        assertTrue(allowed.contains(child4.getMove()));
-        assertTrue(root.isFullyExpandedIn(allowed));
-
-        assertNull(root.expandRandomIn(allowed));
+    @Test
+    public void when_board_is_empty_and_nearby_move_filter_used_then_xxx() {
+        GameState state = GameState.builder()
+                .setConnectHowMany(3)
+                .setBoard(new Piece[3][3])
+                .setNextPlayer(Piece.X)
+                .build();
+        MoveNode root = new MoveNode(state, null, new WinLossDrawScheme(), new NearbyMovesFilter(1));
+        assertTrue(root.getChildren().isEmpty());
+        assertFalse(root.isFullyExpanded());
+        root.expandRandom();
     }
 
     @Test

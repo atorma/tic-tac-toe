@@ -2,10 +2,7 @@ package org.atorma.tictactoe.game.state;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.CLASS,
-        property = "@class"
-)
+@JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, property = "@class")
 public interface Board {
 
     int getNumRows();

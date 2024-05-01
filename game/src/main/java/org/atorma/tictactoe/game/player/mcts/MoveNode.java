@@ -47,6 +47,7 @@ public class MoveNode {
     /* Stored in root only */
     private RewardScheme rewardScheme;
     private GameState rootState;
+    private MoveFilter moveFilter;
 
     /**
      * Creates the root node of a game tree.
@@ -57,21 +58,31 @@ public class MoveNode {
      *  the move that lead to the starting state, or null if no move (empty board)
      * @param rewardScheme
      *  the reward scheme to use for scoring nodes
+     * @param moveFilter
+     *  a move filter
      */
-    public MoveNode(GameState gameState, Cell cell, RewardScheme rewardScheme) {
+    public MoveNode(GameState gameState, Cell cell, RewardScheme rewardScheme, MoveFilter moveFilter) {
         init();
 
         this.root = this;
         this.rewardScheme = rewardScheme;
         this.parent = null;
         this.rootState = gameState.getCopy();
+        this.moveFilter = moveFilter;
 
         this.id = UUID.randomUUID().toString();
         this.cell = cell;
         this.isEndState = gameState.isAtEnd();
         this.nextPlayer = gameState.getNextPlayer();
         this.children = new ArrayList<>();
-        this.unexpandedMoves = new ArrayList<>(gameState.getAllowedMoves()); // sorted by rows then columns
+        // sorted by rows then columns
+        this.unexpandedMoves = gameState.getAllowedMoves().stream()
+                .filter(m -> moveFilter.isAllowed(gameState, m))
+                .collect(Collectors.toList());
+    }
+
+    public MoveNode(GameState gameState, Cell cell, RewardScheme rewardScheme) {
+        this(gameState, cell, rewardScheme, new AllMovesAllowedFilter());
     }
 
     private MoveNode(MoveNode parent, Cell cell) {
@@ -86,7 +97,10 @@ public class MoveNode {
         this.nextPlayer = myState.getNextPlayer();
         this.stateRef = new SoftReference<>(myState);
         this.children = new ArrayList<>();
-        this.unexpandedMoves = new ArrayList<>(myState.getAllowedMoves()); // sorted by rows then columns
+        // sorted by rows then columns
+        this.unexpandedMoves = myState.getAllowedMoves().stream()
+                .filter(m -> getMoveFilter().isAllowed(myState, m))
+                .collect(Collectors.toList());
     }
 
     @JsonCreator
@@ -113,6 +127,7 @@ public class MoveNode {
             this.parent = null;
             this.root = this;
             this.rewardScheme = treeDTO.nodes().get(nodeId).rewardScheme();
+            this.moveFilter = treeDTO.nodes().get(nodeId).moveFilter();
             this.rootState = treeDTO.nodes().get(nodeId).rootState();
             myState = this.rootState;
         } else {
@@ -126,10 +141,11 @@ public class MoveNode {
 
         this.children = moveDTO.expandedChildren().stream()
                 .map(childId -> new MoveNode(treeDTO, childId, this, myState))
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+                .collect(Collectors.toList());
         this.unexpandedMoves = myState.getAllowedMoves().stream()
+                .filter(m -> getMoveFilter().isAllowed(myState, m))
                 .filter(c -> this.children.stream().noneMatch(n -> n.cell.equals(c)))
-                .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+                .collect(Collectors.toList());
     }
 
     @JsonValue
@@ -149,6 +165,7 @@ public class MoveNode {
                     moveNode.rewardSums,
                     moveNode.numPlays,
                     moveNode.id.equals(this.id) ? this.root.rewardScheme : null,
+                    moveNode.id.equals(this.id) ? this.root.moveFilter : null,
                     moveNode.id.equals(this.id) ? this.root.rootState : null
             ));
             movesToProcess.addAll(moveNode.children);
@@ -234,7 +251,6 @@ public class MoveNode {
      *
      * @see #expandAll()
      * @see #expandRandom()
-     * @see #expandRandomIn(Set)
      */
     public List<MoveNode> getChildren() {
         return Collections.unmodifiableList(children);
@@ -242,14 +258,6 @@ public class MoveNode {
 
     public boolean isFullyExpanded() {
         return unexpandedMoves.isEmpty();
-    }
-
-
-    public boolean isFullyExpandedIn(Set<Cell> allowedCells) {
-        if (isFullyExpanded()) {
-            return true;
-        }
-        return unexpandedMoves.stream().noneMatch(allowedCells::contains);
     }
 
     /**
@@ -275,57 +283,40 @@ public class MoveNode {
         return expand(ThreadLocalRandom.current().nextInt(unexpandedMoves.size()));
     }
 
-    /**
-     * Expands this node by one random move in the given allowed set.
-     *
-     * @return
-     *  child node representing the added move,
-     *  or null if no allowed moves to expand
-     */
-    public MoveNode expandRandomIn(Set<Cell> allowedCells) {
-        List<Cell> candidates = unexpandedMoves.stream().filter(allowedCells::contains).collect(Collectors.toList());
-        if (candidates.isEmpty()) {
-            return null;
-        } else {
-            Cell cellToExpandTo = Utils.pickRandom(candidates);
-            return expand(cellToExpandTo);
-        }
-    }
-
     private MoveNode expand(int unexpandedIndex) {
-        Cell position = unexpandedMoves.get(unexpandedIndex);
+        Cell move = unexpandedMoves.get(unexpandedIndex);
         unexpandedMoves.remove(unexpandedIndex);
-        MoveNode child = new MoveNode(this, position);
+        return addChild(move);
+    }
+
+    private MoveNode addChild(Cell move) {
+        MoveNode child = new MoveNode(this, move);
         this.children.add(child);
         return child;
     }
-
-    private MoveNode expand(Cell cellToExpandTo) {
-        boolean removed = unexpandedMoves.remove(cellToExpandTo);
-        if (!removed) {
-            throw new IllegalArgumentException("Not allowed to expand to cell " + cellToExpandTo);
-        }
-        MoveNode child = new MoveNode(this, cellToExpandTo);
-        this.children.add(child);
-        return child;
-    }
-
 
     public MoveNode findMoveTo(Cell nextPosition) {
         // Already expanded?
-        for (MoveNode node : children) {
+        for (var node : children) {
             if (node.getMove().equals(nextPosition)) {
                 return node;
             }
         }
-        // Must be unexpanded then, or else not an allowed move
+
+        // Is it an unexpanded move, passing moveFilter?
         for (int i = 0; i < unexpandedMoves.size(); i++) {
-            Cell move = unexpandedMoves.get(i);
+            var move = unexpandedMoves.get(i);
             if (move.equals(nextPosition)) {
                 return expand(i);
             }
         }
-        return null;
+
+        // Maybe the opponent chose an unexpected move that is not
+        // in unexpandedMoves?
+        var optMove = getGameState().getAllowedMoves().stream()
+                .filter(m -> m.equals(nextPosition))
+                .findFirst();
+        return optMove.map(this::addChild).orElse(null);
     }
 
     /**
@@ -437,6 +428,7 @@ public class MoveNode {
      */
     public void makeRoot() {
         this.rewardScheme = root.rewardScheme;
+        this.moveFilter = root.moveFilter;
         this.rootState = getGameState();
         this.root = this;
         this.parent = null;
@@ -534,4 +526,8 @@ public class MoveNode {
         return count;
     }
 
+
+    public MoveFilter getMoveFilter() {
+        return this.root.moveFilter;
+    }
 }

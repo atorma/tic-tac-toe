@@ -3,9 +3,6 @@ package org.atorma.tictactoe.game.player.mcts;
 
 import org.atorma.tictactoe.game.Simulator;
 import org.atorma.tictactoe.game.player.Player;
-import org.atorma.tictactoe.game.player.mcts.MCTSParameters;
-import org.atorma.tictactoe.game.player.mcts.MCTSPlayer;
-import org.atorma.tictactoe.game.player.mcts.MoveNode;
 import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.atorma.tictactoe.game.state.Cell;
@@ -82,6 +79,7 @@ public class MCTSPlayerTests {
     @Test
     public void beats_naive_player_in_18x18_connect_5_tic_tac_toe_even_when_naive_player_starts() {
         MCTSParameters params = new MCTSParameters();
+        params.searchRadius = 1;
 
         Player mctsPlayer = new MCTSPlayer(params);
         mctsPlayer.setPiece(Piece.X);
@@ -312,13 +310,15 @@ public class MCTSPlayerTests {
 
         // Furthermore, it should expand (search) alternatives within search radius of past moves only
         MoveNode mctsPlayer2ndNode = mctsPlayer.getLastMove();
-        assertTrue(mctsPlayer2ndNode.getChildren().size() > 0);
+        assertFalse(mctsPlayer2ndNode.getChildren().isEmpty());
         for (MoveNode n : mctsPlayer2ndNode.getChildren()) {
-            assertTrue(Cell.getDistance(n.getMove(), mctsPlayerMove) <= params.searchRadius
+            assertTrue(
+                    Cell.getDistance(n.getMove(), mctsPlayer2ndMove) <= params.searchRadius
+                    || Cell.getDistance(n.getMove(), mctsPlayerMove) <= params.searchRadius
                     || Cell.getDistance(n.getMove(), opponentsMove) <= params.searchRadius);
         }
         MoveNode opponentNode = mctsPlayer2ndNode.getParent();
-        assertTrue(opponentNode.getChildren().size() > 0);
+        assertFalse(opponentNode.getChildren().isEmpty());
         for (MoveNode n : opponentNode.getChildren()) {
             assertTrue(Cell.getDistance(n.getMove(), mctsPlayerMove) <= params.searchRadius
                     || Cell.getDistance(n.getMove(), opponentsMove) <= params.searchRadius);

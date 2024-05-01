@@ -112,8 +112,9 @@ public class GameState {
      * i.e. the cell is within the board's boundaries and unoccupied.
      *
      * @param cell
+     *  a cell
      * @return
-     *  true if the move is allowed
+     *  true if the move to the cell is allowed
      */
     public boolean isAllowed(Cell cell) {
         if (cell == null ) {

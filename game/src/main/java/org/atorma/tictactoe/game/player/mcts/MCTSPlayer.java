@@ -6,15 +6,14 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import org.atorma.tictactoe.game.Simulator;
 import org.atorma.tictactoe.game.Utils;
 import org.atorma.tictactoe.game.player.Configurable;
-import org.atorma.tictactoe.game.player.NearbyEmptyCellTracker;
 import org.atorma.tictactoe.game.player.Player;
 import org.atorma.tictactoe.game.player.naive.MandatoryMovePlayer;
+import org.atorma.tictactoe.game.player.naive.NaivePlayer;
 import org.atorma.tictactoe.game.player.random.RandomNearbyPlayer;
+import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.atorma.tictactoe.game.state.Cell;
 import org.atorma.tictactoe.game.state.GameState;
 import org.atorma.tictactoe.game.state.Piece;
-import org.atorma.tictactoe.game.player.naive.NaivePlayer;
-import org.atorma.tictactoe.game.player.random.RandomPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +54,6 @@ public class MCTSPlayer implements Player, Configurable {
     private ExecutorService workerPool;
 
     private MandatoryMovePlayer mandatoryMovePlayer;
-    private NearbyEmptyCellTracker emptyCellTracker;
 
     public MCTSPlayer() {
         this(DEFAULT_PARAMS);
@@ -142,16 +140,15 @@ public class MCTSPlayer implements Player, Configurable {
     @Override
     public Cell move(GameState updatedState, Cell opponentsLastMove) {
         if (lastMove == null) {
-            lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme);
+            var moveFilter = params.searchRadius < Integer.MAX_VALUE ? new NearbyMovesFilter(params.searchRadius) : new AllMovesAllowedFilter();
+            lastMove = new MoveNode(updatedState, opponentsLastMove, params.rewardScheme, moveFilter);
             LOGGER.info("New game started! Simulation strategy {}.", params.simulationStrategy.toString().toLowerCase());
         } else {
             LOGGER.info("Own last move: {}", lastMove.printStatsFor(mySide));
             LOGGER.info("Tree size before opponent's move: {}", MoveNode.getTreeSize(lastMove));
             lastMove = lastMove.findMoveTo(opponentsLastMove);
         }
-        if (emptyCellTracker == null) {
-            emptyCellTracker = new NearbyEmptyCellTracker(updatedState, params.searchRadius);
-        }
+
         this.currentState = updatedState;
         this.opponentsLastMove = opponentsLastMove;
 
@@ -190,8 +187,6 @@ public class MCTSPlayer implements Player, Configurable {
     private MoveNode planMove() {
         planningStartTime = System.currentTimeMillis();
 
-        emptyCellTracker.addOccupiedCell(currentState, opponentsLastMove);
-
         MoveNode bestMove = null;
         MoveNode rolloutStartMove;
 
@@ -202,7 +197,6 @@ public class MCTSPlayer implements Player, Configurable {
             bestMove = lastMove.findMoveTo(mandatoryMove);
             // If we have a mandatory move, use the time to plan ahead from that state
             rolloutStartMove = bestMove;
-            emptyCellTracker.addOccupiedCell(currentState, bestMove.getMove());
         } else {
             rolloutStartMove = lastMove;
         }
@@ -233,7 +227,6 @@ public class MCTSPlayer implements Player, Configurable {
 
         if (!isMandatoryMove) {
             bestMove = selectNextMoveBasedOnExpectedReward();
-            emptyCellTracker.addOccupiedCell(currentState, bestMove.getMove());
         }
 
         LOGGER.info("{} rollouts in {} ms", planningRollouts, System.currentTimeMillis() - planningStartTime);
@@ -293,14 +286,12 @@ public class MCTSPlayer implements Player, Configurable {
         MoveNode moveNode = startNode;
 
         while (!moveNode.isEndState()) {
-            MoveNode child = moveNode.expandRandomIn(emptyCellTracker.getEmptyCellsNearOccupied());
+            MoveNode child = moveNode.expandRandom();
             if (child != null) { // not yet fully expanded in nearby cells
                 return child;
             } else { // all children visited at least once, now continue to searching in the most promising branch
                 if (!moveNode.getChildren().isEmpty()) {
                     moveNode = Utils.pickRandom(moveNode.getBestExploratoryMoves());
-                } else { // search area is fully occupied, pick one outside it
-                    moveNode = moveNode.expandRandom();
                 }
             }
         }

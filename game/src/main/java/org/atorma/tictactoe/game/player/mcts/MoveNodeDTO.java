@@ -19,6 +19,7 @@ public record MoveNodeDTO(
         int numPlays,
 
         RewardScheme rewardScheme,
+        MoveFilter moveFilter,
         GameState rootState
 ) {
 }
