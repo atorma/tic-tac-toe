@@ -45,8 +45,8 @@ spec:
             timeoutSeconds: 5
           resources:
             requests:
-              cpu: 50m
-              memory: 200Mi
+              cpu: 5m
+              memory: 250Mi
           env:
             - name: MCTS_MAX_DESCENDANT_LEVEL
               value: "2"
