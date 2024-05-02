@@ -91,11 +91,17 @@ public abstract class MandatoryMovePlayer extends NearbyCellPlayer {
 
     private boolean isVictoryInThreeTurns(Cell move, GameState state) {
         GameState nextState = state.next(move);
-        return nextState.getUpdatedSequences().stream()
+        var count1 = nextState.getUpdatedSequences().stream()
                 .filter(sequence ->
                         sequence.getLength() >= state.getConnectHowMany() - 2 &&
-                                getFreeSequenceEnds(nextState, sequence).size() >= 2
-                ).count() >= 2;
+                                getFreeSequenceEnds(nextState, sequence).size() >= 2)
+                .count();
+        var count2 = nextState.getUpdatedSequences().stream()
+                .filter(sequence ->
+                        sequence.getLength() >= state.getConnectHowMany() - 1 &&
+                                getFreeSequenceEnds(nextState, sequence).size() >= 1)
+                .count();
+        return count1 + count2 >= 2;
     }
 
     protected List<Cell> getFreeSequenceEnds(GameState state, Sequence sequence) {

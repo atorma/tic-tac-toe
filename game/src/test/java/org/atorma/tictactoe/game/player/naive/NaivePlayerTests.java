@@ -342,4 +342,47 @@ public class NaivePlayerTests {
         endState.print();
         assertEquals(player.getPiece(), endState.getWinner());
     }
+
+    @Test
+    public void blocks_move_that_would_yield_winning_move_for_opponent_in_three_players_turns() {
+        Piece[][] board = new Piece[18][18];
+        board[2][5] = Piece.X;
+        board[2][11] = Piece.X;
+        board[3][4] = Piece.X;
+        board[3][5] = Piece.O;
+        board[3][6] = Piece.O;
+        board[3][7] = Piece.O;
+        board[3][8] = Piece.O;
+        board[3][9] = Piece.X;
+        board[3][10] = Piece.O;
+        board[4][7] = Piece.O;
+        board[4][9] = Piece.O;
+        board[5][7] = Piece.X;
+        board[5][8] = Piece.O;
+        board[5][9] = Piece.X;
+        board[6][7] = Piece.O;
+        board[6][8] = Piece.X;
+        board[6][9] = Piece.O;
+        board[7][6] = Piece.X;
+        board[7][8] = Piece.X;
+        board[7][9] = Piece.O;
+        board[7][10] = Piece.X;
+        board[8][7] = Piece.X;
+        board[8][8] = Piece.X;
+
+        GameState state = GameState.builder()
+                .setConnectHowMany(5)
+                .setBoard(board)
+                .setNextPlayer(Piece.O)
+                .build();
+        state.print();
+
+        player.setPiece(Piece.O);
+        Cell move = player.move(state, new Cell(8, 8));
+
+        state.update(move);
+        state.print();
+
+        assertEquals(new Cell(9, 8), move);
+    }
 }
