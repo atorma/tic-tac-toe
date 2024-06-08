@@ -41,14 +41,12 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
         MCTSParameters randomNearbyParams = new MCTSParameters();
         randomNearbyParams.simulationStrategy = MCTSParameters.SimulationStrategy.RANDOM_NEARBY;
         randomNearbyParams.gamesPerRollout = parseEnvVarAsInt("MCTS_RANDOM_NEARBY_GAMES_PER_ROLLOUT", 25);
-        randomNearbyParams.searchRadius = 2;
         randomNearbyParams.pruneDescendantLevelsGreaterThan = parseEnvVarAsInt("MCTS_MAX_DESCENDANT_LEVEL", Integer.MAX_VALUE);
         addPlayerInfo("MCTS random nearby", PlayerInfo.Type.AI, MCTSPlayer.class, randomNearbyParams);
 
         MCTSParameters uniformRandomParams = new MCTSParameters();
         uniformRandomParams.simulationStrategy = MCTSParameters.SimulationStrategy.UNIFORM_RANDOM;
         uniformRandomParams.gamesPerRollout = parseEnvVarAsInt("MCTS_UNIFORM_RANDOM_GAMES_PER_ROLLOUT", 700);
-        uniformRandomParams.searchRadius = 2;
         uniformRandomParams.pruneDescendantLevelsGreaterThan = parseEnvVarAsInt("MCTS_MAX_DESCENDANT_LEVEL", Integer.MAX_VALUE);
         addPlayerInfo("MCTS uniform random", PlayerInfo.Type.AI, MCTSPlayer.class, uniformRandomParams);
 
