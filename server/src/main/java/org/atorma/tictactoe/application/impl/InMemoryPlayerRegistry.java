@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 @Service
@@ -104,13 +103,13 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
             throw new NotFoundException("Cannot find player id = " + playerInfo.getId() + ", name = " + playerInfo.getName());
         }
         try {
-            Player player = playerClass.getDeclaredConstructor().newInstance();
+            var player = playerClass.getConstructor().newInstance();
             if (player instanceof Configurable configurable) {
                 configurable.configure(playerConfigs.get(playerInfo.getId()));
             }
             // TODO configure with user input
             return player;
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error when creating player", e);
         }
     }

@@ -10,6 +10,10 @@ import java.util.*;
 public class RandomNearbyPlayer extends NearbyCellPlayer implements Player {
     private Piece myPiece;
 
+    public RandomNearbyPlayer() {
+        this(1);
+    }
+
     public RandomNearbyPlayer(int allowedDistance) {
         super(allowedDistance);
     }

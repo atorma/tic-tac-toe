@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
-import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -15,8 +14,8 @@ import static org.hamcrest.Matchers.*;
 @Tag("FastTests")
 public class PlayerRegistryTests extends ApplicationTests {
 
-    @Autowired PlayerRegistry playerRegistry;
-    Random random = new Random();
+    @Autowired
+    PlayerRegistry playerRegistry;
 
     @Test
     public void get_player_information_list() {
@@ -34,10 +33,10 @@ public class PlayerRegistryTests extends ApplicationTests {
     @Test
     public void create_player() {
         List<PlayerInfo> playerInfoList = playerRegistry.getPlayerInfoList();
-        PlayerInfo playerInfo = playerInfoList.get(random.nextInt(playerInfoList.size()));
-
-        Player player = playerRegistry.createPlayer(playerInfo);
-        assertThat(player, notNullValue());
+        for (PlayerInfo playerInfo : playerInfoList) {
+            Player player = playerRegistry.createPlayer(playerInfo);
+            assertThat(player, notNullValue());
+        }
     }
 
 }
