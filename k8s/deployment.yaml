@@ -19,7 +19,7 @@ spec:
       containers:
         - name: tic-tac-toe-server
           image: tic-tac-toe-image
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
               name: api
