@@ -110,7 +110,7 @@ public class InMemoryPlayerRegistry implements PlayerRegistry {
             // TODO configure with user input
             return player;
         } catch (Exception e) {
-            throw new RuntimeException("Error when creating player", e);
+            throw new RuntimeException("Error when creating player: " + e.getMessage(), e);
         }
     }
 }
