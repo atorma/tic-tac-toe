@@ -21,4 +21,4 @@ spec:
   tls:
     - hosts:
         - tic-tac-toe.atorma.fi
-      secretName: atorma-fi-certificate-secret
+      secretName: tic-tac-toe-certificate-secret

@@ -1,0 +1,12 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tic-tac-toe
+  namespace: default
+spec:
+  secretName: tic-tac-toe-certificate-secret
+  dnsNames:
+    - tic-tac-toe.atorma.fi
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
